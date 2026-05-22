@@ -1585,6 +1585,39 @@ export async function updateHeading(
   )
 }
 
+/** Reorder a heading sibling set. ``parent_id=null`` targets the
+ *  top-level (text-root) headings; an existing heading id targets
+ *  its children. ``order`` is the desired sequence of heading ids
+ *  top-to-bottom and must cover the sibling set exactly — backend
+ *  rejects partial / extra lists. Cross-parent moves are not
+ *  supported here; the caller must re-parent first via
+ *  ``updateHeading`` and then reorder. */
+export async function reorderHeadings(
+  slug: string,
+  body: { parent_id: number | null; order: number[] },
+) {
+  return apiPatch<LegalHeadingRead[]>(
+    `/editorial/legal-texts/${encodeURIComponent(slug)}/headings/reorder`,
+    body,
+  )
+}
+
+/** Reorder articles inside a single heading bucket.
+ *  ``heading_id=null`` targets the text-root bucket (articles
+ *  attached directly to the LegalText, no heading parent — used
+ *  for proclamations / discours). ``order`` is the desired
+ *  sequence of article ids top-to-bottom and must cover the
+ *  bucket exactly — backend rejects partial / extra lists. */
+export async function reorderArticles(
+  slug: string,
+  body: { heading_id: number | null; order: number[] },
+) {
+  return apiPatch<ArticleEmbed[]>(
+    `/editorial/legal-texts/${encodeURIComponent(slug)}/articles/reorder`,
+    body,
+  )
+}
+
 export async function updateArticleContent(
   articleId: number,
   patch: ArticleContentPatch,

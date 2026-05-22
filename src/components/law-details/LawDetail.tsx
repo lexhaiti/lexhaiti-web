@@ -54,6 +54,8 @@ import { DocumentBody } from './DocumentBody'
 import {
   deleteHeading,
   moniteurIssueSlug,
+  reorderArticles,
+  reorderHeadings,
   updateHeading,
   updateHeadingTitle,
   updateLegalTextMetadata,
@@ -1500,6 +1502,20 @@ export default function LawDetail() {
                         onAddRootHeading={() =>
                           setAddHeadingAnchor({ kind: 'root' })
                         }
+                        onReorderHeadings={async (parentId, order) => {
+                          await reorderHeadings(law.slug, {
+                            parent_id: parentId,
+                            order,
+                          })
+                          refetch()
+                        }}
+                        onReorderArticles={async (headingId, order) => {
+                          await reorderArticles(law.slug, {
+                            heading_id: headingId,
+                            order,
+                          })
+                          refetch()
+                        }}
                         activeHeadingIds={articleBreadcrumb.map((h) => h.id)}
                       />
                     </div>
@@ -1601,6 +1617,20 @@ export default function LawDetail() {
                     onAddRootHeading={() =>
                       setAddHeadingAnchor({ kind: 'root' })
                     }
+                    onReorderHeadings={async (parentId, order) => {
+                      await reorderHeadings(law.slug, {
+                        parent_id: parentId,
+                        order,
+                      })
+                      refetch()
+                    }}
+                    onReorderArticles={async (headingId, order) => {
+                      await reorderArticles(law.slug, {
+                        heading_id: headingId,
+                        order,
+                      })
+                      refetch()
+                    }}
                     activeHeadingIds={articleBreadcrumb.map((h) => h.id)}
                   />
                 </div>

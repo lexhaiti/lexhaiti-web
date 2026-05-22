@@ -970,6 +970,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/editorial/legal-texts/{slug}/headings/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Reorder a heading sibling set to match an editor-supplied permutation
+         * @description Rewrite ``position`` on every heading inside the sibling set
+         *     identified by ``(legal_text, parent_id)`` so it matches the
+         *     supplied ID order. ``parent_id=null`` is the top-level set.
+         *
+         *     The body's ``order`` array must cover the sibling set exactly —
+         *     no missing, no extra. Cross-parent moves aren't allowed via
+         *     this route; re-parent first with PATCH on the heading metadata,
+         *     then reorder.
+         */
+        patch: operations["reorder_headings_api_v1_editorial_legal_texts__slug__headings_reorder_patch"];
+        trace?: never;
+    };
+    "/api/v1/editorial/legal-texts/{slug}/articles/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Reorder articles inside a heading to match an editor-supplied permutation
+         * @description Rewrite ``position`` on every article inside the heading bucket
+         *     identified by ``(legal_text, heading_id)``. ``heading_id=null``
+         *     is the text-root bucket (articles attached directly to the
+         *     LegalText with no heading parent — used for proclamations /
+         *     discours).
+         *
+         *     The body's ``order`` array must cover the bucket exactly — same
+         *     invariant as the headings reorder route. Cross-heading moves
+         *     aren't allowed via this route.
+         */
+        patch: operations["reorder_articles_api_v1_editorial_legal_texts__slug__articles_reorder_patch"];
+        trace?: never;
+    };
     "/api/v1/editorial/legal-texts/{slug}/signers/reorder": {
         parameters: {
             query?: never;
@@ -2402,6 +2457,21 @@ export interface components {
             domain_tags: string[];
         };
         /**
+         * ArticleReorderInput
+         * @description Editor-supplied permutation of articles within a single
+         *     heading bucket. ``heading_id=null`` is the text-root bucket
+         *     (articles attached directly to the LegalText, no heading
+         *     parent — used for proclamations / discours). ``order`` covers
+         *     the bucket exactly; cross-heading moves require ``insert_article``
+         *     or a metadata patch first.
+         */
+        ArticleReorderInput: {
+            /** Heading Id */
+            heading_id?: number | null;
+            /** Order */
+            order: number[];
+        };
+        /**
          * ArticleResolved
          * @description Lightweight article identity for cross-text citation label resolution.
          *
@@ -3474,6 +3544,25 @@ export interface components {
             content_ht?: string | null;
             /** Position */
             position: number;
+        };
+        /**
+         * LegalHeadingReorderInput
+         * @description Editor-supplied permutation of a heading's siblings.
+         *
+         *     ``parent_id`` identifies the sibling set: ``null`` for top-level
+         *     headings, an existing heading id for nested children. ``order``
+         *     is the desired sequence of heading IDs in that sibling set,
+         *     top-to-bottom. Must cover the set exactly — no missing, no
+         *     extra; the backend rejects mismatched lists to keep the
+         *     operation a pure permutation. Cross-parent moves are not
+         *     supported by this endpoint (re-parent first via the metadata
+         *     patch, then reorder).
+         */
+        LegalHeadingReorderInput: {
+            /** Parent Id */
+            parent_id?: number | null;
+            /** Order */
+            order: number[];
         };
         /**
          * LegalSignerBulkInput
@@ -6523,6 +6612,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LegalSignerRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reorder_headings_api_v1_editorial_legal_texts__slug__headings_reorder_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LegalHeadingReorderInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegalHeadingRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reorder_articles_api_v1_editorial_legal_texts__slug__articles_reorder_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArticleReorderInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleEmbed"][];
                 };
             };
             /** @description Validation Error */

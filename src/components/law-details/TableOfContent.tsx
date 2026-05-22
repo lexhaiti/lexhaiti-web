@@ -3,6 +3,8 @@
 import React, { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
+  ArrowDown,
+  ArrowUp,
   Check,
   ChevronDown,
   ChevronRight,
@@ -25,6 +27,10 @@ import {
 } from '@/components/ui/tooltip'
 
 interface Article {
+  /** Article row id — required so editor-mode reorder buttons can
+   *  build the permutation payload. Always present in ArticleEmbed
+   *  objects (which is what LawDetail passes through). */
+  id: number
   number: string
   heading_id?: number | null
   chapter?: string | null
@@ -106,6 +112,23 @@ interface TableOfContentsProps {
   onAddChildHeading?: (parent: Heading) => void
   /** Open the "Add heading" modal at the text root (no parent). */
   onAddRootHeading?: () => void
+  /** Reorder a heading sibling set — parent owns the API call so
+   *  it can refetch the law after success. ``parentId`` is null for
+   *  top-level headings; the order array covers the sibling set
+   *  exactly (full permutation, not just a delta). Invoked when the
+   *  editor clicks the ▲ / ▼ arrows on a heading row. */
+  onReorderHeadings?: (
+    parentId: number | null,
+    orderedIds: number[],
+  ) => Promise<void>
+  /** Reorder articles inside a single heading bucket — same shape
+   *  as ``onReorderHeadings`` but for the article rows nested under
+   *  a heading. ``headingId=null`` is the text-root bucket (orphan
+   *  articles with no heading parent). */
+  onReorderArticles?: (
+    headingId: number | null,
+    orderedIds: number[],
+  ) => Promise<void>
   /** Ordered list of heading ids on the path from the LegalText root
    *  down to the currently selected article (Titre → Chapitre → …).
    *  Every heading in this set is rendered in the active colour (red)
@@ -342,6 +365,8 @@ export default function TableOfContents({
   onAddSiblingHeading,
   onAddChildHeading,
   onAddRootHeading,
+  onReorderHeadings,
+  onReorderArticles,
   activeHeadingIds,
 }: TableOfContentsProps) {
   // Lookup-friendly set for "is this heading on the active path?"
@@ -380,6 +405,13 @@ export default function TableOfContents({
   // the tree so we don't render one per row.
   const [pendingDelete, setPendingDelete] = useState<Heading | null>(null)
   const [deletingHeading, setDeletingHeading] = useState(false)
+
+  // Per-row lock for the ▲/▼ reorder arrows so a slow PATCH doesn't
+  // let the editor queue a second swap on the same row. Keyed by
+  // ``"h:<id>"`` for headings, ``"a:<id>"`` for articles. We don't
+  // optimistically update — the parent's refetch reseats positions
+  // after the PATCH lands, so the buttons stay accurate.
+  const [reorderInflight, setReorderInflight] = useState<string | null>(null)
 
   function startEditHeading(h: Heading) {
     const current =
@@ -442,6 +474,87 @@ export default function TableOfContents({
     }
     return buildFlatGroups(articles)
   }, [headings, articles])
+
+  // Sibling-set maps derived from the *unfiltered* tree — drive the
+  // reorder arrows' enabled/disabled state and the permutation
+  // payload sent to the backend. We can't rely on the filtered tree
+  // because a search query would shrink the sibling set and a
+  // partial reorder would be rejected by the API.
+  //
+  //   headingSiblings: parent_id (null = root)        → ordered TocNode[]
+  //   articleSiblings: heading_id (null = orphans)    → ordered Article[]
+  const { headingSiblings, articleSiblings } = useMemo(() => {
+    const hMap = new Map<number | null, TocNode[]>()
+    const aMap = new Map<number | null, Article[]>()
+    const walkH = (nodes: TocNode[], parentId: number | null) => {
+      // ``nodes`` is already position-sorted by buildTocTree.
+      hMap.set(parentId, nodes)
+      for (const n of nodes) {
+        // Articles directly under this heading — already preserved
+        // in the insertion order of ``articles``, which the backend
+        // returns sorted by Article.position.
+        aMap.set(n.heading.id, n.articles)
+        walkH(n.children, n.heading.id)
+      }
+    }
+    walkH(tocTree.roots, null)
+    // Orphan articles share the "null heading" bucket with any
+    // text-root articles. ``buildFlatGroups`` puts every article
+    // into ``orphans`` when no headings exist; the regular tree
+    // path leaves ``orphans`` populated only for unattached rows.
+    aMap.set(null, tocTree.orphans)
+    return { headingSiblings: hMap, articleSiblings: aMap }
+  }, [tocTree])
+
+  // Reorder a heading row by ±1 within its sibling set. Builds the
+  // full permutation from the sibling map (not the filtered tree),
+  // skips no-op moves at the boundary, and relays the IDs to the
+  // parent so it can PATCH the API and refetch the law. The inflight
+  // lock keys off ``h:<id>`` so the same row can't queue a second
+  // swap until the first lands.
+  async function moveHeadingBy(node: TocNode, delta: -1 | 1) {
+    if (!onReorderHeadings) return
+    const parentId = node.heading.parent_id ?? null
+    const siblings = headingSiblings.get(parentId) ?? []
+    const idx = siblings.findIndex((n) => n.heading.id === node.heading.id)
+    const target = idx + delta
+    if (idx < 0 || target < 0 || target >= siblings.length) return
+    const reordered = siblings.slice()
+    const [moved] = reordered.splice(idx, 1)
+    reordered.splice(target, 0, moved)
+    const orderedIds = reordered.map((n) => n.heading.id)
+    const key = `h:${node.heading.id}`
+    setReorderInflight(key)
+    try {
+      await onReorderHeadings(parentId, orderedIds)
+    } finally {
+      setReorderInflight((current) => (current === key ? null : current))
+    }
+  }
+
+  // Reorder an article row by ±1 within its heading bucket. Same
+  // shape as moveHeadingBy: build the full permutation from the
+  // unfiltered bucket, refuse no-op boundary moves, relay to the
+  // parent. headingId is null for the text-root / orphan bucket.
+  async function moveArticleBy(article: Article, delta: -1 | 1) {
+    if (!onReorderArticles) return
+    const headingId = article.heading_id ?? null
+    const bucket = articleSiblings.get(headingId) ?? []
+    const idx = bucket.findIndex((a) => a.id === article.id)
+    const target = idx + delta
+    if (idx < 0 || target < 0 || target >= bucket.length) return
+    const reordered = bucket.slice()
+    const [moved] = reordered.splice(idx, 1)
+    reordered.splice(target, 0, moved)
+    const orderedIds = reordered.map((a) => a.id)
+    const key = `a:${article.id}`
+    setReorderInflight(key)
+    try {
+      await onReorderArticles(headingId, orderedIds)
+    } finally {
+      setReorderInflight((current) => (current === key ? null : current))
+    }
+  }
 
   // Filter by search — runs over the heading tree only; orphans use a
   // dedicated filter so a search query like "1382" finds an orphan
@@ -540,6 +653,109 @@ export default function TableOfContents({
       cancelAnimationFrame(raf2)
     }
   }, [selectedArticle, expandedSections])
+
+  /** Render a single article row — shared between the nested-in-
+   *  heading case (renderNode) and the orphan list at the TOC root.
+   *  Uses ``role=button`` instead of ``<button>`` so the per-row
+   *  reorder arrows (in editor mode) can nest cleanly: a real
+   *  ``<button>`` inside another ``<button>`` is invalid HTML and
+   *  trips React's hydration check. Keyboard a11y is preserved via
+   *  tabIndex + onKeyDown. ``bucketHeadingId`` is the parent
+   *  heading id (null for orphans / text-root articles) — drives
+   *  boundary detection for the ▲▼ buttons. */
+  const renderArticleRow = (article: Article, bucketHeadingId: number | null) => {
+    const isSelected = selectedArticle === article.number
+    const title =
+      currentLang === 'ht' && article.title_ht
+        ? article.title_ht
+        : article.title_fr
+
+    const bucket = articleSiblings.get(bucketHeadingId) ?? []
+    const idx = bucket.findIndex((a) => a.id === article.id)
+    const isFirst = idx <= 0
+    const isLast = idx < 0 || idx >= bucket.length - 1
+    const busy = reorderInflight === `a:${article.id}`
+    const showArrows = isEditor && onReorderArticles && !searchQuery
+
+    return (
+      <div
+        key={article.id}
+        id={`toc-article-${article.number}`}
+        role="button"
+        tabIndex={0}
+        onClick={() => onArticleSelect(article)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onArticleSelect(article)
+          }
+        }}
+        className={`w-full flex items-center gap-2.5 px-3 py-1.5 text-left text-sm transition-colors group/item cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-sm ${
+          isSelected
+            ? 'text-red-600 font-semibold'
+            : 'text-gray-600 hover:text-red-600'
+        }`}
+      >
+        <FileText
+          className={`w-3.5 h-3.5 flex-shrink-0 ${
+            isSelected
+              ? 'text-red-600'
+              : 'text-gray-400 group-hover/item:text-red-600 transition-colors'
+          }`}
+        />
+        <span
+          className={`flex-shrink-0 tabular-nums ${
+            isSelected ? '' : 'text-gray-900'
+          }`}
+        >
+          {formatArticleNumber(article.number, currentLang)}
+        </span>
+        {title && (
+          <span className="text-xs text-gray-500 truncate min-w-0">
+            — {title}
+          </span>
+        )}
+        {showArrows && (
+          <span className="ml-auto flex items-center gap-0.5 flex-shrink-0">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                moveArticleBy(article, -1)
+              }}
+              disabled={isFirst || busy}
+              className="opacity-0 group-hover/item:opacity-100 transition-opacity text-slate-400 hover:text-primary disabled:opacity-30 disabled:hover:text-slate-400 disabled:cursor-not-allowed"
+              aria-label={
+                currentLang === 'fr' ? "Monter l'article" : 'Monte atik la'
+              }
+              title={
+                currentLang === 'fr' ? "Monter l'article" : 'Monte atik la'
+              }
+            >
+              <ArrowUp className="w-3 h-3" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                moveArticleBy(article, 1)
+              }}
+              disabled={isLast || busy}
+              className="opacity-0 group-hover/item:opacity-100 transition-opacity text-slate-400 hover:text-primary disabled:opacity-30 disabled:hover:text-slate-400 disabled:cursor-not-allowed"
+              aria-label={
+                currentLang === 'fr' ? "Descendre l'article" : 'Desann atik la'
+              }
+              title={
+                currentLang === 'fr' ? "Descendre l'article" : 'Desann atik la'
+              }
+            >
+              <ArrowDown className="w-3 h-3" />
+            </button>
+          </span>
+        )}
+      </div>
+    )
+  }
 
   /** Render a single heading node recursively */
   const renderNode = (node: TocNode, depth: number = 0) => {
@@ -899,6 +1115,68 @@ export default function TableOfContents({
                       <Trash2 className="w-3 h-3" />
                     </button>
                   )}
+                  {/* Reorder arrows — editor-only. Hidden while a
+                      sidebar search query is active (we'd be
+                      reordering only the visible siblings, which the
+                      backend would reject as a partial permutation).
+                      The disabled state at the sibling boundary keeps
+                      keyboard / pointer users from no-op clicks. */}
+                  {isEditor && onReorderHeadings && !searchQuery && (() => {
+                    const siblings =
+                      headingSiblings.get(heading.parent_id ?? null) ?? []
+                    const idx = siblings.findIndex(
+                      (n) => n.heading.id === heading.id,
+                    )
+                    const isFirst = idx <= 0
+                    const isLast = idx < 0 || idx >= siblings.length - 1
+                    const busy = reorderInflight === `h:${heading.id}`
+                    return (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            moveHeadingBy(node, -1)
+                          }}
+                          disabled={isFirst || busy}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-primary disabled:opacity-30 disabled:hover:text-slate-400 disabled:cursor-not-allowed flex-shrink-0"
+                          aria-label={
+                            currentLang === 'fr'
+                              ? 'Monter cette section'
+                              : 'Monte seksyon sa'
+                          }
+                          title={
+                            currentLang === 'fr'
+                              ? 'Monter dans le sommaire'
+                              : 'Monte nan somè a'
+                          }
+                        >
+                          <ArrowUp className="w-3 h-3" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            moveHeadingBy(node, 1)
+                          }}
+                          disabled={isLast || busy}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-primary disabled:opacity-30 disabled:hover:text-slate-400 disabled:cursor-not-allowed flex-shrink-0"
+                          aria-label={
+                            currentLang === 'fr'
+                              ? 'Descendre cette section'
+                              : 'Desann seksyon sa'
+                          }
+                          title={
+                            currentLang === 'fr'
+                              ? 'Descendre dans le sommaire'
+                              : 'Desann nan somè a'
+                          }
+                        >
+                          <ArrowDown className="w-3 h-3" />
+                        </button>
+                      </>
+                    )
+                  })()}
                 </>
               )}
             </div>
@@ -931,46 +1209,9 @@ export default function TableOfContents({
               {/* Direct articles */}
               {nodeArticles.length > 0 && (
                 <div className="ml-6 mt-1 mb-2">
-                  {nodeArticles.map((article) => {
-                    const isSelected = selectedArticle === article.number
-                    const title =
-                      currentLang === 'ht' && article.title_ht
-                        ? article.title_ht
-                        : article.title_fr
-
-                    return (
-                      <button
-                        key={article.number}
-                        id={`toc-article-${article.number}`}
-                        onClick={() => onArticleSelect(article)}
-                        className={`w-full flex items-center gap-2.5 px-3 py-1.5 text-left text-sm transition-colors group/item ${
-                          isSelected
-                            ? 'text-red-600 font-semibold'
-                            : 'text-gray-600 hover:text-red-600'
-                        }`}
-                      >
-                        <FileText
-                          className={`w-3.5 h-3.5 flex-shrink-0 ${
-                            isSelected
-                              ? 'text-red-600'
-                              : 'text-gray-400 group-hover/item:text-red-600 transition-colors'
-                          }`}
-                        />
-                        <span
-                          className={`flex-shrink-0 tabular-nums ${
-                            isSelected ? '' : 'text-gray-900'
-                          }`}
-                        >
-                          {formatArticleNumber(article.number, currentLang)}
-                        </span>
-                        {title && (
-                          <span className="text-xs text-gray-500 truncate min-w-0">
-                            — {title}
-                          </span>
-                        )}
-                      </button>
-                    )
-                  })}
+                  {nodeArticles.map((article) =>
+                    renderArticleRow(article, heading.id),
+                  )}
                 </div>
               )}
 
@@ -1080,45 +1321,7 @@ export default function TableOfContents({
               articles. */}
           {filteredOrphans.length > 0 && (
             <div className="mb-3">
-              {filteredOrphans.map((article) => {
-                const isSelected = selectedArticle === article.number
-                const title =
-                  currentLang === 'ht' && article.title_ht
-                    ? article.title_ht
-                    : article.title_fr
-                return (
-                  <button
-                    key={article.number}
-                    id={`toc-article-${article.number}`}
-                    onClick={() => onArticleSelect(article)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-1.5 text-left text-sm transition-colors group/item ${
-                      isSelected
-                        ? 'text-red-600 font-semibold'
-                        : 'text-gray-600 hover:text-red-600'
-                    }`}
-                  >
-                    <FileText
-                      className={`w-3.5 h-3.5 flex-shrink-0 ${
-                        isSelected
-                          ? 'text-red-600'
-                          : 'text-gray-400 group-hover/item:text-red-600 transition-colors'
-                      }`}
-                    />
-                    <span
-                      className={`flex-shrink-0 tabular-nums ${
-                        isSelected ? '' : 'text-gray-900'
-                      }`}
-                    >
-                      {formatArticleNumber(article.number, currentLang)}
-                    </span>
-                    {title && (
-                      <span className="text-xs text-gray-500 truncate min-w-0">
-                        — {title}
-                      </span>
-                    )}
-                  </button>
-                )
-              })}
+              {filteredOrphans.map((article) => renderArticleRow(article, null))}
             </div>
           )}
           {filteredTree.length > 0 ? (
