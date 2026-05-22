@@ -2,17 +2,18 @@
 
 > Open frontend for [lexhaiti.org](https://lexhaiti.org) — the public digital corpus of Haitian law.
 
-This repository contains the Next.js frontend of the LexHaïti project. The
-backend (Python FastAPI service that ingests, structures, and serves the
-corpus) lives in a separate, proprietary repository owned by HDDI
-(Haïti Digital Data Infrastructure).
+This repository contains the public Next.js frontend for the LexHaïti project.
 
-This repo is intentionally public + Apache 2.0 licensed so anyone can:
+LexHaïti is an open-access bilingual legal information platform dedicated to improving public access to Haitian law.
 
-- Read the code that renders the public site
-- Audit the bilingual (French / Kreyòl) presentation logic
-- Fork the UI for a different jurisdiction's legal corpus
-- Contribute fixes back via pull request
+This repository is licensed under Apache 2.0 so that anyone can:
+
+* Audit the public-facing legal information platform
+* Review the bilingual French / Haitian Creole interface logic
+* Reuse and adapt the frontend architecture for other legal-information initiatives
+* Contribute improvements through pull requests
+
+The project aims to support transparency, legal accessibility, and open digital public infrastructure.
 
 ## Stack
 
