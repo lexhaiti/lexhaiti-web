@@ -579,7 +579,7 @@ export const ht = {
     showHistory: 'Wè istwa konplè a',
     hideHistory: 'Kache istwa a',
     amendedBy: 'Modifye pa',
-    inForceSince: 'An vigè depi',
+    inForceSince: 'Depi',
     showAll: 'Montre tout',
     sections: {
       modified: {

@@ -592,7 +592,7 @@ export const fr = {
     showHistory: "Voir l'historique complet",
     hideHistory: "Masquer l'historique",
     amendedBy: 'Modifié par',
-    inForceSince: 'En vigueur depuis le',
+    inForceSince: 'Depuis le',
     showAll: 'Tout afficher',
     sections: {
       modified: {
