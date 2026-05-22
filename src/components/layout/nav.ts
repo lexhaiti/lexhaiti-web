@@ -34,6 +34,7 @@ export const footerResources: NavItem[] = [
 
 export const footerAbout: NavItem[] = [
   { href: '/a-propos', labelKey: 'footer.links.about' },
+  { href: '/soutenir', labelKey: 'footer.links.donate' },
   { href: '/contact', labelKey: 'footer.links.contact' },
   { href: '/legal', labelKey: 'footer.links.legalNotice' },
   { href: '/privacy', labelKey: 'footer.links.privacy' },

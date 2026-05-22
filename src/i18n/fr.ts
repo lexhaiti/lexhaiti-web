@@ -160,6 +160,7 @@ export const fr = {
     },
     links: {
       about: 'À propos',
+      donate: 'Soutenir',
       all: 'Tous les textes',
       moniteur: 'Le Moniteur',
       updates: 'Mises à jour',

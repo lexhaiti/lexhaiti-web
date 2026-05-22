@@ -162,6 +162,7 @@ export const ht = {
     },
     links: {
       about: 'Sou nou',
+      donate: 'Sipòte',
       all: 'Tout tèks yo',
       moniteur: 'Le Moniteur',
       updates: 'Mizajou',
