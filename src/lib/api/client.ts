@@ -157,7 +157,7 @@ function cacheKey(method: string, url: string): string {
 }
 
 /** Drop all cached responses. Called automatically after any mutation. */
-export function clearApiCache(): void {
+function clearApiCache(): void {
   if (typeof window === 'undefined') return
   cache.clear()
   inflight.clear()

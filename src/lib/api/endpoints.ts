@@ -50,23 +50,8 @@ export type PaginatedCitationsResponse =
 export type CourtType = components['schemas']['CourtType']
 
 // -----------------------------------------------------------------------
-// Corpus stats — drives the homepage stats strip
-// -----------------------------------------------------------------------
-
-export type CorpusStats = components['schemas']['CorpusStats']
-
-export async function getCorpusStats(): Promise<CorpusStats> {
-  return apiGet<CorpusStats>('/stats')
-}
-
-// -----------------------------------------------------------------------
 // Legal texts
 // -----------------------------------------------------------------------
-
-/** Quick-access cards on the homepage. */
-export async function getQuickAccess() {
-  return apiGet<LegalTextListItem[]>('/legal-texts/quick-access')
-}
 
 /**
  * Batch-resolve article IDs → parent-text label + permalink. Used by the
@@ -210,29 +195,9 @@ export async function getTextToc(slug: string) {
   )
 }
 
-/** Paginated articles within a text — light shape, no content. */
-export async function listArticlesInText(
-  slug: string,
-  params?: {
-    heading_id?: number
-    heading_key?: string
-    limit?: number
-    offset?: number
-  },
-) {
-  return apiGet<PaginatedArticlesResponse>(
-    `/legal-texts/${encodeURIComponent(slug)}/articles`,
-    { params },
-  )
-}
-
 // -----------------------------------------------------------------------
 // Articles
 // -----------------------------------------------------------------------
-
-export async function getArticle(articleId: number) {
-  return apiGet<ArticleWithHistoryRead>(`/articles/${articleId}`)
-}
 
 export type ArticleVersionRead = components['schemas']['ArticleVersionRead']
 
@@ -753,9 +718,6 @@ export async function uploadMoniteurFile(id: number, file: File) {
   return (await r.json()) as MoniteurIssueRead
 }
 
-/** @deprecated Use uploadMoniteurFile instead */
-export const uploadMoniteurPdf = uploadMoniteurFile
-
 /** Upload a pre-transcribed version of the Moniteur file. When present,
  *  the parse pipeline reads text from this instead of running OCR. */
 export async function uploadMoniteurTranscript(id: number, file: File) {
@@ -899,9 +861,6 @@ export async function reviewMoniteurEntry(
   )
 }
 
-/** @deprecated Use reviewMoniteurEntry instead */
-export const reviewMoniteurCandidate = reviewMoniteurEntry
-
 /** Attach or clear the translation pointer on a Moniteur entry — used
  *  when a Kreyòl-companion issue (e.g. 36-a) is the source of the HT
  *  version of this content. The companion documents JSON describes any
@@ -953,35 +912,12 @@ export async function promoteMoniteurEntry(id: number) {
   )
 }
 
-/** @deprecated Use promoteMoniteurEntry instead */
-export const promoteMoniteurCandidate = promoteMoniteurEntry
-
 // -----------------------------------------------------------------------
-// Decisions (jurisprudence)
+// Citations (the legal graph) — only the article-side helpers are
+// wired today. Decisions / jurisprudence are a later phase, not built.
 // -----------------------------------------------------------------------
 
-export async function listDecisions(params?: {
-  q?: string
-  court?: CourtType
-  /** Inclusive, ISO date YYYY-MM-DD. Maps to backend `from`. */
-  from?: string
-  /** Inclusive, ISO date YYYY-MM-DD. Maps to backend `to`. */
-  to?: string
-  limit?: number
-  offset?: number
-}) {
-  return apiGet<PaginatedDecisionsResponse>('/decisions', { params })
-}
-
-export async function getDecisionBySlug(slug: string) {
-  return apiGet<DecisionRead>(`/decisions/${encodeURIComponent(slug)}`)
-}
-
-// -----------------------------------------------------------------------
-// Citations (the legal graph)
-// -----------------------------------------------------------------------
-
-export async function listCitations(params?: {
+async function listCitations(params?: {
   source_type?: CitationNodeType
   source_id?: number
   target_type?: CitationNodeType
@@ -1001,11 +937,6 @@ export async function citationsFromArticle(articleId: number) {
 /** Incoming edges to an article: what cites it? */
 export async function citationsToArticle(articleId: number) {
   return listCitations({ target_type: 'article', target_id: articleId })
-}
-
-/** Outgoing edges from a decision: what does it cite? */
-export async function citationsFromDecision(decisionId: number) {
-  return listCitations({ source_type: 'decision', source_id: decisionId })
 }
 
 // -----------------------------------------------------------------------
@@ -1330,11 +1261,6 @@ export type EditorIdentity = {
   role: 'admin' | 'reviewer' | 'editor'
 }
 
-/** Caller identity (for showing "logged in as ..." in the UI). */
-export async function whoami() {
-  return apiGet<EditorIdentity>('/editorial/me')
-}
-
 /**
  * Editor list — sees ALL editorial statuses (drafts + published + ...).
  * Default `editorial_status` is undefined → no filter, returns everything.
@@ -1541,12 +1467,6 @@ export type LegalSignerInput = {
 }
 
 export type LegalSignerPatch = Partial<LegalSignerInput>
-
-export async function listLegalSigners(slug: string) {
-  return apiGet<LegalSignerRead[]>(
-    `/editorial/legal-texts/${encodeURIComponent(slug)}/signers`,
-  )
-}
 
 export async function createLegalSigner(slug: string, body: LegalSignerInput) {
   return apiPost<LegalSignerRead>(
