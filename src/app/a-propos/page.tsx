@@ -260,82 +260,82 @@ export default async function Page() {
         </p>
       </div>
 
-      {/* Maxim — closing emotional beat. Centered poster layout with
-          a vertical accent rule, a quote glyph on the side, and the
-          CTA underneath rather than floating right. Gives the Latin
-          sentence top-of-document weight without the cramped
-          two-column squeeze the previous layout produced on
-          narrower screens. */}
-      <div className="container pb-24 lg:pb-32">
-        <div className="relative overflow-hidden rounded-[2rem] bg-primary text-white animate-in fade-in slide-in-from-bottom-4 duration-700">
-          {/* Soft colored halos in the corners — same palette as the
-              landing hero so the about page closes in the same key. */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/15 blur-[120px] rounded-full translate-x-1/3 -translate-y-1/3 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-red-600/12 blur-[120px] rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none" />
-          {/* Faint grid overlay reused from the hero band. */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
+      {/* Maxim — closing editorial beat. Light-card design on a
+          slate-50 ribbon: the Latin sentence sits LEFT in small-caps
+          serif bronze, the French translation sits RIGHT in italic
+          serif, separated by a vertical divider — like a facing-page
+          translation in a printed edition. Quote glyphs anchor the
+          corners as the only decoration. The closing programme
+          sentence + CTA sit under the divider as the call to
+          action. Lighter palette than the dark hero so the page
+          breathes at its close. */}
+      <div className="bg-slate-50/70 border-y border-slate-200/60 py-20 lg:py-28">
+        <div className="container">
+          <figure className="relative max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03),0_8px_24px_-12px_rgba(15,23,42,0.08)] px-8 sm:px-12 lg:px-16 py-12 lg:py-16 animate-in fade-in slide-in-from-bottom-2 duration-700">
+            {/* Decorative quote glyphs — bronze, anchored to the
+                corners of the card. ``aria-hidden`` because the
+                ``<figure>`` + ``<blockquote>`` already convey the
+                citation semantics to assistive tech. */}
+            <span
+              aria-hidden="true"
+              className="absolute top-4 left-5 font-serif text-4xl leading-none text-stone-400/70 select-none pointer-events-none"
+            >
+              ”
+            </span>
+            <span
+              aria-hidden="true"
+              className="absolute bottom-4 right-5 font-serif text-4xl leading-none text-stone-400/70 select-none pointer-events-none"
+            >
+              ”
+            </span>
 
-          <div className="relative z-10 px-8 py-16 lg:px-20 lg:py-24">
-            {/* The Latin maxim, framed as a pure citation — large
-                serif quote glyphs as the only ornament, no "Maxime
-                juridique" eyebrow label needed. ``blockquote`` is
-                also the right semantic element for this content. */}
-            <blockquote className="relative max-w-5xl mx-auto text-center">
-              {/* Oversized opening quote glyph — pure decoration,
-                  pushed off the baseline so it sits behind the
-                  first line of the maxim. ``aria-hidden`` because
-                  ``blockquote`` already conveys the citation
-                  semantics to screen readers. */}
-              <span
-                aria-hidden="true"
-                className="absolute -top-8 -left-2 lg:-top-14 lg:-left-6 font-serif text-7xl lg:text-9xl leading-none text-amber-300/30 select-none pointer-events-none"
-              >
-                «
-              </span>
-
-              <p className="font-serif text-3xl sm:text-4xl lg:text-6xl font-black italic leading-[1.1] text-white">
-                Publicitas iuris{' '}
-                <span className="text-amber-300">fundamentum libertatis</span>.
-              </p>
-
-              <span
-                aria-hidden="true"
-                className="absolute -bottom-12 -right-2 lg:-bottom-20 lg:-right-6 font-serif text-7xl lg:text-9xl leading-none text-amber-300/30 select-none pointer-events-none"
-              >
-                »
-              </span>
+            {/* Facing-page layout: Latin LEFT, translation RIGHT,
+                divider between. Collapses to stacked on phones so
+                neither side gets squeezed. */}
+            <blockquote className="grid grid-cols-1 md:grid-cols-2 md:divide-x md:divide-stone-200 gap-8 md:gap-0">
+              <div className="md:pr-10 lg:pr-14">
+                <p
+                  // Small-caps serif in warm bronze — gives the
+                  // sentence the weight of a printed inscription
+                  // without screaming.
+                  className="font-serif text-2xl sm:text-3xl lg:text-4xl font-semibold leading-[1.15] tracking-wide uppercase text-stone-700"
+                  lang="la"
+                >
+                  Publicitas iuris fundamentum libertatis.
+                </p>
+              </div>
+              <div className="md:pl-10 lg:pl-14">
+                <p className="font-serif text-xl sm:text-2xl lg:text-3xl italic leading-snug text-slate-700">
+                  {isFr
+                    ? 'La publicité du droit est le fondement de la liberté.'
+                    : 'Piblisite dwa a se fondasyon libète a.'}
+                </p>
+              </div>
             </blockquote>
 
-            {/* Amber accent rule under the citation — visual full-stop
-                tying the maxim to the rest of the design system. */}
-            <div className="mt-12 mx-auto h-[3px] w-16 bg-amber-400 rounded-full" />
+            {/* Hairline divider + closing programme. The closing
+                sentence is tighter than the previous version
+                ("...qui le gouverne, en ligne, gratuitement") —
+                the maxim already does the rhetorical lifting; the
+                tagline just lands the practical point. */}
+            <div className="mt-10 pt-8 border-t border-slate-200/80 text-center">
+              <figcaption className="text-sm lg:text-base text-slate-600 leading-relaxed">
+                {isFr
+                  ? 'Chaque citoyen·ne a le droit de lire la loi qui le gouverne.'
+                  : 'Chak sitwayen gen dwa li lwa ki gouvène l la.'}
+              </figcaption>
 
-            {/* Translation — softer, smaller, second voice. */}
-            <p className="mt-8 text-lg lg:text-xl italic text-slate-300 max-w-2xl mx-auto text-center">
-              {isFr
-                ? 'La publicité du droit est le fondement de la liberté.'
-                : 'Piblisite dwa a se fondasyon libète a.'}
-            </p>
-
-            {/* Closing paragraph — programme behind the maxim. */}
-            <p className="mt-6 text-base lg:text-lg text-slate-400 leading-relaxed max-w-2xl mx-auto text-center">
-              {isFr
-                ? "Chaque citoyen·ne a le droit de lire la loi qui le gouverne. LexHaïti existe pour rendre ce droit effectif, en ligne, gratuitement."
-                : 'Chak sitwayen gen dwa li lwa ki gouvène l la. LexHaïti egziste pou rann dwa sa a efektif, sou entènèt, gratis.'}
-            </p>
-
-            {/* CTA — centered, sits under the quote as the natural
-                next step after reading the maxim. */}
-            <div className="mt-10 flex justify-center">
-              <Link
-                href="/lois"
-                className="inline-flex items-center gap-2 bg-white hover:bg-slate-100 text-primary px-6 py-3 rounded-md font-semibold transition-all active:scale-[0.99] shadow-sm hover:shadow-md"
-              >
-                <BookOpen className="w-4 h-4" />
-                {isFr ? 'Explorer les textes' : 'Eksplore tèks yo'}
-              </Link>
+              <div className="mt-7 flex justify-center">
+                <Link
+                  href="/lois"
+                  className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-md font-semibold transition-all active:scale-[0.99] shadow-sm hover:shadow-md"
+                >
+                  <BookOpen className="w-4 h-4 text-amber-300" />
+                  {isFr ? 'Explorer les textes' : 'Eksplore tèks yo'}
+                </Link>
+              </div>
             </div>
-          </div>
+          </figure>
         </div>
       </div>
     </div>
