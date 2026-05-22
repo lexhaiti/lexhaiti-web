@@ -19,11 +19,12 @@ export default async function PartenairesSection() {
   const t = await getT()
 
   return (
-    // Full-bleed band (drops the ``container`` max-width) so the
-    // "Construit avec les institutions du droit haïtien" headline
-    // and the partner-type tiles span the full viewport. Inner
-    // padding uses the same gutters as the rest of the page so
-    // mobile/tablet still breathe.
+    // The band's BACKGROUND is full-bleed (gradient + blobs span the
+    // viewport so the section reads as a distinct ribbon), but the
+    // CONTENT sits inside ``container`` so its width matches the
+    // header + footer + every other section on the landing page.
+    // Mixing full-bleed visuals with container-bound content is the
+    // pattern used across the site.
     <section className="relative w-full bg-gradient-to-b from-slate-50/60 via-white to-slate-50/40 py-20 lg:py-28 border-t border-slate-100 overflow-hidden">
       {/* Soft brand-tinted blobs for depth — match the hero's visual
           rhythm without competing for attention. */}
@@ -32,7 +33,7 @@ export default async function PartenairesSection() {
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-red-600/[0.02] blur-[120px] rounded-full" />
       </div>
 
-      <div className="relative z-10 w-full px-6 sm:px-10 lg:px-16 xl:px-24">
+      <div className="container relative z-10">
         <SectionHeading
           eyebrow={t('home.partenaires.eyebrow')}
           title={t('home.partenaires.title')}
