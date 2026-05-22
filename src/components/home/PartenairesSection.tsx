@@ -1,0 +1,83 @@
+// Server Component — no client state. Entrance animation handled by
+// tailwindcss-animate utilities instead of framer-motion.
+
+import Link from 'next/link'
+import { ArrowRight, Building2, GraduationCap, Scale } from 'lucide-react'
+import { SectionHeading } from '@/components/shared/SectionHeading'
+import { getT } from '@/i18n/server'
+
+// Copy lives at `home.partenaires.*` in i18n/{fr,ht}.ts.
+// Partner-type icons stay here — they're component references, not
+// translatable strings.
+const TYPES = [
+  { key: 'universities' as const, icon: GraduationCap },
+  { key: 'bars' as const, icon: Scale },
+  { key: 'ngos' as const, icon: Building2 },
+]
+
+export default async function PartenairesSection() {
+  const t = await getT()
+
+  return (
+    // Full-bleed band (drops the ``container`` max-width) so the
+    // "Construit avec les institutions du droit haïtien" headline
+    // and the partner-type tiles span the full viewport. Inner
+    // padding uses the same gutters as the rest of the page so
+    // mobile/tablet still breathe.
+    <section className="relative w-full bg-gradient-to-b from-slate-50/60 via-white to-slate-50/40 py-20 lg:py-28 border-t border-slate-100 overflow-hidden">
+      {/* Soft brand-tinted blobs for depth — match the hero's visual
+          rhythm without competing for attention. */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-0 left-1/3 w-[600px] h-[600px] bg-blue-600/[0.025] blur-[140px] rounded-full" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-red-600/[0.02] blur-[120px] rounded-full" />
+      </div>
+
+      <div className="relative z-10 w-full px-6 sm:px-10 lg:px-16 xl:px-24">
+        <SectionHeading
+          eyebrow={t('home.partenaires.eyebrow')}
+          title={t('home.partenaires.title')}
+          subtitle={t('home.partenaires.subtitle')}
+          // Let the headline stretch the full band width — the
+          // SectionHeading default (``max-w-3xl``) was capping the
+          // ``Construit avec les institutions du droit haïtien``
+          // title around 768px even though the wrapping section is
+          // full-bleed. ``max-w-none`` removes the constraint.
+          titleMaxWidth="max-w-none"
+        />
+
+        {/* Partner-types grid — full-width stretch, the tiles share
+            the same gutter as the heading so the band reads as one
+            unified surface. Dashed border still signals "open to
+            partners, not yet filled with logos". */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-12 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          {TYPES.map((type, i) => {
+            const Icon = type.icon
+            return (
+              <div
+                key={i}
+                className="group flex items-center gap-5 rounded-2xl border border-dashed border-slate-300 bg-white/80 px-6 py-6 backdrop-blur-sm transition-all hover:border-primary/40 hover:bg-white hover:shadow-sm"
+              >
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/[0.06] border border-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white group-hover:border-primary">
+                  <Icon className="w-5 h-5" />
+                </div>
+                <span className="text-sm lg:text-base font-semibold text-slate-700 leading-tight">
+                  {t(`home.partenaires.types.${type.key}`)}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="flex justify-center sm:justify-start">
+          <Link
+            href="/contact"
+            className="inline-flex items-center gap-2 rounded-md bg-primary text-white px-6 py-3 text-sm font-semibold hover:bg-primary/90 transition-colors group shadow-sm"
+          >
+            {t('home.partenaires.cta')}
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
+}

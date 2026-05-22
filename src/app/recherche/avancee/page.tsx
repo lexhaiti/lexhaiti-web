@@ -1,0 +1,1005 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  ArrowRight,
+  BookOpen,
+  Calendar,
+  ChevronDown,
+  HelpCircle,
+  Info,
+  Mail,
+  PlayCircle,
+  Plus,
+  RotateCcw,
+  Scale,
+  Scroll,
+  Search as SearchIcon,
+  Shield,
+  Stamp,
+  Trash2,
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  advancedSearchTexts,
+  type AdvancedSearchCriterion,
+} from '@/lib/api/endpoints'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { StandardPageHeader } from '@/components/shared/StandardPageHeader'
+import { useT } from '@/i18n/useT'
+import { useLanguage } from '@/i18n/LanguageContext'
+import { cn } from '@/lib/utils'
+
+// =============================================================================
+// Types
+// =============================================================================
+
+interface MatchSnippet {
+  article_number: string
+  article_slug?: string | null
+  /** May contain `<mark>...</mark>` HTML wrappers around matched terms. */
+  snippet_fr?: string | null
+  snippet_ht?: string | null
+}
+
+interface LegalTextRow {
+  slug: string
+  title_fr: string
+  title_ht?: string | null
+  description_fr?: string | null
+  description_ht?: string | null
+  category: string
+  status?: string | null
+  publication_date?: string | null
+  /** Populated when the backend was called with `with_snippets=true`. */
+  match_snippets?: MatchSnippet[] | null
+}
+
+type FieldKey = 'all' | 'title' | 'description'
+type ModeKey = 'all' | 'exact' | 'any' | 'exclude'
+type OperatorKey = 'ET' | 'OU' | 'SAUF'
+
+interface CriteriaRow {
+  id: string
+  operator: OperatorKey // ignored for the first row
+  field: FieldKey
+  text: string
+  mode: ModeKey
+}
+
+interface FormState {
+  fonds: string
+  rows: CriteriaRow[]
+  status: string
+  yearFrom: string
+  yearTo: string
+}
+
+// Copy lives at `searchAdvanced.*` in i18n/{fr,ht}.ts.
+
+type T = (key: string, opts?: { fallback?: string }) => string
+
+// =============================================================================
+// Constants
+// =============================================================================
+
+const FONDS = [
+  { value: 'all', icon: SearchIcon },
+  { value: 'constitution', icon: Shield },
+  { value: 'code', icon: BookOpen },
+  { value: 'loi', icon: Scale },
+  { value: 'decret', icon: Scroll },
+  { value: 'arrete', icon: Stamp },
+] as const
+
+// Visual treatment for category / status pill chips. The label text is
+// resolved from i18n at render time via `t('searchAdvanced.categoryPills.*')`
+// — only the colour classes live here.
+const CATEGORY_PILL_CLS: Record<string, string> = {
+  constitution: 'bg-amber-100 text-amber-800',
+  code: 'bg-blue-100 text-blue-800',
+  loi: 'bg-indigo-100 text-indigo-800',
+  decret: 'bg-emerald-100 text-emerald-800',
+  arrete: 'bg-purple-100 text-purple-800',
+}
+
+// Display chips for each `LegalStatus` enum value. Stays in lockstep
+// with the backend enum: the first three cover all domestic
+// legislation, ``historique`` covers pre-constitutional founding
+// documents, and the trailing three are treaty-lifecycle markers
+// (signed → ratified → in_force → possibly denounced). Light-theme
+// chips; the law-detail hero uses a separate dark-theme map in
+// ``_helpers/textStatus.ts``.
+const STATUS_PILL_CLS: Record<string, string> = {
+  in_force: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  abrogated: 'bg-red-50 text-red-700 border-red-200',
+  partially_abrogated: 'bg-amber-50 text-amber-800 border-amber-200',
+  historique: 'bg-slate-50 text-slate-700 border-slate-200',
+  signed: 'bg-amber-50 text-amber-800 border-amber-200',
+  ratified: 'bg-sky-50 text-sky-700 border-sky-200',
+  denounced: 'bg-red-50 text-red-700 border-red-200',
+}
+
+// =============================================================================
+// Defaults
+// =============================================================================
+//
+// Boolean composition (AND / OR / NOT across criteria) is now done
+// server-side via POST /legal-texts/advanced-search. The previous
+// client-side `combinedMatch` / `matchCriterion` helpers were deleted
+// when that moved — they only worked on the loaded batch and silently
+// truncated results past `limit=100`.
+
+const newRow = (operator: OperatorKey = 'ET'): CriteriaRow => ({
+  id: `row-${Math.random().toString(36).slice(2, 9)}`,
+  operator,
+  field: 'all',
+  text: '',
+  mode: 'all',
+})
+
+const DEFAULT_FORM: FormState = {
+  fonds: 'all',
+  rows: [newRow('ET')],
+  status: 'all',
+  yearFrom: '',
+  yearTo: '',
+}
+
+// =============================================================================
+// Component
+// =============================================================================
+
+export default function AdvancedSearchPage() {
+  const { t, language } = useT()
+  // Raw active-language dict — only needed by the two callers below
+  // that iterate keys / read an array. ``useT()`` returns strings via
+  // t(key) but can't enumerate nested keys; ``messages`` from the
+  // LanguageContext fills that gap without re-introducing the eager
+  // ``import { fr, ht } from '@/i18n'`` we just removed.
+  const { messages: dict, fallback: dictFallback } = useLanguage()
+  const lang = ((language as 'fr' | 'ht') ?? 'fr') as 'fr' | 'ht'
+
+  const PAGE_SIZE = 24
+
+  // Results are now fetched in pages from the backend's
+  // /legal-texts/advanced-search endpoint. Composition (AND / OR / NOT)
+  // is server-side, so OR and SAUF criteria affect the **total**
+  // (and the SQL WHERE) instead of being a client-side post-filter on
+  // the loaded batch. The previous limit=100 truncation is gone.
+  const [results, setResults] = useState<LegalTextRow[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [errored, setErrored] = useState(false)
+  const [offset, setOffset] = useState(0)
+
+  const [form, setForm] = useState<FormState>(DEFAULT_FORM)
+  const [applied, setApplied] = useState<FormState>(DEFAULT_FORM)
+  const [refineOpen, setRefineOpen] = useState(true)
+  // Don't show results (or fetch) until the user explicitly clicks "Lancer
+  // la recherche" at least once. Reset on "Réinitialiser la recherche".
+  const [hasSearched, setHasSearched] = useState(false)
+
+  // Map the UI's FR-locale operators (ET / OU / SAUF) to the backend's
+  // English operators (AND / OR / NOT). Defined once so the fetch and
+  // any future logic that needs the same mapping stay aligned.
+  const opForServer = (op: OperatorKey): 'AND' | 'OR' | 'NOT' =>
+    op === 'OU' ? 'OR' : op === 'SAUF' ? 'NOT' : 'AND'
+
+  // Build the criteria payload for the backend. Empty rows are dropped
+  // so the editor can keep a blank one without nuking results.
+  const criteriaForServer = (
+    rows: CriteriaRow[],
+  ): AdvancedSearchCriterion[] =>
+    rows
+      .filter((r) => r.text.trim().length > 0)
+      .map((r, i) => ({
+        // First row is always AND on the server (its UI operator is hidden).
+        operator: i === 0 ? 'AND' : opForServer(r.operator),
+        field: r.field,
+        mode: r.mode,
+        text: r.text.trim(),
+      }))
+
+  // Single fetcher used by both the initial submit and the Load more
+  // button. `nextOffset === 0` (re-)fills the result list; non-zero
+  // offsets append.
+  const fetchPage = (state: FormState, nextOffset: number) => {
+    let cancelled = false
+    setLoading(true)
+    advancedSearchTexts({
+      criteria: criteriaForServer(state.rows),
+      category: state.fonds !== 'all' ? state.fonds : null,
+      status: state.status !== 'all' ? state.status : null,
+      year_from: state.yearFrom ? Number(state.yearFrom) : null,
+      year_to: state.yearTo ? Number(state.yearTo) : null,
+      // Snippets only when at least one criterion targets all fields
+      // (article bodies). Backend uses ts_headline against the merged
+      // field=all text terms.
+      with_snippets: state.rows.some(
+        (r) => r.field === 'all' && r.text.trim().length > 0,
+      ),
+      limit: PAGE_SIZE,
+      offset: nextOffset,
+    })
+      .then((res) => {
+        if (cancelled) return
+        const incoming = res.items as unknown as LegalTextRow[]
+        setResults((prev) =>
+          nextOffset === 0 ? incoming : [...prev, ...incoming],
+        )
+        setTotal(res.total)
+        setOffset(nextOffset)
+        setErrored(false)
+      })
+      .catch(() => {
+        if (!cancelled) setErrored(true)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }
+
+  // Refetch the first page whenever applied filters change (after the
+  // first explicit search).
+  useEffect(() => {
+    if (!hasSearched) return
+    return fetchPage(applied, 0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applied, hasSearched])
+
+  const canLoadMore = results.length < total
+
+  const submit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    setApplied(form)
+    setHasSearched(true)
+  }
+
+  const reset = () => {
+    const fresh: FormState = { ...DEFAULT_FORM, rows: [newRow('ET')] }
+    setForm(fresh)
+    setApplied(fresh)
+    setHasSearched(false)
+    setResults([])
+    setTotal(0)
+    setOffset(0)
+  }
+
+  const loadMore = () => {
+    if (!canLoadMore || loading) return
+    fetchPage(applied, offset + PAGE_SIZE)
+  }
+
+  const updateRow = (id: string, patch: Partial<CriteriaRow>) =>
+    setForm((cur) => ({
+      ...cur,
+      rows: cur.rows.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+    }))
+
+  const addRow = () =>
+    setForm((cur) => ({ ...cur, rows: [...cur.rows, newRow('ET')] }))
+
+  const deleteRow = (id: string) =>
+    setForm((cur) => ({
+      ...cur,
+      rows: cur.rows.length > 1 ? cur.rows.filter((r) => r.id !== id) : cur.rows,
+    }))
+
+  const fondsLabelText = t(`searchAdvanced.fondsDropdown.${form.fonds}`, {
+    fallback: t('searchAdvanced.fondsDropdown.all'),
+  })
+
+  // Pre-resolve the dropdown labels into a plain Record<string,string> so
+  // the FondsPicker subcomponent can index them like the legacy structure.
+  const fondsDropdownLabels: Record<string, string> = Object.fromEntries(
+    Object.keys(
+      dict?.searchAdvanced?.fondsDropdown ??
+        dictFallback?.searchAdvanced?.fondsDropdown ??
+        {},
+    ).map((k) => [k, t(`searchAdvanced.fondsDropdown.${k}`)]),
+  )
+
+  return (
+    <div className="bg-white min-h-screen">
+      <StandardPageHeader
+        title={t('searchAdvanced.pageTitle')}
+        subtitle={t('searchAdvanced.pageSubtitle')}
+      />
+
+      {/* Search panel — Légifrance-style inset */}
+      <div className="container py-10 lg:py-12">
+        <form
+          onSubmit={submit}
+          className="animate-in fade-in slide-in-from-bottom-2 duration-500 rounded-2xl bg-slate-50/80 border border-slate-200 p-6 sm:p-8 space-y-6"
+        >
+          {/* Fonds picker — DropdownMenu with tile grid inside */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">
+              {t('searchAdvanced.fondsLabel')}
+            </label>
+            <FondsPicker
+              value={form.fonds}
+              onChange={(v) => setForm((cur) => ({ ...cur, fonds: v }))}
+              labelText={fondsLabelText}
+              dropdownLabels={fondsDropdownLabels}
+              dropdownTitle={t('searchAdvanced.fondsPickerSelectLabel')}
+            />
+          </div>
+
+          {form.fonds === 'all' && (
+            <div className="flex items-start gap-3 rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 text-sm text-primary">
+              <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span>{t('searchAdvanced.selectFondsHint')}</span>
+            </div>
+          )}
+
+          {/* Criteria rows.
+              Row 1: full width, no operator, no delete when standalone.
+              Row 2+: indented + tree-style connector line.
+                - Middle rows draw a "T" (vertical through full height + a
+                  horizontal branch at mid-row), so the next row's connector
+                  meets seamlessly.
+                - The last row draws an "L" (vertical only to mid-row + branch).
+              The result reads as a single line that branches out to each group. */}
+          <div className="space-y-3">
+            {form.rows.map((row, i) => {
+              const isFirst = i === 0
+              const isLast = i === form.rows.length - 1
+              return (
+                <div
+                  key={row.id}
+                  className={cn('relative', !isFirst && 'pl-4 sm:pl-8')}
+                >
+                  {!isFirst && (
+                    <>
+                      {/* Top half: rounded "L" from above-left curving into
+                          the row's mid-left. Single element with two borders +
+                          rounded-bl gives the curved corner cleanly. */}
+                      <span
+                        aria-hidden
+                        className="pointer-events-none absolute -top-3 left-2 sm:left-4 w-2 sm:w-4 border-l-2 border-b-2 border-slate-300 rounded-bl-lg h-[calc(50%+0.75rem)]"
+                      />
+                      {/* Bottom half (middle rows only): straight trunk
+                          continuing from mid-row down through the gap,
+                          meeting the next row's L on its top edge. */}
+                      {!isLast && (
+                        <span
+                          aria-hidden
+                          className="pointer-events-none absolute top-1/2 left-2 sm:left-4 w-0.5 bg-slate-300 h-[calc(50%+0.75rem)]"
+                        />
+                      )}
+                    </>
+                  )}
+                  <CriteriaRowEditor
+                    row={row}
+                    t={t}
+                    onChange={(patch) => updateRow(row.id, patch)}
+                    onDelete={() => deleteRow(row.id)}
+                    canDelete={form.rows.length > 1}
+                    showOperator={!isFirst}
+                  />
+                </div>
+              )
+            })}
+
+            <div className="flex items-center justify-between flex-wrap gap-3 pt-3">
+              <button
+                type="button"
+                onClick={reset}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline underline-offset-4"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                {t('searchAdvanced.reset')}
+              </button>
+              <button
+                type="button"
+                onClick={addRow}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline underline-offset-4"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                {t('searchAdvanced.addCriterion')}
+              </button>
+            </div>
+          </div>
+
+          {/* Affiner la recherche — collapsible group */}
+          <div className="rounded-xl bg-white border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setRefineOpen((v) => !v)}
+              className="w-full flex items-center justify-between px-5 py-3 text-left"
+              aria-expanded={refineOpen}
+            >
+              <span className="text-sm font-bold text-primary">
+                {t('searchAdvanced.refineTitle')}
+              </span>
+              <ChevronDown
+                className={cn(
+                  'w-4 h-4 text-primary transition-transform',
+                  refineOpen && 'rotate-180',
+                )}
+              />
+            </button>
+
+            <AnimatePresence initial={false}>
+              {refineOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-5 pb-5 pt-2 border-t border-slate-100">
+                    <div>
+                      <label
+                        id="adv-status-label"
+                        className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2"
+                      >
+                        {t('searchAdvanced.statusLabel')}
+                      </label>
+                      <Select
+                        value={form.status}
+                        onValueChange={(v) =>
+                          setForm((cur) => ({ ...cur, status: v }))
+                        }
+                      >
+                        <SelectTrigger
+                          aria-labelledby="adv-status-label"
+                          className="!h-11 w-full bg-white"
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">{t('searchAdvanced.statusOptions.all')}</SelectItem>
+                          <SelectItem value="in_force">{t('searchAdvanced.statusOptions.in_force')}</SelectItem>
+                          <SelectItem value="partially_abrogated">
+                            {t('searchAdvanced.statusOptions.partially_abrogated')}
+                          </SelectItem>
+                          <SelectItem value="abrogated">{t('searchAdvanced.statusOptions.abrogated')}</SelectItem>
+                          <SelectItem value="historique">{t('searchAdvanced.statusOptions.historique')}</SelectItem>
+                          <SelectItem value="signed">{t('searchAdvanced.statusOptions.signed')}</SelectItem>
+                          <SelectItem value="ratified">{t('searchAdvanced.statusOptions.ratified')}</SelectItem>
+                          <SelectItem value="denounced">{t('searchAdvanced.statusOptions.denounced')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                        {t('searchAdvanced.yearLabel')}
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          min={1800}
+                          max={2100}
+                          placeholder={t('searchAdvanced.yearFrom')}
+                          aria-label={`${t('searchAdvanced.yearLabel')} — ${t('searchAdvanced.yearFrom')}`}
+                          value={form.yearFrom}
+                          onChange={(e) =>
+                            setForm((cur) => ({ ...cur, yearFrom: e.target.value }))
+                          }
+                          className="w-full h-11 px-3 rounded-md border border-slate-300 bg-white text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
+                        />
+                        <span aria-hidden="true" className="text-xs text-slate-400">
+                          {t('searchAdvanced.yearTo')}
+                        </span>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          min={1800}
+                          max={2100}
+                          placeholder={t('searchAdvanced.yearTo')}
+                          aria-label={`${t('searchAdvanced.yearLabel')} — ${t('searchAdvanced.yearTo')}`}
+                          value={form.yearTo}
+                          onChange={(e) =>
+                            setForm((cur) => ({ ...cur, yearTo: e.target.value }))
+                          }
+                          className="w-full h-11 px-3 rounded-md border border-slate-300 bg-white text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </form>
+
+        {/* Submit area — right-aligned outside the form card (Légifrance pattern) */}
+        <div className="mt-4 flex justify-end">
+          <Button
+            type="button"
+            onClick={() => submit()}
+            size="lg"
+            className="h-12 rounded-md bg-primary text-white hover:bg-primary/90 px-7 font-semibold gap-2"
+          >
+            <SearchIcon className="w-4 h-4" />
+            {t('searchAdvanced.submit')}
+          </Button>
+        </div>
+      </div>
+
+      {/* Results — only rendered after the user clicks "Lancer la recherche". */}
+      <section className="container pb-12 lg:pb-16">
+        {!hasSearched ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/40 px-6 py-10 text-center">
+            <p className="text-sm text-slate-500 leading-relaxed max-w-xl mx-auto">
+              {t('searchAdvanced.notSearchedYet')}
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-baseline gap-3 mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                {t('searchAdvanced.resultsTitle')}
+              </h2>
+              {/* Show "loaded / total" so the editor sees pagination
+                  state at a glance. Identical figures (e.g. "5 / 5")
+                  imply no Load more. */}
+              <span className="text-sm font-medium text-slate-400 tabular-nums">
+                ({results.length}
+                {total > results.length && ` / ${total}`})
+              </span>
+            </div>
+
+            {loading && results.length === 0 && (
+              <p className="text-sm text-slate-400 italic">{t('searchAdvanced.loading')}</p>
+            )}
+            {!loading && errored && (
+              <p className="text-sm text-red-500 italic">{t('searchAdvanced.error')}</p>
+            )}
+            {!loading && !errored && results.length === 0 && (
+              <p className="text-sm text-slate-400 italic">{t('searchAdvanced.noResults')}</p>
+            )}
+
+            {results.length > 0 && (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+                  {results.map((row) => (
+                    <ResultCard
+                      key={row.slug}
+                      text={row}
+                      lang={lang}
+                      t={t}
+                      query={
+                        applied.rows.find(
+                          (r, i) =>
+                            (i === 0 || r.operator === 'ET') &&
+                            r.text.trim().length > 0,
+                        )?.text ?? ''
+                      }
+                    />
+                  ))}
+                </div>
+
+                {canLoadMore && (
+                  <div className="mt-8 flex justify-center">
+                    <Button
+                      type="button"
+                      onClick={loadMore}
+                      variant="outline"
+                      disabled={loading}
+                      className="min-w-[200px] rounded-full h-11"
+                    >
+                      {loading
+                        ? t('searchAdvanced.loadingMore')
+                        : `${t('searchAdvanced.loadMore')} (${total - results.length})`}
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* Help */}
+      <section className="bg-slate-50/60 border-t border-slate-200 py-12 lg:py-16">
+        <div className="container">
+          <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-3 tracking-tight">
+            {t('searchAdvanced.helpTitle')}
+          </h3>
+          <p className="text-sm text-slate-600 mb-6 max-w-3xl leading-relaxed">
+            {t('searchAdvanced.helpIntro')}
+          </p>
+          <ul className="space-y-2 text-sm text-slate-600 leading-relaxed mb-8 max-w-3xl">
+            {(
+              (dict?.searchAdvanced?.helpItems ??
+                dictFallback?.searchAdvanced?.helpItems ??
+                []) as string[]
+            ).map((item, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span className="mt-1.5 h-1 w-1 rounded-full bg-slate-400 flex-shrink-0" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline underline-offset-4"
+            >
+              <Mail className="w-3.5 h-3.5" />
+              {t('searchAdvanced.contactUs')}
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <Link
+              href="/a-propos"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline underline-offset-4"
+            >
+              <PlayCircle className="w-3.5 h-3.5" />
+              {t('searchAdvanced.tutorials')}
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <Link
+              href="/a-propos"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline underline-offset-4"
+            >
+              <HelpCircle className="w-3.5 h-3.5" />
+              {t('searchAdvanced.useCases')}
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+// =============================================================================
+// Sub-components
+// =============================================================================
+
+interface FondsPickerProps {
+  value: string
+  onChange: (v: string) => void
+  labelText: string
+  dropdownLabels: Record<string, string>
+  dropdownTitle: string
+}
+
+function FondsPicker({
+  value,
+  onChange,
+  labelText,
+  dropdownLabels,
+  dropdownTitle,
+}: FondsPickerProps) {
+  const [open, setOpen] = useState(false)
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex items-center justify-between gap-3 min-w-[260px] h-11 px-4 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
+        >
+          <span>{labelText}</span>
+          <ChevronDown
+            className={cn('w-4 h-4 transition-transform', open && 'rotate-180')}
+          />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        sideOffset={6}
+        className="p-3 w-[min(720px,calc(100vw-2rem))]"
+      >
+        <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3 px-1">
+          {dropdownTitle}
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {FONDS.map((f) => {
+            const Icon = f.icon
+            const active = value === f.value
+            return (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => {
+                  onChange(f.value)
+                  setOpen(false)
+                }}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors',
+                  active
+                    ? 'border-primary bg-primary/5'
+                    : 'border-slate-200 bg-white hover:border-slate-300',
+                )}
+              >
+                <span
+                  className={cn(
+                    'flex h-7 w-7 items-center justify-center rounded-full border',
+                    active
+                      ? 'border-primary bg-white'
+                      : 'border-slate-300 bg-white',
+                  )}
+                >
+                  {active ? (
+                    <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+                  ) : null}
+                </span>
+                <Icon
+                  className={cn(
+                    'w-4 h-4',
+                    active ? 'text-primary' : 'text-slate-400',
+                  )}
+                />
+                <span
+                  className={cn(
+                    'text-sm font-medium',
+                    active ? 'text-primary' : 'text-slate-700',
+                  )}
+                >
+                  {dropdownLabels[f.value]}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+interface CriteriaRowEditorProps {
+  row: CriteriaRow
+  t: T
+  onChange: (patch: Partial<CriteriaRow>) => void
+  onDelete: () => void
+  canDelete: boolean
+  /**
+   * When true, render the operator (ET/OU/SAUF) as the leftmost column.
+   * False for the first row (its operator is implicit — there's nothing
+   * before it to connect to).
+   */
+  showOperator: boolean
+}
+
+/**
+ * One criteria row.
+ * Without operator: Field | Text | Mode | Delete.
+ * With operator:    [ET▼] | Field | Text | Mode | Delete.
+ *
+ * Note on heights: shadcn's `SelectTrigger` ships with
+ * `data-[size=default]:h-9`. We need `h-11` to match the text input,
+ * so we use `!h-11` to force it past the data-attribute selector.
+ */
+function CriteriaRowEditor({
+  row,
+  t,
+  onChange,
+  onDelete,
+  canDelete,
+  showOperator,
+}: CriteriaRowEditorProps) {
+  // Grid adapts to whether the operator and delete columns are present.
+  // Standalone row 1 (canDelete=false) doesn't reserve a delete column.
+  const gridTemplate = showOperator
+    ? 'lg:grid-cols-[100px_minmax(180px,220px)_1fr_minmax(180px,220px)_44px]'
+    : canDelete
+      ? 'lg:grid-cols-[minmax(180px,220px)_1fr_minmax(180px,220px)_44px]'
+      : 'lg:grid-cols-[minmax(180px,220px)_1fr_minmax(180px,220px)]'
+
+  return (
+    <div className="rounded-xl bg-white border border-slate-200 p-3 sm:p-4">
+      <div className={cn('grid grid-cols-1 gap-2 items-stretch', gridTemplate)}>
+        {/* Operator (link to previous row) — only on rows 2+ */}
+        {showOperator && (
+          <Select
+            value={row.operator}
+            onValueChange={(v) => onChange({ operator: v as OperatorKey })}
+          >
+            <SelectTrigger
+              className="!h-11 w-full bg-white font-semibold text-primary tracking-widest uppercase text-xs"
+              aria-label={t('searchAdvanced.operatorLabel')}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ET">{t('searchAdvanced.operatorOptions.ET')}</SelectItem>
+              <SelectItem value="OU">{t('searchAdvanced.operatorOptions.OU')}</SelectItem>
+              <SelectItem value="SAUF">{t('searchAdvanced.operatorOptions.SAUF')}</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+
+        {/* Field */}
+        <Select
+          value={row.field}
+          onValueChange={(v) => onChange({ field: v as FieldKey })}
+        >
+          <SelectTrigger
+            className="!h-11 w-full bg-white"
+            aria-label={t('searchAdvanced.fieldLabel')}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('searchAdvanced.fieldOptions.all')}</SelectItem>
+            <SelectItem value="title">{t('searchAdvanced.fieldOptions.title')}</SelectItem>
+            <SelectItem value="description">
+              {t('searchAdvanced.fieldOptions.description')}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Text */}
+        <input
+          type="text"
+          value={row.text}
+          onChange={(e) => onChange({ text: e.target.value })}
+          placeholder={t('searchAdvanced.textPlaceholder')}
+          aria-label={t('searchAdvanced.textLabel')}
+          className="w-full h-11 px-3 rounded-md border border-slate-300 bg-white text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
+        />
+
+        {/* Mode */}
+        <Select
+          value={row.mode}
+          onValueChange={(v) => onChange({ mode: v as ModeKey })}
+        >
+          <SelectTrigger
+            className="!h-11 w-full bg-white"
+            aria-label={t('searchAdvanced.modeLabel')}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('searchAdvanced.modeOptions.all')}</SelectItem>
+            <SelectItem value="exact">{t('searchAdvanced.modeOptions.exact')}</SelectItem>
+            <SelectItem value="any">{t('searchAdvanced.modeOptions.any')}</SelectItem>
+            <SelectItem value="exclude">{t('searchAdvanced.modeOptions.exclude')}</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Delete — only rendered when there are 2+ rows (so a single-criteria
+            standalone view stays clean). */}
+        {canDelete && (
+          <div className="flex items-center justify-end lg:justify-center h-11">
+            <button
+              type="button"
+              onClick={onDelete}
+              aria-label={t('searchAdvanced.deleteCriterion')}
+              title={t('searchAdvanced.deleteCriterion')}
+              className="w-11 h-11 inline-flex items-center justify-center rounded-md border border-transparent text-slate-400 hover:text-red-600 hover:bg-red-50 hover:border-red-100 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+
+interface ResultCardProps {
+  text: LegalTextRow
+  lang: 'fr' | 'ht'
+  t: T
+  /** Search query string — used to highlight matches in title/description. */
+  query?: string
+}
+
+// Query-highlighting moved to @/lib/text/highlight (imported as
+// `highlightQuery` to avoid touching call sites).
+import { highlightMatches as highlightQuery } from '@/lib/text/highlight'
+
+function ResultCard({ text, lang, t, query = '' }: ResultCardProps) {
+  const title = lang === 'ht' && text.title_ht ? text.title_ht : text.title_fr
+  const desc =
+    lang === 'ht' && text.description_ht ? text.description_ht : text.description_fr
+  const catCls = CATEGORY_PILL_CLS[text.category] ?? CATEGORY_PILL_CLS.loi
+  const catLabel = t(`searchAdvanced.categoryPills.${text.category}`, {
+    fallback: t('searchAdvanced.categoryPills.loi'),
+  })
+  const stat = text.status && STATUS_PILL_CLS[text.status]
+    ? { cls: STATUS_PILL_CLS[text.status], label: t(`searchAdvanced.statusPills.${text.status}`) }
+    : null
+  const year = text.publication_date?.slice(0, 4)
+  const snippets = text.match_snippets ?? []
+
+  // Card wrapper is a `<div>` (not `<Link>`) so we can nest separate links
+  // for the title and each individual snippet — clicking a snippet deep-links
+  // straight to that article on the detail page via `?article=N`.
+  return (
+    <div className="group flex flex-col h-full rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-slate-300 hover:shadow-md">
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <span
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${catCls}`}
+        >
+          {catLabel}
+        </span>
+        {stat && (
+          <span
+            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${stat.cls}`}
+          >
+            {stat.label}
+          </span>
+        )}
+      </div>
+
+      <Link
+        href={`/loi/${text.slug}`}
+        className="block group/title"
+      >
+        <h3 className="text-base font-bold text-slate-900 mb-2 leading-snug group-hover/title:text-primary transition-colors line-clamp-2">
+          {highlightQuery(title, query)}
+        </h3>
+      </Link>
+
+      {desc && (
+        <p className="text-xs text-slate-500 leading-relaxed line-clamp-3 mb-3">
+          {highlightQuery(desc, query)}
+        </p>
+      )}
+
+      {/* Article-body snippets — each snippet is its own link with the
+          article anchor as a query param so the detail page opens with
+          that exact article selected. Backend wraps matched terms in
+          `<mark>` via `ts_headline`. */}
+      {snippets.length > 0 && (
+        <ul className="mb-3 space-y-2 border-l-2 border-amber-200 pl-3">
+          {snippets.map((s, i) => {
+            const snippetHtml =
+              lang === 'ht' && s.snippet_ht ? s.snippet_ht : s.snippet_fr
+            if (!snippetHtml) return null
+            return (
+              <li key={i} className="text-xs leading-relaxed text-slate-600">
+                <Link
+                  href={`/loi/${text.slug}?article=${encodeURIComponent(s.article_number)}`}
+                  className="block rounded-md hover:bg-amber-50/60 -mx-2 px-2 py-1 transition-colors"
+                >
+                  <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover/snippet:text-primary mb-0.5">
+                    Art. {s.article_number}
+                  </span>
+                  <span
+                    className="[&_mark]:bg-amber-100 [&_mark]:text-amber-900 [&_mark]:rounded [&_mark]:px-0.5 [&_mark]:font-semibold"
+                    // Sanitized server-side via ts_headline — only <mark>
+                    // tags are inserted around matched terms.
+                    dangerouslySetInnerHTML={{ __html: snippetHtml }}
+                  />
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
+      <div className="mt-auto flex items-center justify-between gap-2 pt-3 border-t border-slate-100">
+        {year && (
+          <span className="flex items-center gap-1.5 text-[11px] text-slate-400">
+            <Calendar className="w-3 h-3" />
+            {year}
+          </span>
+        )}
+        <Link
+          href={`/loi/${text.slug}`}
+          className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline underline-offset-4"
+        >
+          {t('searchAdvanced.viewText')}
+          <ArrowRight className="w-3 h-3" />
+        </Link>
+      </div>
+    </div>
+  )
+}
