@@ -11,7 +11,6 @@ import {
   BookOpen,
   Building2,
   Library,
-  Quote,
   Scale,
   Target,
   Users,
@@ -240,27 +239,25 @@ export default async function Page() {
           project backed by a non-profit association (HDDI is an e.V.
           incorporated under German law), not a community fork. */}
       <div className="container py-20 lg:py-24">
-        <div className="max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-widest text-primary/65 mb-3 flex items-center gap-2">
-            <Users className="w-3.5 h-3.5" />
-            {isFr ? 'Gouvernance' : 'Gouvènans'}
-          </p>
-          <h2 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight mb-5">
-            {isFr
-              ? "Une association au service de l'accès au droit."
-              : 'Yon asosiyasyon pou ouvri aksè dwa.'}
-          </h2>
-          <p className="text-slate-600 leading-relaxed text-lg mb-4">
-            {isFr
-              ? "LexHaïti est édité par HDDI (Haïti Digital Data Infrastructure), une association sans but lucratif (e.V. de droit allemand) dont la mission est de bâtir l'infrastructure numérique publique d'Haïti — en commençant par le droit."
-              : "LexHaïti edite pa HDDI (Haïti Digital Data Infrastructure), yon asosiyasyon san bi likratif (e.V. dwa alman) ki gen pou misyon bati enfrastrikti nimerik piblik Ayiti — kòmanse ak dwa."}
-          </p>
-          <p className="text-slate-600 leading-relaxed text-lg">
-            {isFr
-              ? 'La plateforme reste gratuite, ouverte à toutes les juridictions, et financée par des partenariats institutionnels — pas par la publicité ou les abonnements.'
-              : 'Platfòm nan rete gratis, ouvè pou tout jiridiksyon, ak finanse pa patenarya enstitisyonèl — pa pa piblisite oswa abònman.'}
-          </p>
-        </div>
+        <p className="text-xs font-bold uppercase tracking-widest text-primary/65 mb-3 flex items-center gap-2">
+          <Users className="w-3.5 h-3.5" />
+          {isFr ? 'Gouvernance' : 'Gouvènans'}
+        </p>
+        <h2 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight mb-5">
+          {isFr
+            ? "Une association au service de l'accès au droit."
+            : 'Yon asosiyasyon pou ouvri aksè dwa.'}
+        </h2>
+        <p className="text-slate-600 leading-relaxed text-lg mb-4">
+          {isFr
+            ? "LexHaïti est édité par HDDI (Haïti Digital Data Infrastructure), une association sans but lucratif (e.V. de droit allemand) dont la mission est de bâtir l'infrastructure numérique publique d'Haïti — en commençant par le droit."
+            : "LexHaïti edite pa HDDI (Haïti Digital Data Infrastructure), yon asosiyasyon san bi likratif (e.V. dwa alman) ki gen pou misyon bati enfrastrikti nimerik piblik Ayiti — kòmanse ak dwa."}
+        </p>
+        <p className="text-slate-600 leading-relaxed text-lg">
+          {isFr
+            ? 'La plateforme reste gratuite, ouverte à toutes les juridictions, et financée par des partenariats institutionnels — pas par la publicité ou les abonnements.'
+            : 'Platfòm nan rete gratis, ouvè pou tout jiridiksyon, ak finanse pa patenarya enstitisyonèl — pa pa piblisite oswa abònman.'}
+        </p>
       </div>
 
       {/* Maxim — closing emotional beat. Centered poster layout with
@@ -278,50 +275,66 @@ export default async function Page() {
           {/* Faint grid overlay reused from the hero band. */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
 
-          <div className="relative z-10 px-8 py-16 lg:px-20 lg:py-24 text-center">
-            {/* Decorative quote glyph + eyebrow */}
-            <div className="inline-flex items-center gap-2 text-slate-400 mb-6">
-              <Quote className="w-4 h-4 -scale-x-100" />
-              <span className="text-[11px] font-bold uppercase tracking-[0.2em]">
-                {isFr ? 'Maxime juridique' : 'Maksim jiridik'}
+          <div className="relative z-10 px-8 py-16 lg:px-20 lg:py-24">
+            {/* The Latin maxim, framed as a pure citation — large
+                serif quote glyphs as the only ornament, no "Maxime
+                juridique" eyebrow label needed. ``blockquote`` is
+                also the right semantic element for this content. */}
+            <blockquote className="relative max-w-5xl mx-auto text-center">
+              {/* Oversized opening quote glyph — pure decoration,
+                  pushed off the baseline so it sits behind the
+                  first line of the maxim. ``aria-hidden`` because
+                  ``blockquote`` already conveys the citation
+                  semantics to screen readers. */}
+              <span
+                aria-hidden="true"
+                className="absolute -top-8 -left-2 lg:-top-14 lg:-left-6 font-serif text-7xl lg:text-9xl leading-none text-amber-300/30 select-none pointer-events-none"
+              >
+                «
               </span>
-              <Quote className="w-4 h-4" />
-            </div>
 
-            {/* The Latin maxim — display weight, generous leading. */}
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-6xl font-black italic leading-[1.1] text-white max-w-4xl mx-auto">
-              Publicitas iuris{' '}
-              <span className="text-amber-300">fundamentum libertatis</span>.
-            </h2>
+              <p className="font-serif text-3xl sm:text-4xl lg:text-6xl font-black italic leading-[1.1] text-white">
+                Publicitas iuris{' '}
+                <span className="text-amber-300">fundamentum libertatis</span>.
+              </p>
 
-            {/* Amber accent rule — same accent used by SectionHeading
-                across the site, picked here to tie the maxim back to
-                the design system. */}
-            <div className="mt-8 mx-auto h-[3px] w-16 bg-amber-400 rounded-full" />
+              <span
+                aria-hidden="true"
+                className="absolute -bottom-12 -right-2 lg:-bottom-20 lg:-right-6 font-serif text-7xl lg:text-9xl leading-none text-amber-300/30 select-none pointer-events-none"
+              >
+                »
+              </span>
+            </blockquote>
+
+            {/* Amber accent rule under the citation — visual full-stop
+                tying the maxim to the rest of the design system. */}
+            <div className="mt-12 mx-auto h-[3px] w-16 bg-amber-400 rounded-full" />
 
             {/* Translation — softer, smaller, second voice. */}
-            <p className="mt-8 text-lg lg:text-xl italic text-slate-300 max-w-2xl mx-auto">
+            <p className="mt-8 text-lg lg:text-xl italic text-slate-300 max-w-2xl mx-auto text-center">
               {isFr
-                ? '« La publicité du droit est le fondement de la liberté. »'
-                : '« Piblisite dwa a se fondasyon libète a. »'}
+                ? 'La publicité du droit est le fondement de la liberté.'
+                : 'Piblisite dwa a se fondasyon libète a.'}
             </p>
 
             {/* Closing paragraph — programme behind the maxim. */}
-            <p className="mt-6 text-base lg:text-lg text-slate-400 leading-relaxed max-w-2xl mx-auto">
+            <p className="mt-6 text-base lg:text-lg text-slate-400 leading-relaxed max-w-2xl mx-auto text-center">
               {isFr
                 ? "Chaque citoyen·ne a le droit de lire la loi qui le gouverne. LexHaïti existe pour rendre ce droit effectif, en ligne, gratuitement."
                 : 'Chak sitwayen gen dwa li lwa ki gouvène l la. LexHaïti egziste pou rann dwa sa a efektif, sou entènèt, gratis.'}
             </p>
 
-            {/* CTA — centered under the paragraph rather than floating
-                on the right. Keeps the composition symmetrical. */}
-            <Link
-              href="/lois"
-              className="mt-10 inline-flex items-center gap-2 bg-white hover:bg-slate-100 text-primary px-6 py-3 rounded-md font-semibold transition-all active:scale-[0.99] shadow-sm hover:shadow-md"
-            >
-              <BookOpen className="w-4 h-4" />
-              {isFr ? 'Explorer les textes' : 'Eksplore tèks yo'}
-            </Link>
+            {/* CTA — centered, sits under the quote as the natural
+                next step after reading the maxim. */}
+            <div className="mt-10 flex justify-center">
+              <Link
+                href="/lois"
+                className="inline-flex items-center gap-2 bg-white hover:bg-slate-100 text-primary px-6 py-3 rounded-md font-semibold transition-all active:scale-[0.99] shadow-sm hover:shadow-md"
+              >
+                <BookOpen className="w-4 h-4" />
+                {isFr ? 'Explorer les textes' : 'Eksplore tèks yo'}
+              </Link>
+            </div>
           </div>
         </div>
       </div>
