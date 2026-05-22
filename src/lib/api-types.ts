@@ -2534,6 +2534,12 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /** Source Amendment Slug */
+            source_amendment_slug?: string | null;
+            /** Source Amendment Title Fr */
+            source_amendment_title_fr?: string | null;
+            /** Source Amendment Title Ht */
+            source_amendment_title_ht?: string | null;
         };
         /**
          * ArticleVersionStatusUpdate

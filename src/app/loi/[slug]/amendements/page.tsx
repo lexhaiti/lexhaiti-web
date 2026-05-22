@@ -718,6 +718,25 @@ function ModifiedCard({
                     {t('amendments.noText')}
                   </p>
                 )}
+                {/* Amending-law attribution per version. V1 (the
+                    original) carries no source_amendment, so nothing
+                    renders. Later versions show "Modifié par <law>"
+                    with a link to the amending text. */}
+                {v.source_amendment_slug && (
+                  <p className="mt-3 text-xs text-slate-500">
+                    {t('amendments.amendedBy')}{' '}
+                    <Link
+                      href={`/loi/${v.source_amendment_slug}`}
+                      className="font-semibold text-primary hover:underline underline-offset-2"
+                    >
+                      {(lang === 'ht'
+                        ? v.source_amendment_title_ht
+                        : v.source_amendment_title_fr) ||
+                        v.source_amendment_title_fr ||
+                        v.source_amendment_slug}
+                    </Link>
+                  </p>
+                )}
                 {idx === 0 && versions.length > 1 && (
                   <div className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-slate-400">
                     <FileText className="w-3 h-3" />
