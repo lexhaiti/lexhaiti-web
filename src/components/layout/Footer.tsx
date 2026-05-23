@@ -56,7 +56,7 @@ export default function Footer() {
             <div className="space-y-4">
               <div className="flex items-center gap-3 group">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-slate-800 transition-colors group-hover:border-red-500/50">
-                  <MapPin className="h-3.5 w-3.5 text-slate-500 transition-colors group-hover:text-red-500" />
+                  <MapPin className="h-3.5 w-3.5 text-slate-400 transition-colors group-hover:text-red-500" />
                 </div>
                 <span className="text-xs font-medium group-hover:text-white transition-colors">
                   {t('footer.location')}
@@ -67,7 +67,7 @@ export default function Footer() {
                 className="flex items-center gap-3 group"
               >
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-slate-800 transition-colors group-hover:border-red-500/50">
-                  <Mail className="h-3.5 w-3.5 text-slate-500 transition-colors group-hover:text-red-500" />
+                  <Mail className="h-3.5 w-3.5 text-slate-400 transition-colors group-hover:text-red-500" />
                 </div>
                 <span className="text-xs font-medium group-hover:text-white transition-colors">
                   {t('footer.email')}
@@ -78,9 +78,9 @@ export default function Footer() {
 
           {/* COL 2: Textes Juridiques */}
           <div>
-            <h4 className="mb-6 text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <h3 className="mb-6 text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
               {t('footer.legalTexts')}
-            </h4>
+            </h3>
             <ul className="space-y-3">
               {footerLegal.map((link) => (
                 <li key={link.href}>
@@ -100,9 +100,9 @@ export default function Footer() {
 
           {/* COL 3: Ressources */}
           <div>
-            <h4 className="mb-6 text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <h3 className="mb-6 text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
               {t('footer.resources')}
-            </h4>
+            </h3>
             <ul className="space-y-3">
               {footerResources.map((link) => (
                 <li key={link.href}>
@@ -122,9 +122,9 @@ export default function Footer() {
 
           {/* COL 4: À propos */}
           <div>
-            <h4 className="mb-6 text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <h3 className="mb-6 text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
               {t('footer.about')}
-            </h4>
+            </h3>
             <ul className="space-y-3">
               {footerAbout.map((link) => (
                 <li key={link.href}>

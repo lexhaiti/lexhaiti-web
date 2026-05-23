@@ -28,11 +28,11 @@ export default async function AppelContribution() {
               <p className="text-xs font-bold uppercase tracking-widest text-amber-400">
                 {t('home.appelContribution.eyebrow')}
               </p>
-              <h3 className="mt-3 text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight tracking-tight">
+              <h2 className="mt-3 text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight tracking-tight">
                 {t('home.appelContribution.heading')}
-              </h3>
+              </h2>
               <div className="mt-5 h-[3px] w-16 bg-amber-400" />
-              <p className="mt-5 text-white/85 text-sm sm:text-base lg:text-lg leading-relaxed max-w-2xl">
+              <p className="mt-5 text-white/90 text-sm sm:text-base lg:text-lg leading-relaxed max-w-2xl">
                 {t('home.appelContribution.body')}
               </p>
             </div>

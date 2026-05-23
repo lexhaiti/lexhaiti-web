@@ -58,7 +58,7 @@ export default async function ActualitesSection() {
         />
 
         {items.length === 0 ? (
-          <p className="text-sm text-slate-400 italic">{t('home.actualites.empty')}</p>
+          <p className="text-sm text-slate-500 italic">{t('home.actualites.empty')}</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
             {items.map((it) => {
@@ -80,7 +80,7 @@ export default async function ActualitesSection() {
                     >
                       {categoryLabel(it.category, lang)}
                     </span>
-                    <FileText className="w-3.5 h-3.5 text-slate-300" />
+                    <FileText className="w-3.5 h-3.5 text-slate-400" />
                   </div>
                   <h3 className="text-base lg:text-[15px] font-bold text-primary mb-2 leading-snug line-clamp-2">
                     {title}
@@ -91,7 +91,7 @@ export default async function ActualitesSection() {
                     </p>
                   )}
                   {(it.updated_at || it.publication_date) && (
-                    <div className="mt-auto flex items-center gap-1.5 text-[11px] text-slate-400 pt-3 border-t border-slate-100">
+                    <div className="mt-auto flex items-center gap-1.5 text-[11px] text-slate-500 pt-3 border-t border-slate-100">
                       <Calendar className="w-3 h-3" />
                       {formatDate(
                         it.updated_at ?? it.publication_date,

@@ -58,7 +58,7 @@ export default async function FeaturesSection() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/5 border border-primary/10 text-primary">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 tabular-nums">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 tabular-nums">
                     {String(i + 1).padStart(2, '0')} — {t(`home.features.mobile.pillars.${pillar.key}.label`)}
                   </span>
                 </div>
@@ -83,7 +83,7 @@ export default async function FeaturesSection() {
                   <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/5 border border-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white group-hover:border-primary">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 tabular-nums">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 tabular-nums">
                     {String(i + 1).padStart(2, '0')} — {t(`home.features.desktop.pillars.${pillar.key}.label`)}
                   </span>
                 </div>

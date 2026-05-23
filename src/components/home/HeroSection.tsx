@@ -138,7 +138,7 @@ export default function HeroSection() {
             divider; small SVG icons (BadgeCheck for provenance,
             Unlock for posture) give each half a glyph. Reads as the
             project's quality cue before the user even types. */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs sm:text-sm text-slate-500">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs sm:text-sm text-slate-600">
           <span className="inline-flex items-center gap-2">
             <BadgeCheck
               className="w-4 h-4 text-emerald-600 flex-shrink-0"
@@ -146,7 +146,7 @@ export default function HeroSection() {
             />
             {t('home.hero.trustSources')}
           </span>
-          <span className="hidden sm:inline text-slate-300" aria-hidden>
+          <span className="hidden sm:inline text-slate-400" aria-hidden>
             |
           </span>
           <span className="inline-flex items-center gap-2">
@@ -186,7 +186,7 @@ export default function HeroSection() {
                 className={cn(
                   'w-full h-14 pl-14 pr-4 rounded-full',
                   'bg-slate-50 ring-1 ring-slate-200',
-                  'placeholder:text-slate-400 placeholder:italic placeholder:text-sm',
+                  'placeholder:text-slate-500 placeholder:italic placeholder:text-sm',
                   'text-base text-slate-900 outline-none',
                   'focus:ring-2 focus:ring-primary/40 focus:bg-white transition',
                 )}
@@ -224,7 +224,7 @@ export default function HeroSection() {
             <SlidersHorizontal className="w-3.5 h-3.5" aria-hidden />
             {t('home.hero.advanced')}
           </Link>
-          <span className="text-slate-300" aria-hidden>
+          <span className="text-slate-400" aria-hidden>
             |
           </span>
           <Link
