@@ -33,7 +33,7 @@ import { LoadingState } from '@/components/shared/LoadingState'
 
 const STATUS_LABEL: Record<
   MoniteurIssueRead['processing_status'],
-  { fr: string; ht: string; cls: string; Icon: any }
+  { fr: string; ht: string; cls: string; Icon: React.ComponentType<{ className?: string }> }
 > = {
   uploaded: {
     fr: 'Téléversé', ht: 'Telechaje',

@@ -406,7 +406,7 @@ export function AllLawsUI({
               {laws.map((di, index) => (
                 <LawCard
                   key={String(
-                    di.type === 'text' ? di.data.id : (di.data as any).text.id,
+                    di.type === 'text' ? di.data.id : di.data.text.id,
                   )}
                   displayItem={di}
                   language={lang}

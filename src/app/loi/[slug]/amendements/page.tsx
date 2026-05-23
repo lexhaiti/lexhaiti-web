@@ -42,7 +42,6 @@ import {
   listBlockVersions,
 } from '@/lib/api/endpoints'
 import type {
-  ArticleVersionRead,
   ArticleWithHistoryRead,
   BlockVersionRead,
   FormalBlockKind,
@@ -270,7 +269,7 @@ export default function AmendementsPage() {
         if (cancelled) return
         setChanges(c)
         setAmendedArticles(a)
-        setLawStatus((t as { status?: string } | null)?.status ?? null)
+        setLawStatus(t?.status ?? null)
       })
       .catch(() => {
         if (cancelled) return

@@ -228,7 +228,7 @@ export default function LawDetail() {
   const currentArticleIndex = useMemo(() => {
     if (!selectedArticle || !law?.articles) return -1
     return law.articles.findIndex(
-      (a: any) => a.number === selectedArticle.number,
+      (a) => a.number === selectedArticle.number,
     )
   }, [selectedArticle, law?.articles])
 
@@ -253,7 +253,7 @@ export default function LawDetail() {
   // on, the page swaps the article-list body for a single rich-text
   // region and skips the TOC sidebar entirely.
   const isDocumentMode =
-    ((law as any)?.display_mode ?? 'articles') === 'document'
+    (law?.display_mode ?? 'articles') === 'document'
   const showStructuralUi = (hasArticles || isEditor) && !isDocumentMode
   // Add-article modal state for the empty-text editor case. Opened
   // by the "+ Ajouter le premier article" button when no articles
@@ -297,7 +297,7 @@ export default function LawDetail() {
     // Otherwise we subtract abrogated articles so an in-force text
     // displays only its still-binding count.
     const wholeTextAbrogated =
-      (law as any).status === 'abrogated' || abrogated === law.articles.length
+      law.status === 'abrogated' || abrogated === law.articles.length
     return {
       total: wholeTextAbrogated
         ? law.articles.length
@@ -311,7 +311,7 @@ export default function LawDetail() {
       rawCount: law.articles.length,
       wholeTextAbrogated,
     }
-  }, [law?.articles, (law as any)?.status])
+  }, [law?.articles, law?.status])
 
   // Heading id → row lookup. Hoisted out of articleBreadcrumb (which
   // ran on every selection) and blocHints (which ran on every article
@@ -360,7 +360,7 @@ export default function LawDetail() {
     // rebuild it inside this hook (rebuilt on every navigation hop).
     const currentHeadingId = selectedArticle?.heading_id ?? null
 
-    const hint = (article: any | undefined): string | null => {
+    const hint = (article: ArticleEmbed | undefined): string | null => {
       if (!article) return null
       const numStr = String(article.number ?? '')
       const numLabel = numStr.toLowerCase().startsWith('article')
@@ -400,7 +400,7 @@ export default function LawDetail() {
     const requested = searchParams?.get('article') ?? null
     if (requested) {
       const target = law.articles.find(
-        (a: any) => String(a.number) === requested,
+        (a) => String(a.number) === requested,
       )
       if (target) {
         setSelectedArticle(target)
