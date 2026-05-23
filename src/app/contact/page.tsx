@@ -95,6 +95,9 @@ export default async function Page() {
           <div className="relative animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-red-500/5 blur-3xl rounded-[3rem]" />
             <div className="relative bg-white border border-slate-100 shadow-2xl shadow-slate-200/50 rounded-[3rem] p-8 lg:p-12">
+              {/* TODO: Wire form to a backend endpoint (e.g. /api/contact).
+                  Until then, inputs are disabled and the submit button
+                  shows a "coming soon" label so visitors aren't misled. */}
               <form className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -153,10 +156,18 @@ export default async function Page() {
                     className="rounded-md border-slate-200 focus:ring-primary focus:border-primary min-h-[150px]"
                   />
                 </div>
-                <Button className="w-full rounded-md bg-primary hover:bg-primary/90 text-white h-12 sm:h-14 font-semibold text-base transition-all active:scale-[0.99]">
+                <Button
+                  disabled
+                  className="w-full rounded-md bg-primary hover:bg-primary/90 text-white h-12 sm:h-14 font-semibold text-base transition-all active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+                >
                   <Send className="w-5 h-5 mr-2" />
-                  {isFr ? 'Envoyer le message' : 'Voye mesaj la'}
+                  {isFr ? 'Bientôt disponible' : 'Byento disponib'}
                 </Button>
+                <p className="text-xs text-slate-400 text-center">
+                  {isFr
+                    ? 'Le formulaire sera bientôt opérationnel. En attendant, écrivez-nous directement par email.'
+                    : 'Fòmilè a pral fonksyone byento. Annatandan, ekri nou dirèkteman pa imèl.'}
+                </p>
               </form>
             </div>
           </div>
