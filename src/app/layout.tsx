@@ -61,6 +61,11 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: SITE,
+    languages: {
+      'fr': SITE,
+      'ht': SITE,
+      'x-default': SITE,
+    },
   },
 }
 

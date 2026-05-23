@@ -36,11 +36,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-function LawJsonLd({ slug }: { slug: string }) {
+function LawJsonLd({ slug, title }: { slug: string; title: string }) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Legislation',
-    name: slug.replace(/-/g, ' '),
+    name: title,
     url: `${SITE}/loi/${slug}`,
     inLanguage: 'fr',
     legislationJurisdiction: 'HT',
@@ -60,9 +60,16 @@ function LawJsonLd({ slug }: { slug: string }) {
 
 export default async function Page({ params }: PageProps) {
   const { slug } = await params
+  let title = slug.replace(/-/g, ' ')
+  try {
+    const text = await getTextBySlug(slug)
+    title = text.title_fr ?? title
+  } catch {
+    // Soft fail — JSON-LD will use the slug-derived name.
+  }
   return (
     <>
-      <LawJsonLd slug={slug} />
+      <LawJsonLd slug={slug} title={title} />
       <LawDetailPage />
     </>
   )

@@ -17,21 +17,25 @@ const CARDS = [
     key: 'constitutions' as const,
     href: '/lois?category=constitution',
     image: '/constitutions.png',
+    alt: 'Constitutions haïtiennes',
   },
   {
     key: 'codes' as const,
     href: '/lois?category=code',
     image: '/codes.png',
+    alt: 'Codes juridiques',
   },
   {
     key: 'lois' as const,
     href: '/lois?category=loi',
     image: '/decrets-lois.png',
+    alt: 'Lois et décrets',
   },
   {
     key: 'aide' as const,
     href: '/aide',
     image: '/faq.png',
+    alt: 'Aide et FAQ',
   },
 ]
 
@@ -73,8 +77,7 @@ export default async function ExplorerSection() {
                       (4-col xl, 2-col md, 1-col mobile). */}
                   <Image
                     src={card.image}
-                    alt=""
-                    aria-hidden="true"
+                    alt={card.alt}
                     fill
                     sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
                     className={cn(
