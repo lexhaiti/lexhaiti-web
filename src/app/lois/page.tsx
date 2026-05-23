@@ -6,6 +6,8 @@ import { Suspense } from 'react'
 import AllLaws from '@/components/all-laws/AllLaws'
 import { getServerLanguage, getT } from '@/i18n/server'
 
+export const revalidate = 3600
+
 export async function generateMetadata(): Promise<Metadata> {
   const language = await getServerLanguage()
   const t = await getT(language)

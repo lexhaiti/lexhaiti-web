@@ -1,3 +1,5 @@
+export const revalidate = 3600
+
 import HeroSection from '@/components/home/HeroSection'
 import ExplorerSection from '@/components/home/ExplorerSection'
 import MoniteurRecentSection from '@/components/home/MoniteurRecentSection'

@@ -24,13 +24,18 @@ const sourceSerif4 = Source_Serif_4({
   variable: '--font-source-serif-4',
 })
 
+const SITE = 'https://lexhaiti.org'
+const SITE_NAME = 'LexHaiti'
+const DEFAULT_DESC =
+  "Plateforme de numérisation et d'accès public à la législation haïtienne. Recherchez les lois, décrets, codes et textes juridiques d'Haïti."
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE),
   title: {
     default: 'LexHaiti — Législation Haïtienne',
     template: '%s | LexHaiti',
   },
-  description:
-    "Plateforme de numérisation et d'accès public à la législation haïtienne. Recherchez les lois, décrets, codes et textes juridiques d'Haïti.",
+  description: DEFAULT_DESC,
   keywords: [
     'Haïti',
     'législation',
@@ -41,6 +46,22 @@ export const metadata: Metadata = {
     'juridique',
     'Le Moniteur',
   ],
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    locale: 'fr_FR',
+    title: 'LexHaiti — Législation Haïtienne',
+    description: DEFAULT_DESC,
+    url: SITE,
+  },
+  twitter: {
+    card: 'summary',
+    title: 'LexHaiti — Législation Haïtienne',
+    description: DEFAULT_DESC,
+  },
+  alternates: {
+    canonical: SITE,
+  },
 }
 
 export default async function RootLayout({
@@ -72,7 +93,7 @@ export default async function RootLayout({
 
           Gold (amber-500) over red — red stays reserved for the
           attention-tone eyebrow on empty states and error banners. */}
-      <body>
+      <body suppressHydrationWarning>
         <style>{`
           #nprogress .bar {
             top: 78px !important;
