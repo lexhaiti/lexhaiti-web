@@ -99,6 +99,24 @@ const BLOCK_LABEL: Record<string, { fr: string; ht: string }> = {
   enacting_formula: { fr: "Formule d'adoption", ht: 'Fòmil adopsyon' },
 }
 
+const BLOCK_ORDER: Record<string, number> = {
+  preamble: 0,
+  visa: 1,
+  considerant: 2,
+  enacting_formula: 3,
+}
+
+function changeSortKey(c: LegalChangeReceivedRead): number {
+  if (c.amended_block_kind) return BLOCK_ORDER[c.amended_block_kind] ?? 4
+  return 1000 + parseArticleNumber(c.amended_article_number)
+}
+
+function parseArticleNumber(n: string | null | undefined): number {
+  if (!n) return Infinity
+  const m = n.match(/(\d+)/)
+  return m ? parseInt(m[1], 10) : Infinity
+}
+
 /** Minimal version shape used by the card's timeline + diff. Both
  *  ``ArticleVersionRead`` and ``BlockVersionRead`` map cleanly to it. */
 type TimelineVersion = {
@@ -275,7 +293,10 @@ export default function AmendementsPage() {
   }, [amendedArticles])
 
   const modified = useMemo(
-    () => (changes ?? []).filter((c) => c.change_kind === 'amend'),
+    () =>
+      (changes ?? [])
+        .filter((c) => c.change_kind === 'amend')
+        .sort((a, b) => changeSortKey(a) - changeSortKey(b)),
     [changes],
   )
   const added = useMemo(
