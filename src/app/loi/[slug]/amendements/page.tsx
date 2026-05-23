@@ -39,10 +39,13 @@ import {
   getAmendmentsForText,
   getTextBySlug,
   listChangesReceivedBy,
+  listBlockVersions,
 } from '@/lib/api/endpoints'
 import type {
   ArticleVersionRead,
   ArticleWithHistoryRead,
+  BlockVersionRead,
+  FormalBlockKind,
   LegalChangeReceivedRead,
 } from '@/lib/api/endpoints'
 import type { components } from '@/lib/api-types'
@@ -86,6 +89,48 @@ const STATUS_PILL: Record<
     cls: 'bg-slate-50 text-slate-600 border-slate-200',
     icon: Archive,
   },
+}
+
+// Block-kind → display label, matching ChangesMadePanel.
+const BLOCK_LABEL: Record<string, { fr: string; ht: string }> = {
+  preamble: { fr: 'Préambule', ht: 'Preanmbil' },
+  visa: { fr: 'Visas', ht: 'Visa' },
+  considerant: { fr: 'Considérants', ht: 'Konsideran' },
+  enacting_formula: { fr: "Formule d'adoption", ht: 'Fòmil adopsyon' },
+}
+
+/** Minimal version shape used by the card's timeline + diff. Both
+ *  ``ArticleVersionRead`` and ``BlockVersionRead`` map cleanly to it. */
+type TimelineVersion = {
+  id: number
+  version_number: number
+  text_fr?: string | null
+  text_ht?: string | null
+  title_fr?: string | null
+  title_ht?: string | null
+  effective_from?: string | null
+  effective_to?: string | null
+  status: ArticleStatus
+  source_amendment_slug?: string | null
+  source_amendment_title_fr?: string | null
+  source_amendment_title_ht?: string | null
+}
+
+function blockToTimeline(v: BlockVersionRead): TimelineVersion {
+  return {
+    id: v.id,
+    version_number: v.version_number,
+    text_fr: v.text_fr,
+    text_ht: v.text_ht,
+    title_fr: null,
+    title_ht: null,
+    effective_from: v.effective_from,
+    effective_to: v.effective_to,
+    status: 'in_force',
+    source_amendment_slug: v.source_amendment_slug,
+    source_amendment_title_fr: v.source_amendment_title_fr,
+    source_amendment_title_ht: null,
+  }
 }
 
 function formatDate(iso: string | null | undefined): string | null {
@@ -540,8 +585,11 @@ function Section({
 }
 
 // ---------------------------------------------------------------------------
-// Modified-article card — header + amending law line + inline diff (when
-// version bodies are available) + collapsible full history.
+// Modified card — works for both article amendments (amended_article_id set)
+// and block amendments (amended_block_kind set, e.g. preamble / visas).
+// For article amendments the version bodies come from the pre-loaded
+// ``article`` prop; for blocks they are fetched on mount via
+// ``listBlockVersions``.
 // ---------------------------------------------------------------------------
 
 function ModifiedCard({
@@ -561,33 +609,70 @@ function ModifiedCard({
    *  pill suppression + caption shortening (drop "En vigueur" prefix). */
   parentRetired?: boolean
 }) {
-  const versions = useMemo<ArticleVersionRead[]>(() => {
+  const isBlock = !!row.amended_block_kind && !row.amended_article_id
+
+  // Block versions — fetched on mount for block amendments.
+  const [blockVersions, setBlockVersions] = useState<BlockVersionRead[]>([])
+  useEffect(() => {
+    if (!isBlock || !row.amended_block_kind) return
+    let cancelled = false
+    listBlockVersions(slug, row.amended_block_kind as FormalBlockKind)
+      .then((bvs) => {
+        if (!cancelled)
+          setBlockVersions(
+            [...bvs].sort(
+              (a, b) => (b.version_number ?? 0) - (a.version_number ?? 0),
+            ),
+          )
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [isBlock, slug, row.amended_block_kind])
+
+  // Normalise both version types into a single timeline shape.
+  const versions = useMemo<TimelineVersion[]>(() => {
+    if (isBlock) return blockVersions.map(blockToTimeline)
     if (!article?.versions) return []
     return [...article.versions].sort(
       (a, b) => (b.version_number ?? 0) - (a.version_number ?? 0),
     )
-  }, [article])
+  }, [isBlock, blockVersions, article])
 
   const latest = versions[0]
   const oldest = versions[versions.length - 1]
   const showDiff = versions.length >= 2 && latest !== oldest
 
   const diffOps = useMemo(() => {
-    if (!showDiff) return null
-    const a = lang === 'ht' && oldest.text_ht ? oldest.text_ht : oldest.text_fr
-    const b = lang === 'ht' && latest.text_ht ? latest.text_ht : latest.text_fr
+    if (!showDiff || !latest || !oldest) return null
+    const a =
+      lang === 'ht' && oldest.text_ht
+        ? oldest.text_ht
+        : (oldest.text_fr ?? '')
+    const b =
+      lang === 'ht' && latest.text_ht
+        ? latest.text_ht
+        : (latest.text_fr ?? '')
     return diffHtml(a, b)
   }, [showDiff, oldest, latest, lang])
 
   const [historyOpen, setHistoryOpen] = useState(false)
 
-  const articleNumber = row.amended_article_number ?? ''
-  const articleLabel = articleNumber.toLowerCase().startsWith('article')
-    ? articleNumber
-    : `Article ${articleNumber}`
+  // Label: "Préambule" for blocks, "Article X" for articles.
+  const itemLabel = isBlock
+    ? (BLOCK_LABEL[row.amended_block_kind!]?.[lang] ?? row.amended_block_kind!)
+    : (() => {
+        const n = row.amended_article_number ?? ''
+        return n.toLowerCase().startsWith('article') ? n : `Article ${n}`
+      })()
 
-  const currentStatus: ArticleStatus =
-    (latest?.status as ArticleStatus | undefined) ?? 'in_force'
+  // Link: for blocks, link to the law page; for articles, to the article.
+  const itemHref = isBlock
+    ? `/loi/${slug}`
+    : `/loi/${slug}?article=${encodeURIComponent(row.amended_article_number ?? '')}`
+
+  const currentStatus: ArticleStatus = latest?.status ?? 'in_force'
   const pill = STATUS_PILL[currentStatus]
   const PillIcon = pill.icon
 
@@ -597,13 +682,15 @@ function ModifiedCard({
         <div className="flex items-baseline gap-3 flex-wrap min-w-0">
           <h3 className="text-lg lg:text-xl font-bold text-primary">
             <Link
-              href={`/loi/${slug}?article=${encodeURIComponent(articleNumber)}`}
+              href={itemHref}
               className="hover:underline underline-offset-4"
             >
-              {articleLabel}
+              {itemLabel}
             </Link>
           </h3>
-          {!parentRetired && (
+          {/* Status pills only make sense for articles — blocks don't
+              carry an ArticleStatus lifecycle. */}
+          {!parentRetired && !isBlock && (
             <span
               className={cn(
                 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md',
@@ -630,7 +717,7 @@ function ModifiedCard({
             <span>{t('amendments.diffLabel')}</span>
             <span className="text-slate-300">·</span>
             <span>
-              v{oldest.version_number} → v{latest.version_number}
+              v{oldest!.version_number} → v{latest!.version_number}
             </span>
           </div>
           <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
@@ -671,19 +758,13 @@ function ModifiedCard({
             const VIcon = vp.icon
             const fromLabel = formatDate(v.effective_from)
             const toLabel = formatDate(v.effective_to)
-            // Always use the neutral "Depuis le X" / "Du X au Y"
-            // caption on this page — the amendments timeline is a
-            // historical view and the "En vigueur" prefix added
-            // noise without information. The version's status pill
-            // (or its absence on a retired text) already conveys
-            // whether it's in force.
             const dateLabel = historicalDateRange(fromLabel, toLabel, lang)
             const text = lang === 'ht' && v.text_ht ? v.text_ht : v.text_fr
             const title = lang === 'ht' && v.title_ht ? v.title_ht : v.title_fr
             return (
               <li key={v.id} className="px-6 py-5">
                 <div className="flex items-center flex-wrap gap-2 mb-3">
-                  {!parentRetired && (
+                  {!parentRetired && !isBlock && (
                     <span
                       className={cn(
                         'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md',
@@ -718,10 +799,6 @@ function ModifiedCard({
                     {t('amendments.noText')}
                   </p>
                 )}
-                {/* Amending-law attribution per version. V1 (the
-                    original) carries no source_amendment, so nothing
-                    renders. Later versions show "Modifié par <law>"
-                    with a link to the amending text. */}
                 {v.source_amendment_slug && (
                   <p className="mt-3 text-xs text-slate-500">
                     {t('amendments.amendedBy')}{' '}
