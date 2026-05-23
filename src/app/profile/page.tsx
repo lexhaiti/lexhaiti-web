@@ -6,8 +6,10 @@ import { signOut, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import {
   ArrowLeft,
+  ArrowRight,
   ClipboardCheck,
   IdCard,
+  LayoutDashboard,
   Loader2,
   LogOut,
   Mail,
@@ -43,7 +45,7 @@ function FieldCard({ icon: Icon, label, children }: FieldCardProps) {
 }
 
 export default function ProfilePage() {
-  const { t } = useT()
+  const { t, language } = useT()
   const { data: session, status } = useSession()
   const router = useRouter()
 
@@ -136,7 +138,15 @@ export default function ProfilePage() {
             </FieldCard>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
+          <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+            <Link
+              href="/editorial"
+              className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors"
+            >
+              <LayoutDashboard className="h-3.5 w-3.5" />
+              {t('profile.goToDashboard', { fallback: language !== 'ht' ? 'Console éditoriale' : 'Konsòl editoryal' })}
+              <ArrowRight className="h-3 w-3" />
+            </Link>
             <Button
               onClick={() => signOut({ callbackUrl: '/' })}
               variant="outline"

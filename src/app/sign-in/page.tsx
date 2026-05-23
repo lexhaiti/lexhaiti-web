@@ -27,7 +27,7 @@ export default function SignInPage() {
       const res = await signIn('nodemailer', {
         email,
         redirect: false,
-        callbackUrl: '/',
+        callbackUrl: '/editorial',
       })
       // signIn returns { error?: string, ok: boolean, url?: string }.
       // If our auth.ts callback redirected to /sign-in/error?error=NotAuthorized,
@@ -55,12 +55,20 @@ export default function SignInPage() {
           <p className="mt-1 text-base font-semibold text-slate-900 break-all">
             {session.user.email}
           </p>
-          <Button asChild className="mt-6 w-full h-11">
-            <Link href="/">
-              {t('signIn.goHome')}
-              <ArrowRight className="ml-1.5 h-4 w-4" />
-            </Link>
-          </Button>
+          <div className="mt-6 flex flex-col gap-3">
+            <Button asChild className="w-full h-11">
+              <Link href="/editorial">
+                {t('signIn.goToDashboard', { fallback: 'Console éditoriale' })}
+                <ArrowRight className="ml-1.5 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full h-11">
+              <Link href="/">
+                {t('signIn.goHome')}
+                <ArrowRight className="ml-1.5 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </ShellWrapper>
     )
