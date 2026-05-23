@@ -1,15 +1,5 @@
 'use client'
 
-/**
- * Editorial dashboard — landing page for editor-mode users.
- *
- * Stage 5 of the bilingual ingestion pipeline. Surfaces translation-
- * pipeline counters (texts/articles/Moniteur-entries) and links to the
- * worklists for each.
- *
- * Currently focused on translation stats; will grow over time to host
- * other editorial KPIs (drafts pending review, OCR queue depth, etc.).
- */
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -18,12 +8,16 @@ import {
   Braces,
   CalendarRange,
   ChevronDown,
+  Clock,
+  FileCheck,
+  FilePen,
   FileText,
   GitMerge,
   Languages,
   Loader2,
   Newspaper,
   Search,
+  ShieldCheck,
   Sparkles,
   X,
 } from 'lucide-react'
@@ -39,21 +33,20 @@ import {
 } from '@/lib/api/endpoints'
 import type { components } from '@/lib/api-types'
 import { cn } from '@/lib/utils'
+import { categoryLabel, categoryBadgeClass } from '@/lib/legal/labels'
 
 type LegalTextListItem = components['schemas']['LegalTextListItem']
 
 export default function EditorialDashboardPage() {
-  const { isEditor, status } = useEditorMode()
+  const { isEditor, role, user, status } = useEditorMode()
   const { language } = useT()
   const isFr = language !== 'ht'
 
   const [stats, setStats] = useState<TranslationStats | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [allLaws, setAllLaws] = useState<LegalTextListItem[] | null>(null)
-  // Search + open-years state for the by-year inventory list. ``openYears``
-  // defaults to a Set seeded once the data lands (the most recent year is
-  // expanded by default; older years stay collapsed so the page reads
-  // quickly even with hundreds of entries).
+  const [drafts, setDrafts] = useState<LegalTextListItem[] | null>(null)
+  const [pendingReview, setPendingReview] = useState<LegalTextListItem[] | null>(null)
   const [lawsQuery, setLawsQuery] = useState('')
   const [openYears, setOpenYears] = useState<Set<string> | null>(null)
 
@@ -67,17 +60,26 @@ export default function EditorialDashboardPage() {
       .catch((e) => {
         if (!cancelled) setErr(e?.message ?? String(e))
       })
-    // Fetch the full corpus listing for the "Tous les textes par
-    // année" section. listEditorialTexts (no editorial_status filter)
-    // returns drafts + published — exactly what an editor wants when
-    // scanning the inventory. Public listTexts would have hidden
-    // drafts behind the default published-only filter.
     listEditorialTexts({ limit: 100 })
       .then((res) => {
         if (!cancelled) setAllLaws(res.items ?? [])
       })
       .catch(() => {
         if (!cancelled) setAllLaws([])
+      })
+    listEditorialTexts({ editorial_status: 'draft', limit: 10 })
+      .then((res) => {
+        if (!cancelled) setDrafts(res.items ?? [])
+      })
+      .catch(() => {
+        if (!cancelled) setDrafts([])
+      })
+    listEditorialTexts({ editorial_status: 'pending_review', limit: 10 })
+      .then((res) => {
+        if (!cancelled) setPendingReview(res.items ?? [])
+      })
+      .catch(() => {
+        if (!cancelled) setPendingReview([])
       })
     return () => {
       cancelled = true
@@ -132,6 +134,17 @@ export default function EditorialDashboardPage() {
   // hidden behind a collapsed accordion. ``effectiveOpen`` is the
   // render-time set; we don't mutate ``openYears`` so toggles after
   // clearing the search restore the user's prior accordion state.
+  const recentTexts = useMemo(() => {
+    if (!allLaws) return null
+    return [...allLaws]
+      .sort((a, b) => {
+        const da = a.updated_at ?? a.publication_date ?? ''
+        const db = b.updated_at ?? b.publication_date ?? ''
+        return db.localeCompare(da)
+      })
+      .slice(0, 5)
+  }, [allLaws])
+
   const effectiveOpenYears = useMemo(() => {
     if (lawsQuery.trim() && lawsByYear) {
       return new Set(lawsByYear.map(([year]) => year))
@@ -178,8 +191,6 @@ export default function EditorialDashboardPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navy hero band — matches the law-detail / amendements pages
-          so the editor dashboard reads as part of the same surface. */}
       <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
@@ -194,14 +205,59 @@ export default function EditorialDashboardPage() {
               { label: isFr ? 'Éditorial' : 'Editoryal' },
             ]}
           />
-          <h1 className="animate-in fade-in slide-in-from-top-2 duration-500 text-4xl lg:text-6xl font-black mb-4 leading-tight tracking-tight text-white">
-            {isFr ? 'Pipeline éditorial' : 'Pipeline editoryal'}
-          </h1>
-          <p className="animate-in fade-in duration-500 delay-100 fill-mode-both text-slate-300 text-lg lg:text-xl leading-relaxed max-w-3xl">
-            {isFr
-              ? 'Tableau de bord pour la curation du corpus juridique haïtien — imports, traductions, et inventaire des textes.'
-              : 'Tablo pou kirate kòpis jiridik ayisyen — enpòtasyon, tradiksyon, ak envantè tèks yo.'}
-          </p>
+          <div className="flex items-end gap-5 flex-wrap animate-in fade-in slide-in-from-top-2 duration-500">
+            <div className="inline-flex h-16 w-16 lg:h-20 lg:w-20 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-700 text-white text-2xl lg:text-3xl font-bold shadow-xl shadow-red-900/40 ring-4 ring-white/10 flex-shrink-0">
+              {(user?.name?.[0] ?? user?.email?.[0] ?? 'E').toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl lg:text-5xl font-black leading-tight tracking-tight text-white">
+                {isFr ? 'Bonjour' : 'Bonjou'},{' '}
+                {user?.name ?? user?.email?.split('@')[0] ?? ''}
+              </h1>
+              <div className="mt-2 flex items-center gap-3 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
+                  <ShieldCheck className="w-3 h-3" />
+                  {role ?? 'editor'}
+                </span>
+                <span className="text-sm text-slate-400">
+                  {new Date().toLocaleDateString(isFr ? 'fr-FR' : 'fr-FR', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </span>
+              </div>
+            </div>
+          </div>
+          {/* Corpus overview strip */}
+          {stats && (
+            <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 animate-in fade-in duration-500 delay-150 fill-mode-both">
+              <OverviewStat
+                label={isFr ? 'Textes' : 'Tèks'}
+                value={stats.legal_texts_total}
+              />
+              <OverviewStat
+                label={isFr ? 'Articles' : 'Atik'}
+                value={stats.articles_total}
+              />
+              <OverviewStat
+                label={isFr ? 'Traduits' : 'Tradui'}
+                value={stats.articles_translated}
+                pct={
+                  stats.articles_total > 0
+                    ? Math.round(
+                        (stats.articles_translated / stats.articles_total) * 100,
+                      )
+                    : 0
+                }
+              />
+              <OverviewStat
+                label="Moniteur"
+                value={stats.moniteur_entries_total}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -293,6 +349,83 @@ export default function EditorialDashboardPage() {
           }
         />
       </section>
+
+      {/* Pipeline — drafts + pending review */}
+      {((drafts && drafts.length > 0) || (pendingReview && pendingReview.length > 0)) && (
+        <section className="space-y-3">
+          <header className="flex items-center gap-2">
+            <FilePen className="w-4 h-4 text-slate-400" />
+            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500">
+              {isFr ? 'Textes à traiter' : 'Tèks pou trete'}
+            </h2>
+          </header>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {drafts && drafts.length > 0 && (
+              <PipelineCard
+                title={isFr ? 'Brouillons' : 'Bouyon'}
+                icon={FileText}
+                count={drafts.length}
+                accent="amber"
+                items={drafts}
+                lang={isFr ? 'fr' : 'ht'}
+              />
+            )}
+            {pendingReview && pendingReview.length > 0 && (
+              <PipelineCard
+                title={isFr ? 'En attente de révision' : 'Ap tann revizyon'}
+                icon={FileCheck}
+                count={pendingReview.length}
+                accent="blue"
+                items={pendingReview}
+                lang={isFr ? 'fr' : 'ht'}
+              />
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Recently updated texts */}
+      {recentTexts && recentTexts.length > 0 && (
+        <section className="space-y-3">
+          <header className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-slate-400" />
+            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500">
+              {isFr ? 'Dernières modifications' : 'Dènye modifikasyon'}
+            </h2>
+          </header>
+          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden divide-y divide-slate-100">
+            {recentTexts.map((law) => {
+              const title =
+                (isFr ? law.title_fr : law.title_ht || law.title_fr) || law.slug
+              const date = law.updated_at ?? law.publication_date
+              return (
+                <Link
+                  key={law.id}
+                  href={`/loi/${law.slug}`}
+                  className="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors group"
+                >
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider flex-shrink-0 ${categoryBadgeClass(law.category)}`}
+                  >
+                    {categoryLabel(law.category, isFr ? 'fr' : 'ht')}
+                  </span>
+                  <span className="flex-1 min-w-0 text-sm font-medium text-slate-700 group-hover:text-primary truncate transition-colors">
+                    {title}
+                  </span>
+                  {date && (
+                    <span className="text-[11px] text-slate-400 tabular-nums flex-shrink-0">
+                      {new Date(date).toLocaleDateString(isFr ? 'fr-FR' : 'fr-FR', {
+                        day: 'numeric',
+                        month: 'short',
+                      })}
+                    </span>
+                  )}
+                </Link>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Translation stats */}
       {err && <ErrorBanner>{err}</ErrorBanner>}
@@ -598,6 +731,77 @@ function StatCard({
           </span>
         )}
       </p>
+    </div>
+  )
+}
+
+function OverviewStat({
+  label,
+  value,
+  pct,
+}: {
+  label: string
+  value: number
+  pct?: number
+}) {
+  return (
+    <div className="rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 px-4 py-3">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+        {label}
+      </p>
+      <div className="flex items-baseline gap-2">
+        <span className="text-2xl font-black tabular-nums text-white leading-none">
+          {value.toLocaleString('fr-FR')}
+        </span>
+        {pct !== undefined && (
+          <span className="text-xs font-semibold text-emerald-400 tabular-nums">
+            {pct}%
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function PipelineCard({
+  title,
+  icon: Icon,
+  count,
+  accent,
+  items,
+  lang,
+}: {
+  title: string
+  icon: React.ComponentType<{ className?: string }>
+  count: number
+  accent: 'amber' | 'blue'
+  items: LegalTextListItem[]
+  lang: 'fr' | 'ht'
+}) {
+  const borderCls = accent === 'amber' ? 'border-amber-200' : 'border-blue-200'
+  const bgCls = accent === 'amber' ? 'bg-amber-50/60' : 'bg-blue-50/60'
+  const countCls = accent === 'amber' ? 'text-amber-700 bg-amber-100' : 'text-blue-700 bg-blue-100'
+  return (
+    <div className={cn('rounded-xl border p-5', borderCls, bgCls)}>
+      <div className="flex items-center gap-2 mb-3">
+        <Icon className="w-4 h-4 text-slate-500" />
+        <h3 className="text-sm font-bold text-slate-800">{title}</h3>
+        <span className={cn('ml-auto text-[10px] font-bold rounded-full px-2 py-0.5 tabular-nums', countCls)}>
+          {count}
+        </span>
+      </div>
+      <ul className="space-y-1.5">
+        {items.slice(0, 5).map((law) => (
+          <li key={law.id}>
+            <Link
+              href={`/loi/${law.slug}`}
+              className="text-sm text-slate-700 hover:text-primary hover:underline underline-offset-2 line-clamp-1"
+            >
+              {(lang === 'fr' ? law.title_fr : law.title_ht || law.title_fr) || law.slug}
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
