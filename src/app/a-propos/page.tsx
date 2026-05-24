@@ -25,6 +25,10 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t('about.title', {
       fallback: language === 'fr' ? 'À propos' : 'Konsènan',
     }),
+    description:
+      language === 'fr'
+        ? "Mission, équipe et vision de LexHaiti — la plateforme gratuite d'accès à la législation haïtienne."
+        : 'Misyon, ekip ak vizyon LexHaiti — platfòm gratis pou aksè nan lejislasyon ayisyèn.',
   }
 }
 

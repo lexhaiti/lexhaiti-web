@@ -71,6 +71,10 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t('themes.title', {
       fallback: language === 'fr' ? 'Thématiques' : 'Tèm yo',
     }),
+    description:
+      language === 'fr'
+        ? 'Explorez le droit haïtien par thématique : droit des sociétés, fiscal, travail, famille, foncier et plus.'
+        : 'Eksplore dwa ayisyen pa tèm : dwa sosyete, fiskal, travay, fanmi, fonsye ak plis ankò.',
   }
 }
 

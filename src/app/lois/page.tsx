@@ -16,6 +16,10 @@ export async function generateMetadata(): Promise<Metadata> {
       fallback:
         language === 'fr' ? 'Tous les textes juridiques' : 'Tout tèks jiridik yo',
     }),
+    description:
+      language === 'fr'
+        ? "Parcourez l'ensemble des lois, décrets, codes et textes juridiques d'Haïti indexés sur LexHaiti."
+        : 'Navige nan tout lwa, dekrè, kòd ak tèks jiridik Ayiti ki endekse sou LexHaiti.',
   }
 }
 

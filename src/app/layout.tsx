@@ -55,9 +55,10 @@ export const metadata: Metadata = {
     url: SITE,
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'LexHaiti — Législation Haïtienne',
     description: DEFAULT_DESC,
+    site: '@lexhaiti',
   },
   alternates: {
     canonical: SITE,
@@ -67,6 +68,45 @@ export const metadata: Metadata = {
       'x-default': SITE,
     },
   },
+}
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${SITE}/#organization`,
+      name: SITE_NAME,
+      url: SITE,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE}/lexhaiti-logo-384.png`,
+        width: 384,
+        height: 384,
+      },
+      sameAs: [
+        'https://x.com/lexhaiti',
+        'https://linkedin.com/company/lexhaiti',
+      ],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE}/#website`,
+      name: SITE_NAME,
+      url: SITE,
+      description: DEFAULT_DESC,
+      inLanguage: ['fr', 'ht'],
+      publisher: { '@id': `${SITE}/#organization` },
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${SITE}/recherche?q={search_term_string}`,
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    },
+  ],
 }
 
 export default async function RootLayout({
@@ -98,6 +138,12 @@ export default async function RootLayout({
 
           Gold (amber-500) over red — red stays reserved for the
           attention-tone eyebrow on empty states and error banners. */}
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body suppressHydrationWarning>
         <style>{`
           #nprogress .bar {

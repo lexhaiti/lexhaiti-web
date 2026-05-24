@@ -18,6 +18,10 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t('contact.title', {
       fallback: language === 'fr' ? 'Contact' : 'Kontakte Nou',
     }),
+    description:
+      language === 'fr'
+        ? "Contactez l'équipe LexHaiti — questions, partenariats, suggestions ou signalement d'erreurs."
+        : 'Kontakte ekip LexHaiti — kesyon, patenarya, sijesyon oswa rapòte erè.',
   }
 }
 

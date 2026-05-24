@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         siteName: 'LexHaiti',
         locale: 'fr_FR',
       },
-      twitter: { card: 'summary', title, description },
+      twitter: { card: 'summary_large_image', title, description },
     }
   } catch {
     return {}

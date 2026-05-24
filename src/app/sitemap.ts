@@ -12,6 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/a-propos`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${SITE}/contact`, changeFrequency: 'yearly', priority: 0.3 },
     { url: `${SITE}/soutenir`, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${SITE}/moniteur`, changeFrequency: 'weekly', priority: 0.7 },
   ]
 
   const lawRoutes: MetadataRoute.Sitemap = []
