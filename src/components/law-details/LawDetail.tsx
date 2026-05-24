@@ -1,149 +1,41 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { Loader2 } from 'lucide-react'
 import {
-  AlertTriangle,
-  Archive,
-  Ban,
-  Calendar,
-  CheckCircle,
-  ChevronDown,
-  ChevronRight,
-  Clock,
-  Download,
-  Eye,
-  FileText,
-  Info,
-  Library,
-  Loader2,
-  Newspaper,
-  PanelLeft,
-  PanelLeftClose,
-  Pencil,
-  PenLine,
-  PauseCircle,
-  RotateCcw,
-  Search,
-  Tags,
-  XCircle,
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from '@/components/ui/tooltip'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { cn } from '@/lib/utils'
-import Link from 'next/link'
 import { useParams, useSearchParams } from 'next/navigation'
-import ArticleViewer from './ArticleViewer'
-import PreambleViewer from './PreambleViewer'
-import TableOfContents from '@/components/law-details/TableOfContent'
 import { EditorBar } from './EditorBar'
-import { EditableFormalBlock } from './EditableFormalBlock'
-import { DocumentBody } from './DocumentBody'
-import {
-  deleteHeading,
-  moniteurIssueSlug,
-  reorderArticles,
-  reorderHeadings,
-  updateHeading,
-  updateHeadingTitle,
-  updateLegalTextMetadata,
-  type ArticleEmbed,
-} from '@/lib/api/endpoints'
 import { SignataireBlock } from '@/components/law-details/SignataireBlock'
 import { ChangesMadePanel } from '@/components/law-details/_panels/ChangesMadePanel'
 import { AddHeadingDialog } from '@/components/law-details/_panels/AddHeadingDialog'
 import { AddArticleDialog } from '@/components/law-details/_panels/AddArticleDialog'
-import { EditableHeroField } from '@/components/law-details/_helpers/EditableHeroField'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { DeviseEditorDialog } from './_panels/DeviseEditorDialog'
 import { useLawDetail } from '@/lib/hooks/useLawDetail'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useT } from '@/i18n/useT'
-import { Breadcrumb } from '@/components/shared/Breadcrumb'
 import { TextNotFound } from '@/components/law-details/TextNotFound'
 import { useToast } from '@/components/ui/toast-simple'
 import { useEditorMode } from '@/lib/hooks/useEditorMode'
-import { apiUrl } from '@/lib/api/client'
-import { themeLabel } from '@/lib/themes'
-import { formatLongDate } from '@/lib/format/date'
+import type { ArticleEmbed } from '@/lib/api/endpoints'
+import { categoryLabels } from './_helpers/categoryLabels'
 import {
-  TEXT_STATUS_PILL,
-  mapTextStatusToArticleStatus,
-  type TextStatus,
-} from './_helpers/textStatus'
-import { DownloadDropdown } from './_panels/DownloadDropdown'
-import { DeviseBanner } from './_panels/DeviseBanner'
-import { DeviseEditorDialog } from './_panels/DeviseEditorDialog'
-import { IssuingAuthorityHeader } from './_panels/IssuingAuthorityHeader'
-import { OfficialNumberTab } from './_panels/OfficialNumberTab'
-import { buildSignatureLeadCaption } from './_helpers/signatureCaption'
+  pickBilingual,
+  type HeadingAnchor,
+  type SelectedArticle,
+} from './_helpers/lawDetailTypes'
 
-
-// Every value of the backend ``LegalCategory`` enum needs an entry — the
-// hero eyebrow reads ``categoryLabels[law.category][currentLang]`` and a
-// missing key would throw at render. Keep this in sync with
-// ``backend/schemas/enums.py::LegalCategory``.
-const categoryLabels: Record<
-  string,
-  { fr: string; ht: string; color: string }
-> = {
-  constitution: {
-    fr: 'Constitution',
-    ht: 'Konstitisyon',
-    color: 'bg-amber-500',
-  },
-  acte_fondateur: {
-    fr: 'Acte fondateur',
-    ht: 'Akt fondatè',
-    color: 'bg-amber-400',
-  },
-  proclamation: {
-    fr: 'Proclamation',
-    ht: 'Pwoklamasyon',
-    color: 'bg-orange-400',
-  },
-  discours: {
-    fr: 'Discours',
-    ht: 'Diskou',
-    color: 'bg-yellow-500',
-  },
-  code: { fr: 'Code', ht: 'Kòd', color: 'bg-blue-500' },
-  loi: { fr: 'Loi', ht: 'Lwa', color: 'bg-indigo-500' },
-  loi_constitutionnelle: {
-    fr: 'Loi constitutionnelle',
-    ht: 'Lwa konstitisyonèl',
-    color: 'bg-amber-600',
-  },
-  decret: { fr: 'Décret', ht: 'Dekrè', color: 'bg-green-500' },
-  arrete: { fr: 'Arrêté', ht: 'Arète', color: 'bg-purple-500' },
-  ordonnance: { fr: 'Ordonnance', ht: 'Òdonans', color: 'bg-teal-500' },
-  circulaire: { fr: 'Circulaire', ht: 'Sikilè', color: 'bg-sky-500' },
-  convention: { fr: 'Convention', ht: 'Konvansyon', color: 'bg-fuchsia-500' },
-  communique: { fr: 'Communiqué', ht: 'Kominike', color: 'bg-slate-500' },
-  avis: { fr: 'Avis', ht: 'Avi', color: 'bg-slate-500' },
-  other_regulatory: {
-    fr: 'Texte réglementaire',
-    ht: 'Tèks règlemantè',
-    color: 'bg-slate-500',
-  },
-}
+// Sub-components extracted from this file
+import { EditorPreviewBanner } from './EditorPreviewBanner'
+import { LawHero } from './LawHero'
+import { TocSidebar } from './TocSidebar'
+import { SearchPanel } from './SearchPanel'
+import { IdentityMasthead } from './IdentityMasthead'
+import { FormalBlocksSection } from './FormalBlocksSection'
+import { ArticleSection } from './ArticleSection'
+import { ClosingAddendum } from './ClosingAddendum'
+import { RelatedLaws } from './RelatedLaws'
 
 
 export default function LawDetail() {
@@ -153,59 +45,21 @@ export default function LawDetail() {
   const currentLang = language as 'fr' | 'ht'
 
   // ``?lang=ht`` (or ``?lang=fr``) on the URL is a one-shot "open this
-  // page in that language" hint — used by Moniteur entries that point
-  // at the Kreyòl supplement so clicking the constitution from N° 36-A
-  // lands in Kreyòl while reading from N° 36 stays in French. We
-  // promote the param into the global language state once on mount so
-  // the rest of the app (header, footer, future navigation) stays in
-  // sync. Re-runs are guarded by the current ``language`` value so we
-  // don't bounce the user back to FR when they manually switch.
+  // page in that language" hint.
   const langParam = useSearchParams()?.get('lang')
   useEffect(() => {
     if (langParam === 'ht' && language !== 'ht') setLanguage('ht')
     else if (langParam === 'fr' && language !== 'fr') setLanguage('fr')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [langParam])
-  // ``SelectedArticle`` is whatever ``law.articles[i]`` is —
-  // ArticleEmbed from the OpenAPI types. Centralising the type here
-  // keeps the navigation + breadcrumb + selection callbacks honest
-  // instead of leaking ``any``.
-  type SelectedArticle = ArticleEmbed
-  // The TOC component carries a structurally narrower ``Heading``
-  // (no ``legal_text_id``, all fields except id/key optional) and
-  // that's what its callbacks emit. Keep the anchor's ``heading``
-  // field aligned with the TOC's shape so the onAddSiblingHeading +
-  // onEditHeading callbacks pass without casts. ``LegalHeadingRead``
-  // (which has ``legal_text_id`` + non-optional ``number``) is the
-  // wider read type; we don't need its extra fields here.
-  type HeadingAnchorRow = {
-    id: number
-    key: string
-    parent_id?: number | null
-    level?: string | null
-    number?: string | null
-    title_fr?: string | null
-    title_ht?: string | null
-    position?: number
-  }
+
   const [selectedArticle, setSelectedArticle] =
     useState<SelectedArticle | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  // Add-heading modal state. ``anchor`` selects the insertion mode:
-  // - { kind: 'after', heading } slots after that heading at the same
-  //   level (most common — TOC + on a heading row)
-  // - { kind: 'child', heading } appends under that heading (rare;
-  //   reserved for a future "+ child" affordance)
-  // - { kind: 'root' } creates a top-level heading (TOC header +)
-  type HeadingAnchor =
-    | { kind: 'after'; heading: HeadingAnchorRow }
-    | { kind: 'child'; heading: HeadingAnchorRow }
-    | { kind: 'root' }
   const [addHeadingAnchor, setAddHeadingAnchor] = useState<
     HeadingAnchor | null
   >(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  // V2 page-level search (replaces TOC's internal search input)
   const [pageSearchScope, setPageSearchScope] = useState<'sommaire' | 'code'>(
     'sommaire',
   )
@@ -216,10 +70,6 @@ export default function LawDetail() {
   const searchParams = useSearchParams()
 
   const { isEditor: actuallyIsEditor, user: editorUser } = useEditorMode()
-  // ``?view=public`` lets a signed-in editor see the page exactly as
-  // an anonymous visitor would (edit affordances hidden, draft-only
-  // surfaces gated). Renders an "Aperçu public" banner with a toggle
-  // back to editor mode. Survives refresh because it's a URL param.
   const isPublicPreview = searchParams?.get('view') === 'public'
   const isEditor = actuallyIsEditor && !isPublicPreview
   const { data: law, isLoading, isError, refetch } = useLawDetail(slug)
@@ -233,32 +83,10 @@ export default function LawDetail() {
   }, [selectedArticle, law?.articles])
 
   // Article counts for the hero "Contenu" stat.
-  //
-  // The 1987 Constitution numbers top-level articles 1 → 298, but the
-  // actual ``law.articles.length`` is higher because amendments insert
-  // articles with dash-suffixes ("35-1", "35-2"…) instead of
-  // renumbering everything that follows. So the *count* and the
-  // *highest visible number* legitimately disagree. We now show the
-  // real total — what the editor and reader actually navigate — and
-  // surface a tooltip explaining the gap so the number doesn't look
-  // like a bug ("why 499 when the last article is 298?").
-  // True when the law has at least one article row. Drives the
-  // TOC + ArticleViewer rendering. Editors always see the TOC
-  // shell (with an "+ Ajouter une section" affordance) even when
-  // the parser produced nothing, so they can build the structure
-  // by hand instead of falling back to the preamble-only view.
   const hasArticles = !!law?.articles && law.articles.length > 0
-  // Document mode — foundational texts that aren't article-structured
-  // (Acte de l'Indépendance, Proclamation de Dessalines, etc.). When
-  // on, the page swaps the article-list body for a single rich-text
-  // region and skips the TOC sidebar entirely.
   const isDocumentMode =
     (law?.display_mode ?? 'articles') === 'document'
   const showStructuralUi = (hasArticles || isEditor) && !isDocumentMode
-  // Add-article modal state for the empty-text editor case. Opened
-  // by the "+ Ajouter le premier article" button when no articles
-  // exist; reuses ``AddArticleDialog`` in correction mode so no
-  // amending law is required.
   const [emptyAddArticleOpen, setEmptyAddArticleOpen] = useState(false)
   const [deviseEditorOpen, setDeviseEditorOpen] = useState(false)
 
@@ -278,10 +106,7 @@ export default function LawDetail() {
     let abrogated = 0
     for (const a of law.articles) {
       const num = String(a.number ?? '').trim().toLowerCase()
-      // Top-level = bare integer or "premier" (no dash suffix).
-      // "35-1" is an inserted article, not top-level.
       if (/^(premier|\d+)$/.test(num)) seenTopLevel.add(num)
-      // Highest integer prefix — handles "35-1" → 35 just like "35".
       const m = num.match(/^(\d+)/)
       if (m) {
         const n = parseInt(m[1], 10)
@@ -289,13 +114,6 @@ export default function LawDetail() {
       }
       if (a.status === 'abrogated') abrogated += 1
     }
-    // When the whole text is abrogated (every article carries the
-    // abrogated status — typical for historical constitutions and
-    // every text whose LegalStatus is ``abrogated``), the headline
-    // count is the FULL article tally — readers consulting an
-    // abrogated reference want to know its size, not "0 in force".
-    // Otherwise we subtract abrogated articles so an in-force text
-    // displays only its still-binding count.
     const wholeTextAbrogated =
       law.status === 'abrogated' || abrogated === law.articles.length
     return {
@@ -305,19 +123,12 @@ export default function LawDetail() {
       topLevel: seenTopLevel.size,
       highestNumber: highest,
       abrogated,
-      // True "rows in the DB" — used by the bis-mismatch hint so it
-      // compares against the highest article number correctly,
-      // regardless of how ``total`` is computed.
       rawCount: law.articles.length,
       wholeTextAbrogated,
     }
   }, [law?.articles, law?.status])
 
-  // Heading id → row lookup. Hoisted out of articleBreadcrumb (which
-  // ran on every selection) and blocHints (which ran on every article
-  // index change) — both used to rebuild this Map per fire. Keying on
-  // ``law?.headings`` only means the Map is rebuilt at most once per
-  // refetch instead of dozens of times per session.
+  // Heading id -> row lookup
   const headingsById = useMemo(() => {
     const headings = law?.headings ?? []
     return new Map<number, (typeof headings)[number]>(
@@ -325,15 +136,14 @@ export default function LawDetail() {
     )
   }, [law?.headings])
 
-  // Walk the heading tree from the selected article up to the LegalText root.
-  // Used for the in-article breadcrumb (Titre → Chapitre → Art.).
+  // Walk the heading tree from the selected article up to the root.
   const articleBreadcrumb = useMemo(() => {
     if (!selectedArticle?.heading_id || !law?.headings) return []
     const path: typeof law.headings = []
     let current: (typeof law.headings)[number] | undefined = headingsById.get(
       selectedArticle.heading_id,
     )
-    let safety = 10 // belt-and-braces against accidental cycles
+    let safety = 10
     while (current && safety-- > 0) {
       path.unshift(current)
       current = current.parent_id ? headingsById.get(current.parent_id) : undefined
@@ -341,10 +151,7 @@ export default function LawDetail() {
     return path
   }, [selectedArticle, law?.headings, headingsById])
 
-  // Bloc-style nav hints (Légifrance-flavored). When the prev/next article
-  // sits under a different heading than the current one, append the heading
-  // label so editors see "Art. 12 · Chapitre III" — the cue that the bloc
-  // crosses a structural boundary.
+  // Bloc-style nav hints
   const blocHints = useMemo(() => {
     if (!law?.articles || !law?.headings || currentArticleIndex < 0) {
       return { prev: null as string | null, next: null as string | null }
@@ -356,8 +163,6 @@ export default function LawDetail() {
       section: { fr: 'Section', ht: 'Seksyon' },
       subsection: { fr: 'Sous-section', ht: 'Sou-seksyon' },
     }
-    // headingsById comes from the hoisted useMemo above; no need to
-    // rebuild it inside this hook (rebuilt on every navigation hop).
     const currentHeadingId = selectedArticle?.heading_id ?? null
 
     const hint = (article: ArticleEmbed | undefined): string | null => {
@@ -366,9 +171,6 @@ export default function LawDetail() {
       const numLabel = numStr.toLowerCase().startsWith('article')
         ? numStr
         : currentLang === 'ht'
-          // Kreyòl uses "Atik" + Arabic numerals ("Atik 1", "Atik 1-1");
-          // FR keeps "Art. premier" / "Art. premier-N" for legal-tradition
-          // accuracy.
           ? `Atik ${
               numStr === 'premier'
                 ? '1'
@@ -393,8 +195,6 @@ export default function LawDetail() {
   }, [law?.articles, law?.headings, currentArticleIndex, selectedArticle?.heading_id, currentLang, headingsById])
 
   // Auto-select an article on mount.
-  // Priority: ?article=N from the URL (deep-link from search snippets) →
-  // first article in the list as a fallback.
   useEffect(() => {
     if (!law?.articles || law.articles.length === 0 || selectedArticle) return
     const requested = searchParams?.get('article') ?? null
@@ -410,9 +210,7 @@ export default function LawDetail() {
     setSelectedArticle(law.articles[0])
   }, [law, selectedArticle, searchParams])
 
-  // Re-bind selectedArticle to the freshest copy whenever law.articles
-  // changes (e.g. after an inline edit refetched the law). Match by id so
-  // an article rename doesn't lose the selection. Falls back to number.
+  // Re-bind selectedArticle to the freshest copy whenever law.articles changes.
   useEffect(() => {
     if (!selectedArticle || !law?.articles) return
     const fresh = law.articles.find(
@@ -440,7 +238,6 @@ export default function LawDetail() {
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
 
-  // useRef must be called before any early returns (Rules of Hooks)
   const articleViewerRef = React.useRef<HTMLDivElement>(null)
   const preambleRef = React.useRef<HTMLDivElement>(null)
   const visasRef = React.useRef<HTMLDivElement>(null)
@@ -463,54 +260,36 @@ export default function LawDetail() {
 
   const title =
     currentLang === 'ht' && law.title_ht ? law.title_ht : law.title_fr
-  // Moniteur-verbatim title used in the body masthead (under the
-  // doc-type heading, above the issuing authority). Falls back to the
-  // hero title when no official version was captured for this law.
   const officialTitleStored =
     currentLang === 'ht'
       ? (law.official_title_ht ?? null)
       : (law.official_title_fr ?? null)
-  const officialTitle = officialTitleStored ?? title
   const description =
     currentLang === 'ht' && law.description_ht
       ? law.description_ht
       : law.description_fr
   const category = categoryLabels[law.category] || categoryLabels.loi
 
-  // Bilingual picker for the formal blocks (preamble, visas, considerants,
-  // enacting formula). When the page is in Kreyòl and a Kreyòl version
-  // exists, show it; otherwise fall back to French. Returns the value to
-  // display plus a flag the renderer uses to surface a "displayed in
-  // French because no Kreyòl translation yet" tooltip.
-  function pickBilingual(
-    fr: string | null | undefined,
-    ht: string | null | undefined,
-  ): { value: string | null; fallback: boolean } {
-    if (currentLang === 'ht') {
-      if (ht && ht.trim()) return { value: ht, fallback: false }
-      if (fr && fr.trim()) return { value: fr, fallback: true }
-      return { value: null, fallback: false }
-    }
-    return { value: fr ?? null, fallback: false }
-  }
-  const preambleDisplay = pickBilingual(law.preamble_fr, law.preamble_ht)
-  const visasDisplay = pickBilingual(law.visas_fr, law.visas_ht)
+  const preambleDisplay = pickBilingual(law.preamble_fr, law.preamble_ht, currentLang)
+  const visasDisplay = pickBilingual(law.visas_fr, law.visas_ht, currentLang)
   const considerantsDisplay = pickBilingual(
     law.considerants_fr,
     law.considerants_ht,
+    currentLang,
   )
   const mentionsProceduralesDisplay = pickBilingual(
     (law as any).mentions_procedurales_fr,
     (law as any).mentions_procedurales_ht,
+    currentLang,
   )
   const enactingDisplay = pickBilingual(
     law.enacting_formula_fr,
     law.enacting_formula_ht,
+    currentLang,
   )
 
   const handleArticleSelect = (article: any) => {
     setSelectedArticle(article)
-    // Scroll the article viewer into view
     setTimeout(() => {
       articleViewerRef.current?.scrollIntoView({
         behavior: 'smooth',
@@ -531,17 +310,6 @@ export default function LawDetail() {
     }
   }
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen()
-      setIsFullscreen(true)
-    } else {
-      document.exitFullscreen()
-      setIsFullscreen(false)
-    }
-  }
-
-  // Handle share
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -559,1793 +327,125 @@ export default function LawDetail() {
     }
   }
 
-  // Handle copy link
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href)
     toast(t('lawDetail.actions.linkCopied'))
   }
 
-  // Related laws logic (placeholders for now if backend doesn't provide them)
   const relatedLaws: any[] = []
 
   return (
-    // TooltipProvider needs to wrap the whole page because EditableFormalBlock
-    // (rendered for preamble / visas / considérants outside ArticleViewer)
-    // uses <Tooltip> for its "FR" fallback pill. Without an ancestor
-    // provider, Radix throws "`Tooltip` must be used within `TooltipProvider`"
-    // in prod, which was the runtime crash on lexhaiti.org/loi/constitution-1987.
-    // ArticleViewer mounts its own inner provider with delayDuration={200}
-    // for the toolbar — Radix tolerates nested providers, so leaving both
-    // in place preserves the original toolbar behaviour.
     <TooltipProvider delayDuration={150}>
     <div
       className={`min-h-screen bg-white ${isFullscreen ? 'fixed inset-0 z-50 bg-white' : ''}`}
     >
-      {/* Editor view-mode toggle — only renders for signed-in editors.
-          Lets the editor preview the page exactly as anonymous
-          visitors see it (no Modifier pencils, no draft surfaces) by
-          flipping a ``?view=public`` URL flag. Bookmarkable +
-          survives refresh. Sticky so the toggle stays reachable while
-          the user scrolls through long articles. */}
       {actuallyIsEditor && (
-        <div
-          className={cn(
-            'sticky top-20 z-30 border-b backdrop-blur-md',
-            isPublicPreview
-              ? 'bg-amber-50/95 border-amber-200'
-              : 'bg-emerald-50/95 border-emerald-200',
-          )}
-        >
-          <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10 py-2 flex items-center justify-between gap-3">
-            <span
-              className={cn(
-                'text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2',
-                isPublicPreview ? 'text-amber-800' : 'text-emerald-800',
-              )}
-            >
-              {isPublicPreview ? (
-                <>
-                  <Eye className="w-3.5 h-3.5" />
-                  {currentLang === 'fr'
-                    ? 'Aperçu public — édition désactivée'
-                    : 'Apèsi piblik — edisyon dezaktive'}
-                </>
-              ) : (
-                <>
-                  <Pencil className="w-3.5 h-3.5" />
-                  {currentLang === 'fr' ? 'Vue éditeur' : 'Vi editè'}
-                </>
-              )}
-            </span>
-            <Link
-              href={
-                isPublicPreview
-                  ? `?` +
-                    new URLSearchParams(
-                      Object.fromEntries(
-                        Array.from(searchParams?.entries() ?? []).filter(
-                          ([k]) => k !== 'view',
-                        ),
-                      ),
-                    ).toString()
-                  : `?${new URLSearchParams({
-                      ...Object.fromEntries(searchParams?.entries() ?? []),
-                      view: 'public',
-                    }).toString()}`
-              }
-              className={cn(
-                'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition-colors',
-                isPublicPreview
-                  ? 'bg-amber-900 text-white hover:bg-amber-950'
-                  : 'bg-emerald-900 text-white hover:bg-emerald-950',
-              )}
-            >
-              {isPublicPreview ? (
-                <>
-                  <Pencil className="w-3 h-3" />
-                  {currentLang === 'fr'
-                    ? 'Revenir à l’édition'
-                    : 'Retounen nan edisyon'}
-                </>
-              ) : (
-                <>
-                  <Eye className="w-3 h-3" />
-                  {currentLang === 'fr'
-                    ? 'Aperçu public'
-                    : 'Apèsi piblik'}
-                </>
-              )}
-            </Link>
-          </div>
-        </div>
+        <EditorPreviewBanner
+          isPublicPreview={isPublicPreview}
+          currentLang={currentLang}
+          searchParams={searchParams}
+        />
       )}
 
-      {/* Header */}
-      <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
-        {/* Background Decorative Elements */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
-          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px]" />
-        </div>
-
-        {/* Spacer reserving the fixed menu nav's height (h-20). Decoupling
-            menu clearance from the inner padding lets us use balanced py-*
-            below for symmetric top/bottom space inside the dark band. */}
-        <div aria-hidden className="h-20" />
-        <div className="relative z-10 container py-12 lg:py-20">
-          <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[600px] h-[300px] bg-white/5 blur-[100px] rounded-full pointer-events-none" />
-
-          <Breadcrumb
-            className="mb-8"
-            items={[
-              { label: t('lawDetail.breadcrumb.home'), href: '/' },
-              { label: t('lawDetail.breadcrumb.laws'), href: '/lois' },
-              { label: category[currentLang] },
-            ]}
-          />
-
-          {/* Hero is a vertical stack of self-contained sections, each
-              left-aligned and using the full container width:
-                1. Status pill + N° officiel
-                2. Title + description
-                3. Metadata row (year / articles / Moniteur ref) + download
-                4. Theme chips
-              The category badge that used to sit in the badges row was
-              removed: the doc-type ("ARRÊTÉ" / "DÉCRET" / ...) is now
-              announced in the body, between the devise and the issuing
-              authority — Le Moniteur's own convention. The DeviseBanner
-              and IssuingAuthorityHeader sit in the document body, just
-              above the visas, mirroring a printed legal act's masthead. */}
-          <div className="flex flex-col gap-8 lg:gap-10">
-            {/* ── 1. Status + N° officiel ───────────────────────────── */}
-            <div className="animate-in fade-in slide-in-from-top-3 duration-500 flex flex-wrap items-center gap-3">
-              {(() => {
-                const status = (law.status as TextStatus) ?? 'in_force'
-                const meta = TEXT_STATUS_PILL[status] ?? TEXT_STATUS_PILL.in_force
-                const StatusIcon = meta.icon
-                return (
-                  <Badge
-                    className={`border ${meta.cls} px-4 py-1.5 font-bold uppercase tracking-wider text-[10px] rounded-full`}
-                  >
-                    <StatusIcon className="w-3 h-3 mr-1.5" />
-                    {meta.label[currentLang]}
-                  </Badge>
-                )
-              })()}
-              {/* Inline alongside the badges — the official number is the
-                  intrinsic identifier of the act, conceptually a third
-                  badge (after category + status). The devise +
-                  issuing-authority block is rendered later, in the body. */}
-              {(law.official_number || isEditor) && (
-                <EditableHeroField
-                  value={law.official_number ?? ''}
-                  isEditor={isEditor}
-                  editAriaLabel={
-                    currentLang === 'fr'
-                      ? 'Modifier le numéro officiel'
-                      : 'Modifye nimewo ofisyèl'
-                  }
-                  emptyPlaceholder={
-                    currentLang === 'fr'
-                      ? '+ Ajouter un numéro'
-                      : '+ Ajoute yon nimewo'
-                  }
-                  onSave={async (next) => {
-                    await updateLegalTextMetadata(law.slug, {
-                      official_number: next || null,
-                    } as any)
-                    refetch()
-                  }}
-                >
-                  {law.official_number ? (
-                    <OfficialNumberTab
-                      value={law.official_number}
-                      category={law.category}
-                      lang={currentLang}
-                    />
-                  ) : (
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/50 italic">
-                      {currentLang === 'fr'
-                        ? '+ Ajouter un numéro'
-                        : '+ Ajoute yon nimewo'}
-                    </span>
-                  )}
-                </EditableHeroField>
-              )}
-            </div>
-
-            {/* ── 2. Title + description ─────────────────────────────── */}
-            <div className="flex flex-col gap-6 lg:gap-8">
-              <h1 className="animate-in fade-in slide-in-from-top-3 duration-500 delay-100 fill-mode-both text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-black leading-[1.15] sm:leading-[1.1] tracking-tight text-white drop-shadow-sm break-words">
-                <EditableHeroField
-                  value={title}
-                  isEditor={isEditor}
-                  editAriaLabel={
-                    currentLang === 'fr' ? 'Modifier le titre' : 'Modifye tit la'
-                  }
-                  inputClassName="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-black leading-[1.15] sm:leading-[1.1] tracking-tight w-full"
-                  onSave={async (next) => {
-                    if (!next) throw new Error('Le titre ne peut pas être vide')
-                    const field = currentLang === 'ht' ? 'title_ht' : 'title_fr'
-                    await updateLegalTextMetadata(law.slug, {
-                      [field]: next,
-                    } as any)
-                    refetch()
-                  }}
-                >
-                  {title}
-                </EditableHeroField>
-              </h1>
-
-              <p className="animate-in fade-in duration-500 delay-200 fill-mode-both text-slate-300 text-lg lg:text-xl leading-relaxed">
-                {description}
-              </p>
-
-            </div>
-
-            {/* ── 3. Metadata row (download icon sits next to the
-                reference at the end) ───────────────────────────────── */}
-            <div className="animate-in fade-in duration-500 delay-300 fill-mode-both flex flex-wrap items-center gap-x-8 gap-y-5">
-              <div className="contents">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/5 rounded-full border border-white/10">
-                    <Calendar className="w-5 h-5 text-slate-400" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">
-                      {t('lawDetail.meta.year')}
-                    </p>
-                    <p className="text-white font-bold">
-                      {(() => {
-                        // Display falls back to the linked Moniteur
-                        // issue's publication date when the text's own
-                        // ``publication_date`` is null — typical for
-                        // historical imports (e.g. the 1987 Constitution,
-                        // which carries no per-text date but is attached
-                        // to its Moniteur issue from 28 April 1987).
-                        //
-                        // The edit affordance binds to the *full* date so
-                        // the editor picks a real day (not a YYYY-01-01
-                        // sentinel — the old year-only field saved exactly
-                        // that, which is why historical texts showed
-                        // "1 janvier YYYY" on cards). The slot still
-                        // *displays* the year because the meta label is
-                        // "année" — the long-form date appears next to the
-                        // Moniteur link further down the hero.
-                        const ownDate = law.publication_date ?? ''
-                        const shownYear =
-                          law.publication_date?.slice(0, 4) ||
-                          law.moniteur_issue_publication_date?.slice(0, 4) ||
-                          ''
-                        return (
-                          <EditableHeroField
-                            value={ownDate}
-                            isEditor={isEditor}
-                            kind="date"
-                            emptyPlaceholder="—"
-                            editAriaLabel={
-                              currentLang === 'fr'
-                                ? 'Modifier la date'
-                                : 'Modifye dat la'
-                            }
-                            inputClassName="w-44 font-bold"
-                            onSave={async (next) => {
-                              await updateLegalTextMetadata(law.slug, {
-                                publication_date: next || null,
-                              } as any)
-                              refetch()
-                            }}
-                          >
-                            {shownYear || '—'}
-                          </EditableHeroField>
-                        )
-                      })()}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Article count chip — only meaningful for
-                    article-structured texts. In ``document`` display
-                    mode the body is a single rich-text region with
-                    no articles, so the chip would read ``0 articles``
-                    which is misleading. */}
-                {!isDocumentMode && (
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/5 rounded-full border border-white/10">
-                    <FileText className="w-5 h-5 text-slate-400" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">
-                      {t('lawDetail.meta.content')}
-                    </p>
-                    <p className="text-white font-bold inline-flex items-center gap-1.5">
-                      <span>
-                        {articleCounts.total}{' '}
-                        {t('lawDetail.meta.articles')}
-                      </span>
-                      {/* Click-revealed breakdown — combines what used
-                          to be inline-text + hover-tooltip into a
-                          single click target. Works on touch devices
-                          (Radix Tooltip does not). Surfaces only when
-                          there's actually something to explain: either
-                          abrogated articles excluded from the headline
-                          or bis-style insertions inflating the count. */}
-                      {(() => {
-                        const rawCount = articleCounts.rawCount
-                        const numberingMismatch =
-                          articleCounts.highestNumber > 0 &&
-                          rawCount !== articleCounts.highestNumber
-                        const hasAbrogated = articleCounts.abrogated > 0
-                        const wholeAbrogated = articleCounts.wholeTextAbrogated
-                        // Show the dropdown when there is *something* to
-                        // explain: bis-style insertions (numbering mismatch)
-                        // or the in-force / abrogated split (only relevant
-                        // when the text isn't wholly abrogated — for
-                        // wholly-abrogated texts the headline already says
-                        // ``Abrogé`` and the split would just repeat itself).
-                        const showSplit = hasAbrogated && !wholeAbrogated
-                        if (!numberingMismatch && !showSplit) return null
-                        return (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button
-                                type="button"
-                                aria-label={
-                                  currentLang === 'fr'
-                                    ? 'Détails du décompte'
-                                    : 'Detay konte a'
-                                }
-                                className="ml-0.5 text-slate-400 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-full"
-                              >
-                                <Info className="w-3.5 h-3.5" />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              align="start"
-                              sideOffset={8}
-                              className="max-w-sm p-4 space-y-3"
-                            >
-                              {/* Headline block — for a wholly-abrogated
-                                  text it's a single TOTAL number; for
-                                  in-force texts with abrogated articles
-                                  it's the three-way EN VIGUEUR / ABROGÉS
-                                  / TOTAL split. */}
-                              <div className="flex flex-wrap gap-3 pb-3 border-b border-slate-100">
-                                {showSplit ? (
-                                  <>
-                                    <span className="flex flex-col">
-                                      <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-700">
-                                        {currentLang === 'fr' ? 'En vigueur' : 'An vigè'}
-                                      </span>
-                                      <span className="text-lg font-black text-slate-900 tabular-nums">
-                                        {articleCounts.total}
-                                      </span>
-                                    </span>
-                                    <span className="flex flex-col">
-                                      <span className="text-[10px] font-bold uppercase tracking-widest text-rose-700">
-                                        {currentLang === 'fr' ? 'Abrogés' : 'Abwoje'}
-                                      </span>
-                                      <span className="text-lg font-black text-slate-900 tabular-nums">
-                                        {articleCounts.abrogated}
-                                      </span>
-                                    </span>
-                                    <span className="flex flex-col">
-                                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                                        {currentLang === 'fr' ? 'Total' : 'Total'}
-                                      </span>
-                                      <span className="text-lg font-black text-slate-900 tabular-nums">
-                                        {rawCount}
-                                      </span>
-                                    </span>
-                                  </>
-                                ) : (
-                                  <span className="flex flex-col">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                                      {currentLang === 'fr' ? 'Articles' : 'Atik'}
-                                    </span>
-                                    <span className="text-lg font-black text-slate-900 tabular-nums">
-                                      {rawCount}
-                                    </span>
-                                  </span>
-                                )}
-                              </div>
-                              {/* Explanations — branch on the direction of
-                                  the mismatch. When rawCount < highest the
-                                  corpus is missing articles (the parser
-                                  dropped some, or the text was imported
-                                  partially); when rawCount > highest the
-                                  text carries ``bis`` insertions that share
-                                  the head number but are counted as
-                                  distinct articles. */}
-                              <div className="text-xs leading-relaxed space-y-2 text-slate-600">
-                                {numberingMismatch && rawCount < articleCounts.highestNumber &&
-                                  (currentLang === 'fr' ? (
-                                    <p>
-                                      Le dernier article est numéroté{' '}
-                                      <span className="font-bold text-slate-900">
-                                        {articleCounts.highestNumber}
-                                      </span>
-                                      , mais le corpus n’en contient que{' '}
-                                      <span className="font-bold text-slate-900">
-                                        {rawCount}
-                                      </span>
-                                      {' '}: certains articles manquent encore
-                                      à la transcription et seront ajoutés à
-                                      mesure de la curation éditoriale.
-                                    </p>
-                                  ) : (
-                                    <p>
-                                      Dènye atik la nimewote{' '}
-                                      <span className="font-bold text-slate-900">
-                                        {articleCounts.highestNumber}
-                                      </span>
-                                      , men korpis la genyen sèlman{' '}
-                                      <span className="font-bold text-slate-900">
-                                        {rawCount}
-                                      </span>
-                                      {' '}: kèk atik manke nan transkripsyon
-                                      an e yo pral ajoute apre kirasyon
-                                      editoryal.
-                                    </p>
-                                  ))}
-                                {numberingMismatch && rawCount > articleCounts.highestNumber &&
-                                  (currentLang === 'fr' ? (
-                                    <p>
-                                      Le dernier article est numéroté{' '}
-                                      <span className="font-bold text-slate-900">
-                                        {articleCounts.highestNumber}
-                                      </span>
-                                      , mais le texte contient{' '}
-                                      <span className="font-bold text-slate-900">
-                                        {rawCount}
-                                      </span>{' '}
-                                      articles : un article 10 et un article
-                                      10&nbsp;bis comptent comme deux articles
-                                      distincts, même si le numéro reste le
-                                      même.
-                                    </p>
-                                  ) : (
-                                    <p>
-                                      Dènye atik la nimewote{' '}
-                                      <span className="font-bold text-slate-900">
-                                        {articleCounts.highestNumber}
-                                      </span>
-                                      , men tèks la gen{' '}
-                                      <span className="font-bold text-slate-900">
-                                        {rawCount}
-                                      </span>{' '}
-                                      atik : yon atik 10 ak yon atik
-                                      10&nbsp;bis konte kòm de atik diferan,
-                                      menm si nimewo a rete menm jan an.
-                                    </p>
-                                  ))}
-                                {showSplit &&
-                                  (currentLang === 'fr' ? (
-                                    <p>
-                                      Les{' '}
-                                      <span className="font-bold text-slate-900">
-                                        {articleCounts.abrogated}
-                                      </span>{' '}
-                                      article{articleCounts.abrogated > 1 ? 's' : ''}{' '}
-                                      abrogé{articleCounts.abrogated > 1 ? 's' : ''}{' '}
-                                      ne sont pas comptés dans le total en
-                                      vigueur, mais restent consultables
-                                      dans le texte avec leur statut.
-                                    </p>
-                                  ) : (
-                                    <p>
-                                      Yo pa konte{' '}
-                                      <span className="font-bold text-slate-900">
-                                        {articleCounts.abrogated}
-                                      </span>{' '}
-                                      atik abwoje nan total ki an vigè a,
-                                      men yo rete disponib pou konsiltasyon
-                                      nan tèks la ak estati yo.
-                                    </p>
-                                  ))}
-                              </div>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )
-                      })()}
-                    </p>
-                  </div>
-                </div>
-                )}
-
-                {(() => {
-                  // Structured Moniteur link (from the ingestion pipeline)
-                  // takes precedence over the legacy free-text field.
-                  // When a Kreyòl supplement issue is also linked (e.g.
-                  // constitution-1987 → N° 36-A), we render a second
-                  // smaller chip line so both source issues are reachable
-                  // without crowding the primary "Le Moniteur N° 36 du 28
-                  // avril 1987" line.
-                  if (law.moniteur_issue_id) {
-                    const pubDate = law.moniteur_issue_publication_date
-                    const formatted = formatLongDate(pubDate, 'fr')
-                    const dateStr = formatted ? `du ${formatted}` : ''
-                    const prettyNum = (n: string | null | undefined) =>
-                      /^[0-9]/.test(n ?? '') ? `N° ${n}` : (n ?? '')
-                    const slugFr = moniteurIssueSlug({
-                      id: law.moniteur_issue_id,
-                      publication_date: law.moniteur_issue_publication_date ?? null,
-                      number: law.moniteur_issue_number ?? null,
-                    })
-                    const slugHt = law.moniteur_issue_id_ht
-                      ? moniteurIssueSlug({
-                          id: law.moniteur_issue_id_ht,
-                          publication_date:
-                            law.moniteur_issue_publication_date_ht ?? null,
-                          number: law.moniteur_issue_number_ht ?? null,
-                        })
-                      : null
-                    return (
-                      <div className="flex items-center gap-4 min-w-0 max-w-full">
-                        <div className="p-3 bg-white/5 rounded-full border border-white/10">
-                          <Newspaper className="w-5 h-5 text-slate-400" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">
-                            {currentLang === 'fr' ? 'Publié dans' : 'Pibliye nan'}
-                          </p>
-                          <p className="text-white font-medium truncate max-w-[24rem]">
-                            <Link
-                              href={`/moniteur/${slugFr}`}
-                              className="hover:underline"
-                            >
-                              <em className="italic font-semibold">Le Moniteur</em>{' '}
-                              <span className="font-normal text-slate-200">
-                                {prettyNum(law.moniteur_issue_number)} {dateStr}
-                              </span>
-                            </Link>
-                          </p>
-                          {slugHt && (
-                            <Link
-                              href={`/moniteur/${slugHt}`}
-                              className="block mt-0.5 text-[11px] text-slate-400 hover:text-slate-200 hover:underline"
-                            >
-                              {prettyNum(law.moniteur_issue_number_ht)}{' '}
-                              <span className="text-slate-500">
-                                ·{' '}
-                                {currentLang === 'fr'
-                                  ? 'version créole'
-                                  : 'vèsyon kreyòl'}
-                              </span>
-                            </Link>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  }
-                  // Fallback: legacy free-text moniteur_ref field.
-                  const raw = (law.moniteur_ref ?? '').trim()
-                  if (!raw) return null
-                  if (/^https?:\/\//i.test(raw)) return null
-                  if (/^source\s*:/i.test(raw)) return null
-                  const alreadyPrefixed = /^(?:le\s+)?moniteur\b/i.test(raw)
-                  const body = alreadyPrefixed
-                    ? raw.replace(/^(?:le\s+)?moniteur\b\s*/i, '')
-                    : raw
-                  return (
-                    <div className="flex items-center gap-4 min-w-0 max-w-full">
-                      <div className="p-3 bg-white/5 rounded-full border border-white/10">
-                        <Newspaper className="w-5 h-5 text-slate-400" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">
-                          {currentLang === 'fr' ? 'Référence' : 'Referans'}
-                        </p>
-                        <p className="text-white font-medium truncate max-w-[24rem]">
-                          <em className="italic font-semibold">Le Moniteur</em>{' '}
-                          <span className="font-normal text-slate-200">
-                            {body}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  )
-                })()}
-
-                {/* Amendée par — surfaces the laws that touched any
-                    article of this text (derived server-side from
-                    article_versions.source_amendment_id, distinct).
-                    Hidden when nothing has amended this text. The list
-                    can be long for the Constitution, so we render a
-                    count + dropdown rather than inline titles. */}
-                {law.amended_by && law.amended_by.length > 0 && (
-                  <div className="flex items-center gap-4 min-w-0 max-w-full">
-                    <div className="p-3 bg-white/5 rounded-full border border-white/10">
-                      <PenLine className="w-5 h-5 text-slate-400" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">
-                        {currentLang === 'fr' ? 'Amendée par' : 'Modifye pa'}
-                      </p>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button
-                            type="button"
-                            className="text-white font-bold inline-flex items-center gap-1.5 hover:underline focus:outline-none"
-                          >
-                            <span>
-                              {law.amended_by.length}{' '}
-                              {currentLang === 'fr'
-                                ? law.amended_by.length > 1
-                                  ? 'lois'
-                                  : 'loi'
-                                : law.amended_by.length > 1
-                                  ? 'lwa'
-                                  : 'lwa'}
-                            </span>
-                            <ChevronDown className="w-3.5 h-3.5 opacity-70" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="start"
-                          sideOffset={8}
-                          className="max-w-md"
-                        >
-                          {law.amended_by.map((a) => {
-                            const title =
-                              currentLang === 'ht' && a.title_ht
-                                ? a.title_ht
-                                : a.title_fr
-                            return (
-                              <DropdownMenuItem key={a.id} asChild>
-                                <Link
-                                  href={`/loi/${a.slug}`}
-                                  className="flex flex-col items-start gap-0.5 py-2"
-                                >
-                                  <span className="text-sm font-medium text-slate-900 line-clamp-2">
-                                    {title}
-                                  </span>
-                                  {a.publication_date && (
-                                    <span className="text-[11px] text-slate-500">
-                                      {formatLongDate(
-                                        a.publication_date,
-                                        currentLang,
-                                      )}
-                                    </span>
-                                  )}
-                                </Link>
-                              </DropdownMenuItem>
-                            )
-                          })}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                )}
-
-                {/* Abrogée par — surfaces the whole-text abrogator
-                    when an editor has recorded one via MetadataEditor.
-                    Always rendered when ``abrogated_by`` is set,
-                    regardless of the parent ``status`` value — lets
-                    editors spot a stale link if they reverted the
-                    status without clearing the pointer. */}
-                {law.abrogated_by && (
-                  <div className="flex items-center gap-4 min-w-0 max-w-full">
-                    <div className="p-3 bg-red-500/10 rounded-full border border-red-400/20">
-                      <Ban className="w-5 h-5 text-red-300" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-red-300/80 mb-0.5">
-                        {currentLang === 'fr' ? 'Abrogée par' : 'Abwoje pa'}
-                      </p>
-                      <Link
-                        href={`/loi/${law.abrogated_by.slug}`}
-                        className="text-white font-bold hover:underline underline-offset-4 decoration-white/30 hover:decoration-white/60 line-clamp-2 text-sm sm:text-base"
-                      >
-                        {(currentLang === 'ht' &&
-                          law.abrogated_by.title_ht) ||
-                          law.abrogated_by.title_fr ||
-                          law.abrogated_by.slug}
-                      </Link>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Source tile — surfaces the archive provenance for
-                  texts where ``mentions_procedurales_fr`` opens with
-                  ``Source :``. Styled identically to the other meta
-                  tiles (year, articles, download): icon-circle on the
-                  left, small uppercase label, bold value on the
-                  right. The whole tile is the link; the label text
-                  hides the raw URL so the hero stays compact. */}
-              {(() => {
-                const mp = (law as any).mentions_procedurales_fr as
-                  | string
-                  | null
-                  | undefined
-                if (!mp || !/^\s*Source\s*:/i.test(mp)) return null
-                const urlMatch = mp.match(/https?:\/\/\S+/)
-                const url = urlMatch?.[0]?.replace(/[.)\]]+$/, '') ?? null
-                if (!url) return null
-                // Short citation: drop the "Source :" prefix + the
-                // ``Voir <url>`` tail. Falls back to the first 60
-                // chars of the attribution if no comma is found.
-                const noPrefix = mp.replace(/^\s*Source\s*:\s*/i, '').trim()
-                const beforeVoir = noPrefix.replace(/\s+Voir\s+https?:\/\/.*$/i, '').trim()
-                // Cite the host library + the work in a compact form —
-                // ``Les Constitutions d'Haïti, BnF`` reads cleaner
-                // than the full bibliographic citation.
-                const compact = beforeVoir
-                  .replace(/\s*\([^)]*\)\s*/g, ' ')
-                  .replace(/\s*—\s*/g, ' — ')
-                  .replace(/\s+([,.;:])/g, '$1') // ``Janvier , BnF`` → ``Janvier, BnF``
-                  .replace(/\s+/g, ' ')
-                  .replace(/[.,;:]+$/, '') // drop trailing punctuation
-                  .trim()
-                return (
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Voir la source : ${compact}`}
-                    className={cn(
-                      'group/src flex items-center gap-4 text-left',
-                      'rounded-xl -m-2 p-2 hover:bg-white/5 transition-colors',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
-                    )}
-                  >
-                    <div
-                      aria-hidden
-                      className="p-3 bg-white/5 rounded-full border border-white/10 group-hover/src:bg-white/10 group-hover/src:border-white/20 transition-colors"
-                    >
-                      <Library className="w-5 h-5 text-slate-400 group-hover/src:text-white transition-colors" />
-                    </div>
-                    <div className="min-w-0 max-w-[18rem]">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">
-                        {currentLang === 'fr' ? 'Source' : 'Sous'}
-                      </p>
-                      <p className="text-white font-bold underline underline-offset-4 decoration-white/20 group-hover/src:decoration-white/60 transition-colors line-clamp-2 text-sm sm:text-base">
-                        {compact}
-                      </p>
-                    </div>
-                  </a>
-                )
-              })()}
-
-              {/* "Voir les amendements" — appears in the hero whenever
-                  this text was amended by at least one other law. Links
-                  to /loi/{slug}/amendements which lists every change
-                  (amend / abrogate / suspend) any law made to any
-                  article of this text. Single source for the question
-                  "what was modified, by whom, when?". */}
-              {law.amended_by && law.amended_by.length > 0 && (
-                <Link
-                  href={`/loi/${slug}/amendements`}
-                  className="group flex items-center gap-4 text-left rounded-xl -m-2 p-2 hover:bg-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
-                  aria-label={
-                    currentLang === 'fr'
-                      ? 'Voir les amendements'
-                      : 'Wè amandman yo'
-                  }
-                >
-                  <div className="p-3 bg-amber-500/10 rounded-full border border-amber-400/20 group-hover:bg-amber-500/15 group-hover:border-amber-400/30 transition-colors">
-                    <PenLine className="w-5 h-5 text-amber-300" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-300/80 mb-0.5">
-                      {currentLang === 'fr' ? 'Amendements' : 'Amandman yo'}
-                    </p>
-                    <p className="text-white font-bold inline-flex items-center gap-1.5 group-hover:underline">
-                      <span>
-                        {law.amended_by.length}{' '}
-                        {currentLang === 'fr'
-                          ? law.amended_by.length > 1
-                            ? 'loi(s) modifiante(s)'
-                            : 'loi modifiante'
-                          : law.amended_by.length > 1
-                            ? 'lwa modifikatè'
-                            : 'lwa modifikatè'}
-                      </span>
-                      <ChevronRight className="w-3.5 h-3.5 opacity-70 transition-transform group-hover:translate-x-0.5" />
-                    </p>
-                  </div>
-                </Link>
-              )}
-
-              <DownloadDropdown slug={slug} language={language} />
-            </div>
-
-            {/* ── 4. Theme chips ─────────────────────────────────────── */}
-            {law.theme_tags && law.theme_tags.length > 0 && (
-              <div
-                className="animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both flex flex-wrap items-center gap-2"
-                style={{ animationDelay: '350ms' }}
-              >
-                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 mr-1">
-                  <Tags className="w-3.5 h-3.5" />
-                  {currentLang === 'fr' ? 'Thématiques' : 'Tèm'}
-                </span>
-                {law.theme_tags.map((tag: any) => {
-                  const label = themeLabel(tag.theme, currentLang) ?? tag.theme
-                  const isEditor = tag.source === 'editor'
-                  return (
-                    <Link
-                      key={tag.theme}
-                      href={`/lois?theme=${tag.theme}`}
-                      className={cn(
-                        'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all',
-                        isEditor
-                          ? 'bg-white text-slate-900 hover:bg-amber-100 ring-1 ring-amber-300/50'
-                          : 'bg-white/10 text-slate-200 hover:bg-white/15 ring-1 ring-white/10',
-                      )}
-                    >
-                      {label}
-                    </Link>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <LawHero
+        law={law}
+        slug={slug}
+        title={title}
+        description={description}
+        category={category}
+        currentLang={currentLang}
+        language={language}
+        isEditor={isEditor}
+        isDocumentMode={isDocumentMode}
+        articleCounts={articleCounts}
+        refetch={refetch}
+      />
 
       {/* Main Content */}
       <div className="relative container pt-0">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
-          {/* Table of Contents - Mobile Accordion / Desktop Sidebar.
-              The mobile wrapper carries ``mt-6`` so the accordion
-              doesn't collide with the dark hero band's bottom edge —
-              on small screens the hero ends and the white body
-              starts with no architectural element between them, and
-              a flush sommaire chip read as part of the hero. Reset
-              to ``mt-0`` from ``lg:`` since the desktop layout
-              flows the sommaire as a sidebar alongside the body and
-              the gap belongs above the sibling article column. */}
           {showStructuralUi && (
-            <div className="block lg:hidden w-full mt-6 lg:mt-0 mb-4">
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="w-full flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-50 rounded-lg">
-                    <PanelLeft className="w-5 h-5 text-red-600" />
-                  </div>
-                  <span className="font-bold uppercase tracking-widest text-xs text-slate-700">
-                    {currentLang === 'fr' ? 'Sommaire' : 'Somè'}
-                  </span>
-                </div>
-                <ChevronRight
-                  className={cn(
-                    'w-5 h-5 text-gray-400 transition-transform duration-300',
-                    isSidebarOpen && 'rotate-90',
-                  )}
-                />
-              </button>
-
-              <AnimatePresence>
-                {isSidebarOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                    animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
-                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                    className="overflow-hidden"
-                  >
-                    {/* Cap the panel at 60vh so a long corpus doesn't
-                        eat the whole screen, but no min-height — a
-                        short TOC (e.g. a 2-article loi) hugs its
-                        content and doesn't leave dead space below. */}
-                    <div className="max-h-[60vh]">
-                      <TableOfContents
-                        articles={law.articles}
-                        headings={law.headings}
-                        currentLang={currentLang}
-                        onArticleSelect={(article) => {
-                          handleArticleSelect(article)
-                          setIsSidebarOpen(false)
-                        }}
-                        selectedArticle={selectedArticle?.number}
-                        externalQuery={
-                          pageSearchScope === 'sommaire' ? pageSearchQuery : ''
-                        }
-                        hasPreamble={!!law.preamble_fr}
-                        onPreambleClick={() => {
-                          setPreambleExpanded(true)
-                          setIsSidebarOpen(false)
-                          setTimeout(() => {
-                            preambleRef.current?.scrollIntoView({
-                              behavior: 'smooth',
-                              block: 'start',
-                            })
-                          }, 100)
-                        }}
-                        hasVisas={!!law.visas_fr}
-                        onVisasClick={() => {
-                          setVisasExpanded(true)
-                          setIsSidebarOpen(false)
-                          setTimeout(() => {
-                            visasRef.current?.scrollIntoView({
-                              behavior: 'smooth',
-                              block: 'start',
-                            })
-                          }, 100)
-                        }}
-                        hasConsiderants={!!law.considerants_fr}
-                        onConsiderantsClick={() => {
-                          setConsiderantsExpanded(true)
-                          setIsSidebarOpen(false)
-                          setTimeout(() => {
-                            considerantsRef.current?.scrollIntoView({
-                              behavior: 'smooth',
-                              block: 'start',
-                            })
-                          }, 100)
-                        }}
-                        isEditor={isEditor}
-                        onHeadingTitleSave={async (id, field, next) => {
-                          // Numbers (e.g. "2" → "II", "1" → "Première")
-                          // go through the full-patch endpoint; titles
-                          // keep their dedicated title-only endpoint.
-                          if (field === 'number') {
-                            await updateHeading(id, {
-                              number: next.trim() || null,
-                            })
-                          } else {
-                            await updateHeadingTitle(id, { [field]: next })
-                          }
-                          refetch()
-                        }}
-                        onHeadingDelete={async (id, reparentChildren) => {
-                          await deleteHeading(id, { reparentChildren })
-                          refetch()
-                        }}
-                        onAddSiblingHeading={(after) =>
-                          setAddHeadingAnchor({ kind: 'after', heading: after })
-                        }
-                        onAddRootHeading={() =>
-                          setAddHeadingAnchor({ kind: 'root' })
-                        }
-                        onReorderHeadings={async (parentId, order) => {
-                          await reorderHeadings(law.slug, {
-                            parent_id: parentId,
-                            order,
-                          })
-                          refetch()
-                        }}
-                        onReorderArticles={async (headingId, order) => {
-                          await reorderArticles(law.slug, {
-                            heading_id: headingId,
-                            order,
-                          })
-                          refetch()
-                        }}
-                        activeHeadingIds={articleBreadcrumb.map((h) => h.id)}
-                      />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <TocSidebar
+              law={law}
+              currentLang={currentLang}
+              isEditor={isEditor}
+              isSidebarOpen={isSidebarOpen}
+              setIsSidebarOpen={setIsSidebarOpen}
+              selectedArticle={selectedArticle}
+              pageSearchScope={pageSearchScope}
+              pageSearchQuery={pageSearchQuery}
+              articleBreadcrumb={articleBreadcrumb}
+              preambleRef={preambleRef}
+              visasRef={visasRef}
+              considerantsRef={considerantsRef}
+              setPreambleExpanded={setPreambleExpanded}
+              setVisasExpanded={setVisasExpanded}
+              setConsiderantsExpanded={setConsiderantsExpanded}
+              onArticleSelect={handleArticleSelect}
+              onAddHeading={setAddHeadingAnchor}
+              refetch={refetch}
+            />
           )}
 
-          {/* Desktop Sidebar Toggle */}
-          {showStructuralUi && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="hidden lg:flex fixed bottom-6 right-6 z-40 shadow-lg bg-white border-gray-200 rounded-full w-12 h-12 p-0"
-            >
-              {isSidebarOpen ? (
-                <PanelLeftClose className="w-5 h-5" />
-              ) : (
-                <PanelLeft className="w-5 h-5" />
-              )}
-            </Button>
-          )}
-
-          {/* Table of Contents Sidebar (Desktop) */}
-          <AnimatePresence>
-            {isSidebarOpen && showStructuralUi && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className={
-                  // 25% wide column with grey bg + a ::before pseudo that bleeds
-                  // 100vw to the left so the grey reaches the screen edge.
-                  // Vertical padding inside the column makes the grey area
-                  // flush with hero (top) and footer (bottom).
-                  "hidden lg:block lg:flex-shrink-0 lg:w-[25%] lg:bg-slate-50/70 lg:border-r lg:border-gray-200 lg:pr-6 lg:py-8 lg:relative lg:before:content-[''] lg:before:absolute lg:before:inset-y-0 lg:before:right-full lg:before:w-screen lg:before:bg-slate-50/70 lg:before:pointer-events-none"
-                }
-              >
-                <div className="lg:sticky lg:top-24 h-[calc(100vh-12rem)]">
-                  <TableOfContents
-                    articles={law.articles}
-                    headings={law.headings}
-                    currentLang={currentLang}
-                    onArticleSelect={handleArticleSelect}
-                    selectedArticle={selectedArticle?.number}
-                    externalQuery={
-                      pageSearchScope === 'sommaire' ? pageSearchQuery : ''
-                    }
-                    hasPreamble={!!law.preamble_fr}
-                    onPreambleClick={() => {
-                      setPreambleExpanded(true)
-                      setTimeout(() => {
-                        preambleRef.current?.scrollIntoView({
-                          behavior: 'smooth',
-                          block: 'start',
-                        })
-                      }, 100)
-                    }}
-                    hasVisas={!!law.visas_fr}
-                    onVisasClick={() => {
-                      setVisasExpanded(true)
-                      setTimeout(() => {
-                        visasRef.current?.scrollIntoView({
-                          behavior: 'smooth',
-                          block: 'start',
-                        })
-                      }, 100)
-                    }}
-                    hasConsiderants={!!law.considerants_fr}
-                    onConsiderantsClick={() => {
-                      setConsiderantsExpanded(true)
-                      setTimeout(() => {
-                        considerantsRef.current?.scrollIntoView({
-                          behavior: 'smooth',
-                          block: 'start',
-                        })
-                      }, 100)
-                    }}
-                    isEditor={isEditor}
-                    onHeadingTitleSave={async (id, field, next) => {
-                      if (field === 'number') {
-                        await updateHeading(id, {
-                          number: next.trim() || null,
-                        })
-                      } else {
-                        await updateHeadingTitle(id, { [field]: next })
-                      }
-                      refetch()
-                    }}
-                    onHeadingDelete={async (id, reparentChildren) => {
-                      await deleteHeading(id, { reparentChildren })
-                      refetch()
-                    }}
-                    onAddSiblingHeading={(after) =>
-                      setAddHeadingAnchor({ kind: 'after', heading: after })
-                    }
-                    onAddRootHeading={() =>
-                      setAddHeadingAnchor({ kind: 'root' })
-                    }
-                    onReorderHeadings={async (parentId, order) => {
-                      await reorderHeadings(law.slug, {
-                        parent_id: parentId,
-                        order,
-                      })
-                      refetch()
-                    }}
-                    onReorderArticles={async (headingId, order) => {
-                      await reorderArticles(law.slug, {
-                        heading_id: headingId,
-                        order,
-                      })
-                      refetch()
-                    }}
-                    activeHeadingIds={articleBreadcrumb.map((h) => h.id)}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Main Content Area
-              ``pb-12 sm:pb-16`` on mobile/tablet — gives the last
-              body block (closing addendum / signatures / amendements
-              panel) breathing room above the footer. Without this,
-              the approbation / signatures touch the footer on
-              phones because ``lg:py-8`` only kicks in at 1024px+. */}
+          {/* Main Content Area */}
           <div className="flex-1 min-w-0 pb-12 sm:pb-16 lg:py-8">
-            {/* Top search panel — Légifrance-style scope radio + input */}
             {showStructuralUi && (
-              <div className="mb-6">
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-6 text-sm text-slate-700 flex-wrap">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="searchScope"
-                        checked={pageSearchScope === 'sommaire'}
-                        onChange={() => setPageSearchScope('sommaire')}
-                        className="accent-primary"
-                      />
-                      <span>
-                        {currentLang === 'fr'
-                          ? 'Rechercher dans le sommaire'
-                          : 'Chèche nan tab matyè'}
-                      </span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="searchScope"
-                        checked={pageSearchScope === 'code'}
-                        onChange={() => {
-                          setPageSearchScope('code')
-                          toast(
-                            currentLang === 'fr'
-                              ? 'Recherche plein-texte bientôt disponible'
-                              : 'Rechèch plen tèks talè konsa',
-                          )
-                        }}
-                        className="accent-primary"
-                      />
-                      <span>
-                        {currentLang === 'fr'
-                          ? 'Rechercher dans tout le code'
-                          : 'Chèche nan tout kòd la'}
-                      </span>
-                    </label>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="relative flex-1">
-                      <input
-                        type="text"
-                        value={pageSearchQuery}
-                        onChange={(e) => setPageSearchQuery(e.target.value)}
-                        placeholder={
-                          currentLang === 'fr' ? 'Rechercher' : 'Chèche'
-                        }
-                        className="w-full h-11 pl-4 pr-12 rounded-lg border border-gray-300 bg-gray-50 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:bg-white transition-colors"
-                      />
-                      <button
-                        type="button"
-                        aria-label={
-                          currentLang === 'fr' ? 'Rechercher' : 'Chèche'
-                        }
-                        className="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 inline-flex items-center justify-center rounded-md bg-primary text-white hover:bg-primary/90"
-                      >
-                        <Search className="w-4 h-4" />
-                      </button>
-                    </div>
-                    {pageSearchQuery && (
-                      <button
-                        type="button"
-                        onClick={() => setPageSearchQuery('')}
-                        className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
-                      >
-                        <RotateCcw className="w-3 h-3" />
-                        {currentLang === 'fr' ? 'Réinitialiser' : 'Reinisyalize'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <SearchPanel
+                currentLang={currentLang}
+                pageSearchScope={pageSearchScope}
+                pageSearchQuery={pageSearchQuery}
+                onScopeChange={setPageSearchScope}
+                onQueryChange={setPageSearchQuery}
+              />
             )}
 
-            {/* Identity preamble — devise nationale + autorité émettrice
-                rendered HERE (in the document body) rather than in the
-                hero. Mirrors how a printed legal act lays out: identity
-                opens the document, not the masthead. Hidden when there's
-                no issuing_authority on the row.
+            <IdentityMasthead
+              law={law}
+              currentLang={currentLang}
+              isEditor={isEditor}
+              category={category}
+              officialTitleStored={officialTitleStored}
+              refetch={refetch}
+              onDeviseEditorOpen={() => setDeviseEditorOpen(true)}
+            />
 
-                Generous vertical padding so the block reads as a formal
-                opening emblem, with a max-width cap so the centered
-                composition stays compact even on wide viewports. */}
-            {/* Devise nationale → Doc-type heading → Issuing authority.
-                This mirrors the Moniteur masthead literally: after the
-                devise ("Liberté Égalité Fraternité / République d'Haïti")
-                the act always announces its formal class — ARRÊTÉ,
-                DÉCRET, LOI, ORDONNANCE etc. — and only then names the
-                signing authority. Editable from the MetadataEditor side
-                panel; the label is the FR/HT translation of the stored
-                ``category`` enum value. */}
-            <div className="my-6 lg:my-8 flex justify-center">
-              <div className="flex flex-col items-center gap-3 lg:gap-4 text-slate-700 max-w-2xl">
-                {/* Universal Haitian devise banner. Editor can hide
-                    when the source printing didn't carry it (pre-1843
-                    acts that used ``Liberté ou la Mort``, certain
-                    administrative arrêtés / avis printed without the
-                    masthead). The hover toggle on the right shows
-                    only to editors and PATCHes ``show_devise_banner``
-                    on the legal_text row. */}
-                {(law as any).show_devise_banner !== false && (
-                  <div className="relative group/devise w-full flex justify-center">
-                    <DeviseBanner
-                      lang={currentLang}
-                      customText={
-                        currentLang === 'ht'
-                          ? ((law as any).devise_ht || (law as any).devise_fr || null)
-                          : ((law as any).devise_fr || null)
-                      }
-                    />
-                    {isEditor && (
-                      <div
-                        className={cn(
-                          'absolute top-0 right-0 flex items-center gap-1',
-                          'opacity-0 group-hover/devise:opacity-100 transition-opacity',
-                        )}
-                      >
-                        {/* Edit — opens the DeviseEditor dialog where
-                            the editor can override the FR/HT devise
-                            text (multi-line). Sits to the left of the
-                            Hide button. */}
-                        <button
-                          type="button"
-                          onClick={() => setDeviseEditorOpen(true)}
-                          title={
-                            currentLang === 'fr'
-                              ? "Modifier l'emblème (devise)"
-                              : 'Modifye devis la'
-                          }
-                          aria-label={
-                            currentLang === 'fr'
-                              ? "Modifier l'emblème"
-                              : 'Modifye emblèm nan'
-                          }
-                          className={cn(
-                            'inline-flex items-center justify-center w-7 h-7 rounded-full',
-                            'bg-white border border-slate-200 shadow-sm',
-                            'hover:bg-slate-50 hover:border-slate-300',
-                            'text-slate-500 hover:text-blue-600',
-                          )}
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        {/* Hide — toggles ``show_devise_banner`` to
-                            false. Useful for pre-1843 acts that
-                            didn't carry a masthead motto. */}
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            try {
-                              await updateLegalTextMetadata(law.slug, {
-                                show_devise_banner: false,
-                              } as any)
-                              refetch()
-                            } catch (e) {
-                              toast(
-                                currentLang === 'fr'
-                                  ? 'Impossible de masquer la devise'
-                                  : 'Pa kapab kache devis la',
-                              )
-                            }
-                          }}
-                          title={
-                            currentLang === 'fr'
-                              ? 'Masquer la devise pour ce texte'
-                              : 'Kache devis la pou tèks sa a'
-                          }
-                          aria-label={
-                            currentLang === 'fr'
-                              ? 'Masquer la devise'
-                              : 'Kache devis la'
-                          }
-                          className={cn(
-                            'inline-flex items-center justify-center w-7 h-7 rounded-full',
-                            'bg-white border border-slate-200 shadow-sm',
-                            'hover:bg-slate-50 hover:border-slate-300',
-                            'text-slate-500 hover:text-rose-600',
-                          )}
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-                {/* Editor-only "Afficher la devise" affordance — appears
-                    when the banner is hidden so the editor can flip it
-                    back on without diving into MetadataEditor. */}
-                {isEditor && (law as any).show_devise_banner === false && (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        await updateLegalTextMetadata(law.slug, {
-                          show_devise_banner: true,
-                        } as any)
-                        refetch()
-                      } catch (e) {
-                        toast(
-                          currentLang === 'fr'
-                            ? 'Impossible d\'afficher la devise'
-                            : 'Pa kapab afiche devis la',
-                        )
-                      }
-                    }}
-                    className={cn(
-                      'inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest',
-                      'px-2.5 py-1 rounded-full',
-                      'bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700',
-                      'transition-colors',
-                    )}
-                  >
-                    <Eye className="w-3 h-3" />
-                    {currentLang === 'fr'
-                      ? '+ Afficher la devise'
-                      : '+ Afiche devis la'}
-                  </button>
-                )}
-
-                {/* Doc-type heading — editor can hide on a per-text
-                    basis when the printed source carries no
-                    ``DISCOURS`` / ``PROCLAMATION`` masthead. Mirrors
-                    the show_devise_banner toggle below: Eye icon on
-                    hover when visible, "+ Afficher le type" pill
-                    when hidden. */}
-                {(law as any).show_doc_type !== false && (
-                <div className="mt-1 flex flex-col items-center text-center group/cat relative">
-                  {isEditor ? (
-                    // Editor inline picker for the doc-type. Renders as
-                    // the same all-caps heading until hovered, then a
-                    // chevron surfaces; clicking opens a dropdown of every
-                    // ``LegalCategory`` value the editor can switch to.
-                    // Saving PATCHes ``category`` via the existing
-                    // metadata endpoint; the slug stays stable so
-                    // permalinks survive a reclassification.
-                    <Select
-                      value={law.category}
-                      onValueChange={async (next) => {
-                        if (next === law.category) return
-                        try {
-                          await updateLegalTextMetadata(law.slug, {
-                            category: next,
-                          } as any)
-                          refetch()
-                        } catch (e) {
-                          toast(
-                            currentLang === 'fr'
-                              ? 'Impossible de modifier le type'
-                              : 'Pa kapab chanje kalite a',
-                          )
-                        }
-                      }}
-                    >
-                      <SelectTrigger
-                        aria-label={
-                          currentLang === 'fr'
-                            ? "Type du document"
-                            : 'Kalite dokiman an'
-                        }
-                        className="!h-auto !p-0 !bg-transparent !border-0 !shadow-none focus:!ring-0 focus:!ring-offset-0 group/trigger hover:!bg-transparent gap-2"
-                      >
-                        <span className="text-xl sm:text-2xl lg:text-3xl font-black uppercase tracking-[0.18em] text-slate-900 leading-tight">
-                          {category[currentLang]}
-                        </span>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(categoryLabels).map(([value, meta]) => (
-                          <SelectItem key={value} value={value}>
-                            {meta[currentLang]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <p className="text-xl sm:text-2xl lg:text-3xl font-black uppercase tracking-[0.18em] text-slate-900 leading-tight">
-                      {category[currentLang]}
-                    </p>
-                  )}
-                  {isEditor && (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        try {
-                          await updateLegalTextMetadata(law.slug, {
-                            show_doc_type: false,
-                          } as any)
-                          refetch()
-                        } catch (e) {
-                          toast(
-                            currentLang === 'fr'
-                              ? 'Impossible de masquer le type'
-                              : 'Pa kapab kache kalite a',
-                          )
-                        }
-                      }}
-                      title={
-                        currentLang === 'fr'
-                          ? 'Masquer le type de document pour ce texte'
-                          : 'Kache kalite dokiman an pou tèks sa a'
-                      }
-                      aria-label={
-                        currentLang === 'fr'
-                          ? 'Masquer le type'
-                          : 'Kache kalite a'
-                      }
-                      className={cn(
-                        'absolute top-0 right-0 opacity-0 group-hover/cat:opacity-100 transition-opacity',
-                        'inline-flex items-center justify-center w-7 h-7 rounded-full',
-                        'bg-white border border-slate-200 shadow-sm',
-                        'hover:bg-slate-50 hover:border-slate-300',
-                        'text-slate-500 hover:text-rose-600',
-                      )}
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-                )}
-                {isEditor && (law as any).show_doc_type === false && (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        await updateLegalTextMetadata(law.slug, {
-                          show_doc_type: true,
-                        } as any)
-                        refetch()
-                      } catch (e) {
-                        toast(
-                          currentLang === 'fr'
-                            ? 'Impossible d’afficher le type'
-                            : 'Pa kapab afiche kalite a',
-                        )
-                      }
-                    }}
-                    className={cn(
-                      'mt-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-700',
-                      'transition-colors',
-                    )}
-                  >
-                    <Eye className="w-3 h-3" />
-                    {currentLang === 'fr'
-                      ? '+ Afficher le type'
-                      : '+ Afiche kalite a'}
-                  </button>
-                )}
-
-                {/* Title in Le Moniteur masthead form — verbatim text
-                    the journal prints under the doc-type heading.
-                    ``official_title_*`` when set, otherwise hidden for
-                    public viewers + an editable affordance for editors.
-                    Light-themed inline edit via EditableHeroField so
-                    the chrome reads on the white body surface. */}
-                {(officialTitleStored || isEditor) && (
-                  <EditableHeroField
-                    value={officialTitleStored ?? ''}
-                    isEditor={isEditor}
-                    kind="textarea"
-                    theme="light"
-                    layout="block"
-                    editAriaLabel={
-                      currentLang === 'fr'
-                        ? 'Modifier le titre officiel (Moniteur)'
-                        : 'Modifye tit ofisyèl (Moniteur)'
-                    }
-                    emptyPlaceholder={
-                      currentLang === 'fr'
-                        ? '+ Ajouter le titre officiel (Moniteur)'
-                        : '+ Ajoute tit ofisyèl (Moniteur)'
-                    }
-                    inputClassName="text-sm sm:text-base font-bold uppercase text-center tracking-wide leading-relaxed w-full max-w-xl mx-auto"
-                    onSave={async (next) => {
-                      const field =
-                        currentLang === 'ht'
-                          ? 'official_title_ht'
-                          : 'official_title_fr'
-                      await updateLegalTextMetadata(law.slug, {
-                        [field]: next || null,
-                      } as any)
-                      refetch()
-                    }}
-                  >
-                    {officialTitleStored ? (
-                      <p className="text-sm sm:text-base lg:text-lg font-bold uppercase text-center tracking-wide leading-relaxed text-slate-900 max-w-xl whitespace-pre-line">
-                        {officialTitleStored}
-                      </p>
-                    ) : (
-                      <span className="text-xs sm:text-sm italic text-slate-400">
-                        {currentLang === 'fr'
-                          ? '+ Ajouter le titre officiel (Moniteur)'
-                          : '+ Ajoute tit ofisyèl (Moniteur)'}
-                      </span>
-                    )}
-                  </EditableHeroField>
-                )}
-
-                {(law.issuing_authority || isEditor) && (
-                  <EditableHeroField
-                    value={law.issuing_authority ?? ''}
-                    isEditor={isEditor}
-                    kind="textarea"
-                    theme="light"
-                    layout="block"
-                    editAriaLabel={
-                      currentLang === 'fr'
-                        ? 'Modifier l’autorité émettrice'
-                        : 'Modifye otorite ki bay la'
-                    }
-                    emptyPlaceholder={
-                      currentLang === 'fr'
-                        ? '+ Ajouter l’autorité émettrice'
-                        : '+ Ajoute otorite ki bay la'
-                    }
-                    inputClassName="text-base sm:text-lg font-black uppercase tracking-[0.18em] text-center leading-snug w-full max-w-xl mx-auto"
-                    onSave={async (next) => {
-                      await updateLegalTextMetadata(law.slug, {
-                        issuing_authority: next || null,
-                      } as any)
-                      refetch()
-                    }}
-                  >
-                    {law.issuing_authority ? (
-                      <IssuingAuthorityHeader value={law.issuing_authority} />
-                    ) : (
-                      <span className="text-xs sm:text-sm italic text-slate-400">
-                        {currentLang === 'fr'
-                          ? '+ Ajouter l’autorité émettrice'
-                          : '+ Ajoute otorite ki bay la'}
-                      </span>
-                    )}
-                  </EditableHeroField>
-                )}
-              </div>
-            </div>
-
-            {/* Pre-article formal blocks: Préambule → Visas → Considérants
-                → Formule d'adoption. Editable in-place for editors via
-                EditableFormalBlock; read-only for the public.
-
-                Display rules:
-                - Public mode: show the container only when at least one
-                  block has content (otherwise the empty slate would
-                  leak into the public-facing view).
-                - Editor mode: ALWAYS show the container — empty blocks
-                  surface as "Add préambule…" affordances via
-                  EditableFormalBlock, which is how an editor seeds a
-                  block that the parser missed.
-
-                Note: the previous version also required
-                ``law.articles.length > 0`` which suppressed formal
-                blocks on preamble-only texts (historical constitutions,
-                short déclarations). That guard was wrong — a text with
-                no articles can still carry a meaningful préambule. */}
-            {(
-              isEditor || law.preamble_fr || law.visas_fr || law.considerants_fr || law.enacting_formula_fr
-            ) && (
-              <div className="mb-8 space-y-3">
-                <div ref={preambleRef} className="scroll-mt-24">
-                  <EditableFormalBlock
-                    isFr={currentLang === 'fr'}
-                    isEditor={isEditor}
-                    title={currentLang === 'fr' ? 'Préambule' : 'Premye koze'}
-                    value={preambleDisplay.value}
-                    valueHt={law.preamble_ht ?? null}
-                    fallbackToFr={preambleDisplay.fallback}
-                    lawSlug={law.slug}
-                    lawId={law.id}
-                    blockKind="preamble"
-                    onSave={async (v) => {
-                      const field = currentLang === 'ht' ? 'preamble_ht' : 'preamble_fr'
-                      await updateLegalTextMetadata(law.slug, { [field]: v })
-                      refetch()
-                    }}
-                  />
-                </div>
-
-                <div ref={visasRef} className="scroll-mt-24">
-                  <EditableFormalBlock
-                    isFr={currentLang === 'fr'}
-                    isEditor={isEditor}
-                    title={currentLang === 'fr' ? 'Visas' : 'Viza'}
-                    hint={currentLang === 'fr' ? 'Vu les articles...' : 'Wi atik yo...'}
-                    value={visasDisplay.value}
-                    valueHt={law.visas_ht ?? null}
-                    fallbackToFr={visasDisplay.fallback}
-                    lawSlug={law.slug}
-                    lawId={law.id}
-                    blockKind="visa"
-                    onSave={async (v) => {
-                      const field = currentLang === 'ht' ? 'visas_ht' : 'visas_fr'
-                      await updateLegalTextMetadata(law.slug, { [field]: v })
-                      refetch()
-                    }}
-                  />
-                </div>
-
-                <div ref={considerantsRef} className="scroll-mt-24">
-                  <EditableFormalBlock
-                    isFr={currentLang === 'fr'}
-                    isEditor={isEditor}
-                    title={currentLang === 'fr' ? 'Considérants' : 'Konsideran'}
-                    hint={currentLang === 'fr' ? 'Considérant que...' : 'Konsidere ke...'}
-                    value={considerantsDisplay.value}
-                    valueHt={law.considerants_ht ?? null}
-                    fallbackToFr={considerantsDisplay.fallback}
-                    lawSlug={law.slug}
-                    lawId={law.id}
-                    blockKind="considerant"
-                    onSave={async (v) => {
-                      const field = currentLang === 'ht' ? 'considerants_ht' : 'considerants_fr'
-                      await updateLegalTextMetadata(law.slug, { [field]: v })
-                      refetch()
-                    }}
-                  />
-                </div>
-
-                {/* Mentions procédurales — "Sur le rapport du …" /
-                    "Et après délibération en Conseil des Ministres ;".
-                    Sits between considérants and the dispositif word;
-                    bilingual and editable. No blockKind: this block has
-                    no version-history endpoint yet (Phase 2). */}
-                <div className="scroll-mt-24">
-                  <EditableFormalBlock
-                    isFr={currentLang === 'fr'}
-                    isEditor={isEditor}
-                    title={currentLang === 'fr' ? 'Mentions procédurales' : 'Mansyon pwosedi'}
-                    hint={
-                      currentLang === 'fr'
-                        ? 'Sur le rapport du… ; Et après délibération…'
-                        : 'Sou rapò… ; Epi apre deliberasyon…'
-                    }
-                    value={mentionsProceduralesDisplay.value}
-                    valueHt={(law as any).mentions_procedurales_ht ?? null}
-                    fallbackToFr={mentionsProceduralesDisplay.fallback}
-                    lawSlug={law.slug}
-                    lawId={law.id}
-                    onSave={async (v) => {
-                      const field =
-                        currentLang === 'ht'
-                          ? 'mentions_procedurales_ht'
-                          : 'mentions_procedurales_fr'
-                      await updateLegalTextMetadata(law.slug, { [field]: v })
-                      refetch()
-                    }}
-                  />
-                </div>
-
-                <EditableFormalBlock
-                  isFr={currentLang === 'fr'}
-                  isEditor={isEditor}
-                  variant="compact"
-                  title={currentLang === 'fr' ? "Formule d'adoption" : "Fòmil adopsyon"}
-                  value={enactingDisplay.value}
-                  valueHt={law.enacting_formula_ht ?? null}
-                  fallbackToFr={enactingDisplay.fallback}
-                  lawSlug={law.slug}
-                  lawId={law.id}
-                  blockKind="enacting_formula"
-                  align={
-                    (law.enacting_formula_align as
-                      | 'left'
-                      | 'center'
-                      | undefined) ?? 'left'
-                  }
-                  onAlignChange={async (next) => {
-                    await updateLegalTextMetadata(law.slug, {
-                      enacting_formula_align: next,
-                    } as any)
-                    refetch()
-                  }}
-                  onSave={async (v) => {
-                    const field = currentLang === 'ht' ? 'enacting_formula_ht' : 'enacting_formula_fr'
-                    await updateLegalTextMetadata(law.slug, { [field]: v })
-                    refetch()
-                  }}
-                />
-              </div>
-            )}
+            <FormalBlocksSection
+              law={law}
+              currentLang={currentLang}
+              isEditor={isEditor}
+              preambleDisplay={preambleDisplay}
+              visasDisplay={visasDisplay}
+              considerantsDisplay={considerantsDisplay}
+              mentionsProceduralesDisplay={mentionsProceduralesDisplay}
+              enactingDisplay={enactingDisplay}
+              preambleRef={preambleRef}
+              visasRef={visasRef}
+              considerantsRef={considerantsRef}
+              refetch={refetch}
+            />
 
             <div ref={articleViewerRef} className="mb-8 scroll-mt-24">
-              {isDocumentMode ? (
-                /* Free-form document mode — foundational texts that
-                   aren't article-structured (Acte de l'Indépendance,
-                   Proclamation de Dessalines, Discours de Dessalines,
-                   …). The body is the document itself — no accordion,
-                   no box, just the prose inline. Editors see a small
-                   PenLine icon on hover to enter Tiptap edit mode. */
-                <DocumentBody
-                  isEditor={isEditor}
-                  lang={currentLang}
-                  value={
-                    currentLang === 'ht'
-                      ? ((law as any).document_body_ht || (law as any).document_body_fr || null)
-                      : ((law as any).document_body_fr || null)
-                  }
-                  fallbackToFr={
-                    currentLang === 'ht' &&
-                    !(law as any).document_body_ht &&
-                    !!(law as any).document_body_fr
-                  }
-                  onSave={async (v) => {
-                    const field =
-                      currentLang === 'ht'
-                        ? 'document_body_ht'
-                        : 'document_body_fr'
-                    await updateLegalTextMetadata(law.slug, {
-                      [field]: v,
-                    } as any)
-                    refetch()
-                  }}
-                />
-              ) : hasArticles ? (
-                <ArticleViewer
-                  article={selectedArticle}
-                  lawTitle={title}
-                  currentLang={currentLang}
-                  onPrevious={handlePrevious}
-                  onNext={handleNext}
-                  onShare={handleShare}
-                  onCopyLink={handleCopyLink}
-                  hasPrevious={currentArticleIndex > 0}
-                  hasNext={currentArticleIndex < law.articles.length - 1}
-                  breadcrumb={articleBreadcrumb}
-                  prevHint={blocHints.prev}
-                  nextHint={blocHints.next}
-                  defaultStatus={mapTextStatusToArticleStatus(law.status)}
-                  isEditor={isEditor}
-                  onArticleSaved={refetch}
-                  siblingArticles={law.articles as any}
-                  lawSlug={law.slug}
-                  lawId={law.id}
-                  lawPublicationDate={
-                    law.publication_date ??
-                    law.moniteur_issue_publication_date ??
-                    null
-                  }
-                />
-              ) : isEditor ? (
-                /* Empty + editor: parser produced no article rows.
-                   Surface a card with a single CTA so the editor can
-                   start building the structure by hand instead of
-                   being stuck on the preamble-only fallback. After
-                   the first save, ``hasArticles`` flips true and the
-                   regular ArticleViewer takes over. */
-                <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50/40 p-10 text-center">
-                  <FileText className="w-10 h-10 text-amber-500 mx-auto mb-3" />
-                  <h3 className="text-lg font-bold text-slate-900 mb-2">
-                    {currentLang === 'fr'
-                      ? 'Aucun article détecté'
-                      : 'Pa gen atik detekte'}
-                  </h3>
-                  <p className="text-sm text-slate-600 mb-5 max-w-md mx-auto leading-relaxed">
-                    {currentLang === 'fr'
-                      ? "Le parser n'a pas extrait d'articles pour ce texte. Vous pouvez les saisir manuellement."
-                      : "Pasè a pa ekstrè atik pou tèks sa. Ou ka antre yo manyèlman."}
-                  </p>
-                  <Button
-                    onClick={() => setEmptyAddArticleOpen(true)}
-                    className="bg-amber-500 hover:bg-amber-600 text-white"
-                  >
-                    {currentLang === 'fr'
-                      ? 'Ajouter le premier article'
-                      : 'Ajoute premye atik la'}
-                  </Button>
-                </div>
-              ) : (
-                /* Preamble-only mode: legal_text has no articles[] yet
-                   (typical for historical constitutions and other texts
-                   that haven't been structured by an editor). */
-                <PreambleViewer
-                  title={title}
-                  text={law.preamble_fr}
-                  currentLang={currentLang}
-                />
-              )}
+              <ArticleSection
+                law={law}
+                currentLang={currentLang}
+                isEditor={isEditor}
+                isDocumentMode={isDocumentMode}
+                hasArticles={hasArticles}
+                selectedArticle={selectedArticle}
+                currentArticleIndex={currentArticleIndex}
+                title={title}
+                articleBreadcrumb={articleBreadcrumb}
+                blocHints={blocHints}
+                onPrevious={handlePrevious}
+                onNext={handleNext}
+                onShare={handleShare}
+                onCopyLink={handleCopyLink}
+                onEmptyAddArticle={() => setEmptyAddArticleOpen(true)}
+                refetch={refetch}
+              />
             </div>
 
-            {/* Signataires block. Two render paths, chosen at runtime:
-
-                1. **Structured** (preferred): when ``law.signers`` carries
-                   parsed signer rows, render them in a 2-column grid with
-                   bold names + roles, and prepend a context-aware lead
-                   caption ("Adoptée par…", "Donnée le…", etc.).
-
-                2. **Fallback**: when the parser couldn't extract structured
-                   signers but the raw ``official_formula`` text is present
-                   (typical for the 1987 Constitution with its 50+
-                   Constituante members in non-standard format), render the
-                   verbatim formula text with preserved whitespace. Less
-                   structured, but the reader sees the full closing block
-                   instead of nothing.
-
-                3. **Editor mode (manual)**: if a signer hasn't been parsed
-                   and no formula either, the editor still sees a "+ ajouter"
-                   affordance — handled by the dedicated SignerEditor in
-                   a follow-up commit.
-            */}
+            {/* Signataires block */}
             {(law.signers && law.signers.length > 0) ||
             law.official_formula ||
             isEditor ? (
@@ -2362,78 +462,17 @@ export default function LawDetail() {
               />
             ) : null}
 
-            {/* Closing addendum — free-form callout below SIGNATAIRES
-                for historic texts that carry a post-signature
-                statement. Used most prominently on the 1801
-                Constitution, where Toussaint-Louverture's full
-                approval statement (long declaration + dated location
-                + ``Signé : TOUSSAINT-LOUVERTURE``) sits after the
-                Assembly's signatures and is itself a structural
-                feature of the document. Bilingual; rendered only when
-                content exists or the editor is signed in (so the
-                editor can populate it). Reuses EditableFormalBlock
-                for the in-place editor affordance + read-only
-                rendering. */}
-            {(() => {
-              const addendumFr = (law as any).closing_addendum_fr as
-                | string
-                | null
-                | undefined
-              const addendumHt = (law as any).closing_addendum_ht as
-                | string
-                | null
-                | undefined
-              const displayValue =
-                currentLang === 'ht'
-                  ? addendumHt || addendumFr || null
-                  : addendumFr || null
-              const fallback =
-                currentLang === 'ht' && !addendumHt && !!addendumFr
-              if (!displayValue && !isEditor) return null
-              return (
-                <div className="scroll-mt-24">
-                  <EditableFormalBlock
-                    isFr={currentLang === 'fr'}
-                    isEditor={isEditor}
-                    title={
-                      currentLang === 'fr'
-                        ? 'Approbation / Mention finale'
-                        : 'Apwobasyon / Mansyon final'
-                    }
-                    hint={
-                      currentLang === 'fr'
-                        ? "Texte d'approbation, déclaration finale ou autre mention qui suit les signatures (rare — historique)."
-                        : "Tèks apwobasyon, deklarasyon final oswa lòt mansyon ki vini apre siyati yo (ra — istorik)."
-                    }
-                    value={displayValue}
-                    valueHt={addendumHt ?? null}
-                    fallbackToFr={fallback}
-                    lawSlug={law.slug}
-                    lawId={law.id}
-                    onSave={async (v) => {
-                      const field =
-                        currentLang === 'ht'
-                          ? 'closing_addendum_ht'
-                          : 'closing_addendum_fr'
-                      await updateLegalTextMetadata(law.slug, {
-                        [field]: v,
-                      } as any)
-                      refetch()
-                    }}
-                  />
-                </div>
-              )
-            })()}
+            <ClosingAddendum
+              law={law}
+              currentLang={currentLang}
+              isEditor={isEditor}
+              refetch={refetch}
+            />
 
-            {/* Editor-only — articles in other texts that THIS text
-                amended. Hides itself when this law isn't an amending
-                text (i.e. ``legal_changes`` has no rows for it), so
-                non-amending texts don't get a useless empty section. */}
             {isEditor && (
               <ChangesMadePanel lawSlug={law.slug} lang={currentLang} />
             )}
 
-            {/* Editor floating bar — visible only when signed in */}
             {isEditor && law && (
               <EditorBar
                 slug={law.slug}
@@ -2482,11 +521,6 @@ export default function LawDetail() {
               />
             )}
 
-            {/* Add-heading modal — one instance for both TOC trees
-                (mobile drawer + desktop sidebar). The anchor selects
-                the insertion mode (after a sibling, child of a node,
-                or at the text root). On success, refetch the law so
-                the new node lands in both TOCs. */}
             {isEditor && law && (
               <AddHeadingDialog
                 open={addHeadingAnchor !== null}
@@ -2526,12 +560,6 @@ export default function LawDetail() {
               />
             )}
 
-            {/* Empty-text add-article modal — opened by the
-                "Ajouter le premier article" CTA shown when the parser
-                produced no articles. Runs in correction mode so no
-                amending law is required. After save, ``refetch()``
-                flips ``hasArticles`` true and the normal
-                ArticleViewer takes over. */}
             {isEditor && law && (
               <AddArticleDialog
                 open={emptyAddArticleOpen}
@@ -2546,12 +574,6 @@ export default function LawDetail() {
               />
             )}
 
-            {/* Devise / emblem editor — modal launched from the
-                Pencil button next to the DeviseBanner above. Lets the
-                editor override the FR/HT motto for this text (e.g.
-                set "LIBERTÉ, ÉGALITÉ OU LA MORT" on the 1843
-                constitution) without diving into the full
-                MetadataEditor. */}
             {isEditor && law && (
               <DeviseEditorDialog
                 open={deviseEditorOpen}
@@ -2563,54 +585,7 @@ export default function LawDetail() {
               />
             )}
 
-            {/* The OfficialFormula box and the SignatureGrid that
-                used to live here have been removed — the existing
-                "Signataires" 2-column list above (line 944) is the
-                canonical signers display, and the verbatim formula
-                duplicated the devise that opens the body. */}
-
-            {/* Related Laws */}
-            {relatedLaws.length > 0 && (
-              <div className="mt-12">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                  {currentLang === 'fr'
-                    ? 'Textes connexes'
-                    : 'Tèks ki gen rapò'}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {relatedLaws.map((relatedLaw) => (
-                    <Link
-                      key={relatedLaw.id}
-                      href={`/lois/${relatedLaw.slug}`}
-                      className="group block"
-                    >
-                      <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:border-gray-300 hover:shadow-lg transition-all duration-200">
-                        <div className="flex items-start justify-between mb-3">
-                          <Badge className={`${relatedLaw.color} text-white`}>
-                            {(categoryLabels[relatedLaw.category] ?? categoryLabels.loi)[currentLang]}
-                          </Badge>
-                          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" />
-                        </div>
-                        <h4 className="text-lg font-semibold text-gray-900 group-hover:text-primary transition-colors">
-                          {relatedLaw.title}
-                        </h4>
-                        <p className="text-sm text-gray-500 mt-2">
-                          {relatedLaw.description}
-                        </p>
-                        <div className="flex items-center gap-4 mt-4 text-xs text-gray-400">
-                          <span>{relatedLaw.year}</span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <CheckCircle className="w-3 h-3" />
-                            {currentLang === 'fr' ? 'En vigueur' : 'An vigè'}
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+            <RelatedLaws relatedLaws={relatedLaws} currentLang={currentLang} />
           </div>
         </div>
       </div>
@@ -2618,4 +593,3 @@ export default function LawDetail() {
     </TooltipProvider>
   )
 }
-
