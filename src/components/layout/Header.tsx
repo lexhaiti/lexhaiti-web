@@ -150,16 +150,16 @@ export default function Header() {
           </div>
 
           {/* 2. DESKTOP NAVIGATION */}
-          <nav className="hidden xl:flex items-center gap-6 mx-8 h-full">
+          <nav
+            className="hidden xl:flex items-center gap-6 mx-8 h-full"
+            onMouseLeave={handleMegaMenuClose}
+          >
             {MENU_DATA.map((item, index) => (
               <div
                 key={index}
                 className="h-full flex items-center"
                 onMouseEnter={() =>
                   item.type === 'megamenu' && handleMegaMenuOpen(item.labelKey)
-                }
-                onMouseLeave={() =>
-                  item.type === 'megamenu' && handleMegaMenuClose()
                 }
               >
                 {/* Main Nav Links */}
@@ -185,90 +185,96 @@ export default function Header() {
                     />
                   )}
                 </Link>
-
-                {/* --- FULL WIDTH MEGA MENU --- */}
-                <AnimatePresence>
-                  {item.type === 'megamenu' &&
-                    activeMegaMenu === item.labelKey && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -5 }}
-                        transition={{ duration: 0.2, ease: 'easeOut' }}
-                        // 3. Adjusted top position to match the consistent header height (h-20 = 80px)
-                        className="fixed left-0 right-0 top-20 bg-white border-b border-gray-100 shadow-xl z-40"
-                      >
-                        {/* Red Accent Line at top of menu */}
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-red-600 to-red-500" />
-
-                        <div className="container mx-auto px-4 py-8">
-                          <div className="flex gap-12">
-                            {/* Left: Section Info */}
-                            <div className="w-1/4 pr-8 border-r border-gray-100">
-                              <h2 className="text-2xl font-extrabold text-slate-900 mb-2">
-                                {t(item.labelKey)}
-                              </h2>
-                              {item.descriptionKey && (
-                                <p className="text-sm text-slate-500 leading-relaxed">
-                                  {t(item.descriptionKey)}
-                                </p>
-                              )}
-                              <div className="mt-6">
-                                <Link
-                                  href="/lois"
-                                  onClick={handleMegaMenuClose}
-                                  className="inline-flex items-center text-sm font-bold text-red-600 hover:text-red-700 hover:underline"
-                                >
-                                  {t('menu.footer.viewAllTexts')}{' '}
-                                  <ArrowRight className="ml-1 h-4 w-4" />
-                                </Link>
-                              </div>
-                            </div>
-
-                            {/* Right: Grid Content */}
-                            <div className="flex-1 grid grid-cols-3 gap-8">
-                              {item.columns?.map((column, colIndex) => (
-                                <div key={colIndex} className="space-y-4">
-                                  <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                                    {t(column.titleKey)}
-                                  </h3>
-                                  <ul className="space-y-2">
-                                    {column.items.map((subItem) => (
-                                      // Use labelKey as the React key — hrefs
-                                      // can repeat when several conceptual
-                                      // entries fall back to the same /lois
-                                      // category listing (e.g. Analyse /
-                                      // Comparaison both → ?category=constitution).
-                                      <li key={subItem.labelKey}>
-                                        <Link
-                                          href={subItem.href}
-                                          onClick={handleMegaMenuClose}
-                                          className="group block py-1"
-                                        >
-                                          <span className="text-sm font-semibold text-slate-700 transition-colors group-hover:text-red-600">
-                                            {t(subItem.labelKey)}
-                                          </span>
-                                          {subItem.descriptionKey && (
-                                            <p className="text-xs text-slate-400 group-hover:text-slate-500 line-clamp-1">
-                                              {t(subItem.descriptionKey)}
-                                            </p>
-                                          )}
-                                        </Link>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                </AnimatePresence>
               </div>
             ))}
           </nav>
+
+          {/* --- FULL WIDTH MEGA MENU (single instance, avoids overlap) --- */}
+          <AnimatePresence mode="wait">
+            {(() => {
+              const activeItem = MENU_DATA.find(
+                (item) =>
+                  item.type === 'megamenu' &&
+                  item.labelKey === activeMegaMenu,
+              )
+              if (!activeItem) return null
+              return (
+                <motion.div
+                  key={activeItem.labelKey}
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                  className="fixed left-0 right-0 top-20 bg-white border-b border-gray-100 shadow-xl z-40"
+                  onMouseEnter={() =>
+                    handleMegaMenuOpen(activeItem.labelKey)
+                  }
+                  onMouseLeave={handleMegaMenuClose}
+                >
+                  {/* Red Accent Line at top of menu */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-red-600 to-red-500" />
+
+                  <div className="container mx-auto px-4 py-8">
+                    <div className="flex gap-12">
+                      {/* Left: Section Info */}
+                      <div className="w-1/4 pr-8 border-r border-gray-100">
+                        <h2 className="text-2xl font-extrabold text-slate-900 mb-2">
+                          {t(activeItem.labelKey)}
+                        </h2>
+                        {activeItem.descriptionKey && (
+                          <p className="text-sm text-slate-500 leading-relaxed">
+                            {t(activeItem.descriptionKey)}
+                          </p>
+                        )}
+                        <div className="mt-6">
+                          <Link
+                            href="/lois"
+                            onClick={handleMegaMenuClose}
+                            className="inline-flex items-center text-sm font-bold text-red-600 hover:text-red-700 hover:underline"
+                          >
+                            {t('menu.footer.viewAllTexts')}{' '}
+                            <ArrowRight className="ml-1 h-4 w-4" />
+                          </Link>
+                        </div>
+                      </div>
+
+                      {/* Right: Grid Content */}
+                      <div className="flex-1 grid grid-cols-3 gap-8">
+                        {activeItem.columns?.map((column, colIndex) => (
+                          <div key={colIndex} className="space-y-4">
+                            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                              {t(column.titleKey)}
+                            </h3>
+                            <ul className="space-y-2">
+                              {column.items.map((subItem) => (
+                                <li key={subItem.labelKey}>
+                                  <Link
+                                    href={subItem.href}
+                                    onClick={handleMegaMenuClose}
+                                    className="group block py-1"
+                                  >
+                                    <span className="text-sm font-semibold text-slate-700 transition-colors group-hover:text-red-600">
+                                      {t(subItem.labelKey)}
+                                    </span>
+                                    {subItem.descriptionKey && (
+                                      <p className="text-xs text-slate-400 group-hover:text-slate-500 line-clamp-1">
+                                        {t(subItem.descriptionKey)}
+                                      </p>
+                                    )}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })()}
+          </AnimatePresence>
 
           {/* 3. RIGHT ACTIONS (Add-text "+" + User menu + Language + Mobile) */}
           <div className="flex items-center gap-2">

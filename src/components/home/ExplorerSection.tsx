@@ -33,7 +33,7 @@ const CARDS = [
   },
   {
     key: 'aide' as const,
-    href: '/aide',
+    href: '/a-propos',
     image: '/faq.png',
     alt: 'Aide et FAQ',
   },
