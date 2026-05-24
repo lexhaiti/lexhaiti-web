@@ -255,7 +255,7 @@ export default async function Page() {
         <p className="text-slate-600 leading-relaxed text-lg mb-4">
           {isFr
             ? "LexHaïti est édité par HDDI (Haïti Digital Data Infrastructure), une association sans but lucratif (e.V. de droit allemand) dont la mission est de bâtir l'infrastructure numérique publique d'Haïti — en commençant par le droit."
-            : "LexHaïti edite pa HDDI (Haïti Digital Data Infrastructure), yon asosiyasyon san bi likratif (e.V. dwa alman) ki gen pou misyon bati enfrastrikti nimerik piblik Ayiti — kòmanse ak dwa."}
+            : "LexHaïti edite pa HDDI (Haitian Digital Democracy Initiative), yon asosiyasyon san bi likratif (e.V. dwa alman) ki gen pou misyon bati enfrastrikti nimerik piblik Ayiti — kòmanse ak dwa."}
         </p>
         <p className="text-slate-600 leading-relaxed text-lg">
           {isFr
