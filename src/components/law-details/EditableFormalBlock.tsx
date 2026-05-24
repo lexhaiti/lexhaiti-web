@@ -26,7 +26,7 @@
  *     history to show (``versions.length >= 2``).
  */
 import { useEffect, useRef, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import {
   AlignCenter,
   AlignLeft,

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useCallback, useContext, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { CheckCircle2, X } from 'lucide-react'
 
 type Toast = {
