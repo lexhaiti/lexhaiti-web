@@ -940,6 +940,210 @@ export async function citationsToArticle(articleId: number) {
 }
 
 // -----------------------------------------------------------------------
+// Jurisprudence (court decisions) — public read endpoints.
+//
+// The base `DecisionListItem` / `DecisionRead` types come from the
+// generated OpenAPI spec (`@/lib/api-types`). The detail page renders
+// considerably more structure than the current backend schema exposes
+// (parties, procedural history, moyens with court responses, judges,
+// dispositif, cited articles). Those richer fields are declared as
+// optional supplemental types below — keep them as `?` so existing
+// records (and the live backend response) continue to type-check until
+// the backend agent catches up. Whatever the backend omits, the UI
+// gracefully degrades.
+//
+// TODO(backend): mirror the structures below in the Pydantic
+// `DecisionRead` schema so the OpenAPI codegen pulls them in.
+// -----------------------------------------------------------------------
+
+/** Role a party takes in a court proceeding. Mirrors the prospective
+ *  backend enum. Open-ended `string` fallback so unexpected legacy
+ *  values render with a generic label instead of crashing. */
+export type DecisionPartyRole =
+  | 'pourvoyante'
+  | 'intimee'
+  | 'demandeur'
+  | 'defendeur'
+  | 'appelant'
+  | 'intime'
+  | 'demanderesse'
+  | 'defenderesse'
+  | 'partie_civile'
+  | 'consort'
+  | 'representant'
+  | string
+
+/** Role a magistrate plays on the bench. */
+export type DecisionJudgeRole =
+  | 'president'
+  | 'juge'
+  | 'rapporteur'
+  | 'substitut'
+  | 'greffier'
+  | 'commissaire_gouvernement'
+  | 'avocat_general'
+  | string
+
+/** Whether a moyen (ground) was accepted, rejected, or unaddressed. */
+export type MoyenOutcome = 'accepted' | 'rejected' | 'unaddressed' | string
+
+/** Outcome of the decision itself. Common Haitian/civil-law verbs. */
+export type DecisionOutcome =
+  | 'rejet'
+  | 'cassation'
+  | 'cassation_partielle'
+  | 'confirmation'
+  | 'infirmation'
+  | 'irrecevabilite'
+  | 'desistement'
+  | 'autre'
+  | string
+
+/** One party to the proceeding. `name` is post-anonymization when
+ *  `parties_anonymized=true` on the parent decision. */
+export type DecisionParty = {
+  id?: number
+  name: string
+  role: DecisionPartyRole
+  /** Free-text qualifier — "et consorts", "société anonyme", etc. */
+  qualifier?: string | null
+  /** Counsel for this party — typed string "Me X, avocat". */
+  counsel?: string | null
+}
+
+/** One magistrate on the bench. */
+export type DecisionJudge = {
+  id?: number
+  name: string
+  role: DecisionJudgeRole
+}
+
+/** One ground of appeal / cassation. Each moyen typically has a
+ *  petitioner's argument and the court's response. */
+export type DecisionMoyen = {
+  id?: number
+  /** 1-based position within the decision. */
+  number: number
+  /** Optional short label — "Premier moyen", "Deuxième moyen, …". */
+  title_fr?: string | null
+  title_ht?: string | null
+  /** The petitioner's argument as paraphrased in the decision. */
+  argument_fr?: string | null
+  argument_ht?: string | null
+  /** The court's response / motif. */
+  response_fr?: string | null
+  response_ht?: string | null
+  /** Did the court accept or reject this moyen? */
+  outcome?: MoyenOutcome | null
+}
+
+/** A prior decision in the procedural chain — TPI → appel → cassation. */
+export type DecisionProceduralStep = {
+  id?: number
+  /** Court that rendered the prior decision. */
+  court: CourtType | string
+  /** ISO yyyy-mm-dd. */
+  date: string
+  /** Short description — "Jugement du TPI", "Arrêt de la Cour d'appel", … */
+  label_fr?: string | null
+  label_ht?: string | null
+  /** Optional case number / docket reference. */
+  case_number?: string | null
+  /** Outcome at that step, free-text. */
+  outcome?: string | null
+}
+
+/** An article cited by the decision — resolved to a legal text + article. */
+export type DecisionCitedArticle = {
+  id?: number
+  /** The cited article's number ("1382", "2228", "8-1"). */
+  article_number: string
+  /** Parent text slug for the `/loi/<slug>?article=<n>` link. May be
+   *  null when the citation points at a text not yet in the corpus. */
+  text_slug?: string | null
+  text_title_fr?: string | null
+  text_title_ht?: string | null
+  /** Optional context — "à l'appui du premier moyen", etc. */
+  context_fr?: string | null
+  context_ht?: string | null
+}
+
+/** Subject tag attached to a decision — droit civil, droit immobilier,
+ *  etc. Same shape as the legal-text theme tags. */
+export type DecisionSubjectTag = {
+  /** Backend enum / slug — used as the filter key. */
+  key: string
+  /** Display label (bilingual). */
+  label_fr?: string | null
+  label_ht?: string | null
+}
+
+/** Rich detail payload — extends the OpenAPI-typed `DecisionRead` with
+ *  the structured fields the detail page renders. */
+export type DecisionDetail = DecisionRead & {
+  /** Parties to the proceeding. */
+  parties?: DecisionParty[]
+  /** Procedural history — prior decisions, in chronological order. */
+  procedural_history?: DecisionProceduralStep[]
+  /** Grounds raised and the court's response. */
+  moyens?: DecisionMoyen[]
+  /** Dispositif text ("PAR CES MOTIFS, …"). Plain prose; pre-formatted. */
+  dispositif_fr?: string | null
+  dispositif_ht?: string | null
+  /** Magistrates on the bench. */
+  judges?: DecisionJudge[]
+  /** Articles cited in the reasoning. */
+  cited_articles?: DecisionCitedArticle[]
+  /** Subject tags. */
+  subject_tags?: DecisionSubjectTag[]
+}
+
+/** Rich list-item payload — extends the OpenAPI-typed
+ *  `DecisionListItem` with counts and tags used in the row card. */
+export type DecisionListItemRich = DecisionListItem & {
+  /** Number of moyens — shown in the row's footer stat strip. */
+  moyens_count?: number
+  /** Number of cited articles. */
+  cited_articles_count?: number
+  /** Subject chips on the row card. */
+  subject_tags?: DecisionSubjectTag[]
+  /** Convenience: title or first line of the summary (FR). When the
+   *  backend hasn't synthesized this, the UI falls back to summary_fr. */
+  title_fr?: string | null
+  title_ht?: string | null
+}
+
+/** Paginated list response — same shape as the OpenAPI version, just
+ *  re-aliased to the enriched item type. */
+export type PaginatedDecisionsResponseRich = {
+  items: DecisionListItemRich[]
+  total: number
+  page: number
+  size: number
+}
+
+/** Paginated list of court decisions. */
+export async function listDecisions(params?: {
+  q?: string
+  court?: CourtType
+  /** ISO yyyy-mm-dd, inclusive lower bound for `decision_date`. */
+  from?: string
+  /** ISO yyyy-mm-dd, inclusive upper bound. */
+  to?: string
+  /** Subject filter — backend `DecisionSubjectTag.key`. */
+  subject?: string
+  limit?: number
+  offset?: number
+}) {
+  return apiGet<PaginatedDecisionsResponseRich>('/decisions', { params })
+}
+
+/** Single decision by slug. */
+export async function getDecisionBySlug(slug: string) {
+  return apiGet<DecisionDetail>(`/decisions/${encodeURIComponent(slug)}`)
+}
+
+// -----------------------------------------------------------------------
 // Editorial — import pipeline
 // -----------------------------------------------------------------------
 
