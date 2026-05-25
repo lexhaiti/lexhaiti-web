@@ -510,6 +510,10 @@ export default function LawDetail() {
                         title_ht: law.abrogated_by.title_ht ?? null,
                       }
                     : null,
+                  // Pass current theme tags (auto + editor) so the
+                  // editor can see what's already attached and toggle
+                  // additions / removals.
+                  theme_tags: law.theme_tags ?? [],
                 }}
                 headings={law.headings ?? []}
                 onChanged={refetch}

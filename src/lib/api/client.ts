@@ -278,6 +278,17 @@ export async function apiPatch<T>(
   return apiSend<T>('PATCH', path, body, opts)
 }
 
+export async function apiPut<T>(
+  path: string,
+  body?: unknown,
+  opts?: {
+    signal?: AbortSignal
+    headers?: Record<string, string>
+  },
+): Promise<T> {
+  return apiSend<T>('PUT', path, body, opts)
+}
+
 export async function apiDelete<T = void>(
   path: string,
   opts?: {

@@ -5,7 +5,7 @@
  * `http://localhost:8000/api/v1`. All paths here are relative to that base.
  */
 import type { components, paths } from '@/lib/api-types'
-import { apiDelete, apiGet, apiPatch, apiPost, apiPostForm } from '@/lib/api/client'
+import { apiDelete, apiGet, apiPatch, apiPost, apiPostForm, apiPut } from '@/lib/api/client'
 
 // Re-exported types — what consumers reach for.
 export type LegalTextRead = components['schemas']['LegalTextRead']
@@ -1381,6 +1381,25 @@ export async function updateLegalTextMetadata(
   return apiPatch<LegalTextRead>(
     `/editorial/legal-texts/${encodeURIComponent(slug)}/metadata`,
     patch,
+  )
+}
+
+/**
+ * Replace the editor-confirmed theme set on a legal text. Pass an
+ * empty array to clear all editor tags. Auto-suggester tags coexist
+ * separately; a matching auto tag is promoted to "editor" instead
+ * of being duplicated server-side.
+ *
+ * Returns the updated LegalText (with `theme_tags` reflecting the
+ * new set, including any unchanged auto tags).
+ */
+export async function updateLegalTextThemes(
+  slug: string,
+  themes: string[],
+) {
+  return apiPut<LegalTextRead>(
+    `/editorial/legal-texts/${encodeURIComponent(slug)}/themes`,
+    { themes },
   )
 }
 

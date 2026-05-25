@@ -26,9 +26,11 @@ import {
   listEditorialTexts,
   type LegalTextMetadataPatch,
   updateLegalTextMetadata,
+  updateLegalTextThemes,
 } from '@/lib/api/endpoints'
 import type { components } from '@/lib/api-types'
 import { cn } from '@/lib/utils'
+import { THEME_LABELS, type LegalThemeKey } from '@/lib/themes'
 
 type LegalTextListItem = components['schemas']['LegalTextListItem']
 
@@ -120,7 +122,32 @@ export type LegalTextMetadata = {
     title_fr: string
     title_ht: string | null
   } | null
+  /** Theme tags currently attached to the text (auto + editor).
+   *  We surface them here so the editor sees what's already set
+   *  (including auto-suggester picks) and can confirm / extend. */
+  theme_tags?: Array<{
+    theme: string
+    source: 'auto' | 'editor'
+  }>
 }
+
+// Closed vocabulary of theme keys — kept in sync with the backend
+// LegalTheme enum (see schemas/enums.py) and the THEME_LABELS map
+// at lib/themes.ts. Order is editorial: most-used domains first.
+const THEME_KEYS: LegalThemeKey[] = [
+  'droit_famille',
+  'successions',
+  'foncier',
+  'droit_societes',
+  'droit_travail',
+  'droit_fiscal',
+  'droit_bancaire',
+  'propriete_intellectuelle',
+  'droit_administratif',
+  'marches_publics',
+  'protection_sociale',
+  'environnement',
+]
 
 interface Props {
   open: boolean
@@ -188,6 +215,28 @@ export function MetadataEditor({
     LegalTextListItem | null
   >(() => seedAbrogatingLaw(text.abrogated_by))
 
+  // Theme tags — tracked separately because they write to a different
+  // endpoint (PUT /editorial/legal-texts/{slug}/themes). Seeded from
+  // the parent's ``theme_tags``; reset on reopen. We keep both the
+  // selected set (editor + auto promotions) and the original snapshot
+  // for the diff.
+  const seedThemeSet = (
+    tags?: Array<{ theme: string; source: 'auto' | 'editor' }>,
+  ): Set<LegalThemeKey> => {
+    const s = new Set<LegalThemeKey>()
+    if (!tags) return s
+    for (const t of tags) {
+      // Treat both auto + editor tags as "currently applied". Saving
+      // them under PUT promotes any auto match to editor — server
+      // handles de-dup.
+      s.add(t.theme as LegalThemeKey)
+    }
+    return s
+  }
+  const [selectedThemes, setSelectedThemes] = useState<Set<LegalThemeKey>>(
+    () => seedThemeSet(text.theme_tags),
+  )
+
   // Reset form on each open so changes don't leak across openings.
   function handleOpenChange(next: boolean) {
     if (next) {
@@ -216,8 +265,21 @@ export function MetadataEditor({
         comment: '',
       })
       setAbrogatingLaw(seedAbrogatingLaw(text.abrogated_by))
+      setSelectedThemes(seedThemeSet(text.theme_tags))
     }
     onOpenChange(next)
+  }
+
+  function toggleTheme(theme: LegalThemeKey) {
+    setSelectedThemes((prev) => {
+      const next = new Set(prev)
+      if (next.has(theme)) {
+        next.delete(theme)
+      } else {
+        next.add(theme)
+      }
+      return next
+    })
   }
 
   function patch<K extends keyof typeof form>(
@@ -307,7 +369,15 @@ export function MetadataEditor({
         currentAbrogatingSlug
     }
 
-    if (Object.keys(body).length === 0) {
+    // Theme tag diff — separate API endpoint (PUT /themes). Editor-
+    // confirmed snapshot at open time vs current selection. Only
+    // call the endpoint when the set actually changed.
+    const originalThemeSet = seedThemeSet(text.theme_tags)
+    const themesChanged =
+      originalThemeSet.size !== selectedThemes.size ||
+      [...selectedThemes].some((t) => !originalThemeSet.has(t))
+
+    if (Object.keys(body).length === 0 && !themesChanged) {
       onOpenChange(false)
       return
     }
@@ -316,7 +386,18 @@ export function MetadataEditor({
 
     startTransition(async () => {
       try {
-        const updated = await updateLegalTextMetadata(text.slug, body)
+        let updated = text as unknown as { slug: string }
+        if (Object.keys(body).length > 0) {
+          updated = await updateLegalTextMetadata(text.slug, body)
+        }
+        if (themesChanged) {
+          // Use the (possibly new) slug if the metadata patch renamed
+          // the text; otherwise the current one.
+          await updateLegalTextThemes(
+            updated.slug ?? text.slug,
+            [...selectedThemes],
+          )
+        }
         toast(t('metadataEditor.saved'))
         onOpenChange(false)
         // If the slug changed, notify the parent so it can redirect
@@ -484,6 +565,53 @@ export function MetadataEditor({
               />
             </Field>
           )}
+
+          {/* Thématiques — closed-vocabulary chips. The full LegalTheme
+              enum is rendered; selected chips are filled (editor-confirmed
+              on save), unselected sit as outline. Auto-suggester tags that
+              already match are pre-selected and get promoted to "editor"
+              source on save. */}
+          <Field
+            label={
+              isFr ? 'Thématiques' : 'Tèm'
+            }
+            hint={
+              isFr
+                ? "Sélectionnez les domaines de droit que ce texte couvre. Apparaît comme pastilles thématiques sur la fiche et alimente le filtre /lois?theme=…"
+                : 'Chwazi domèn dwa tèks sa a kouvri. Parèt kòm pastil tematik sou fich la epi alimante filtè /lois?theme=…'
+            }
+          >
+            <div className="flex flex-wrap gap-2">
+              {THEME_KEYS.map((key) => {
+                const isSelected = selectedThemes.has(key)
+                const label = THEME_LABELS[key][isFr ? 'fr' : 'ht']
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => toggleTheme(key)}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border',
+                      isSelected
+                        ? 'bg-amber-100 text-amber-900 border-amber-300 ring-1 ring-amber-300/50 hover:bg-amber-200'
+                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900',
+                    )}
+                    aria-pressed={isSelected}
+                  >
+                    {isSelected && <span aria-hidden="true">✓</span>}
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+            {selectedThemes.size > 0 && (
+              <p className="mt-2 text-[11px] text-slate-500">
+                {isFr
+                  ? `${selectedThemes.size} thématique${selectedThemes.size > 1 ? 's' : ''} sélectionnée${selectedThemes.size > 1 ? 's' : ''}.`
+                  : `${selectedThemes.size} tèm chwazi.`}
+              </p>
+            )}
+          </Field>
 
           {form.category === 'code' && (
             <Field label={t('metadataEditor.codeSubcategory')}>
