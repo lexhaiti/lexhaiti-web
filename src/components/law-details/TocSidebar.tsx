@@ -66,6 +66,9 @@ export function TocSidebar({
     articles: law.articles,
     headings: law.headings,
     currentLang,
+    // Drives heading-label overrides (e.g. « Loi » instead of
+    // « Livre » when the code is the Code civil d'Haïti).
+    codeSubcategory: law.code_subcategory ?? null,
     selectedArticle: selectedArticle?.number,
     externalQuery: pageSearchScope === 'sommaire' ? pageSearchQuery : '',
     hasPreamble: !!law.preamble_fr,

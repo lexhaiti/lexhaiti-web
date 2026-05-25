@@ -109,6 +109,7 @@ export function ArticleSection({
           law.moniteur_issue_publication_date ??
           null
         }
+        codeSubcategory={law.code_subcategory ?? null}
       />
     )
   }

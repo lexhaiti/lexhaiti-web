@@ -41,6 +41,7 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/components/ui/toast-simple'
 import { cn } from '@/lib/utils'
+import { getLevelLabel } from '@/lib/legal/headingLabels'
 import {
   citationsFromArticle,
   citationsToArticle,
@@ -168,17 +169,9 @@ const STATUS_PILL: Record<
   },
 }
 
-const LEVEL_LABELS: Record<
-  BreadcrumbNode['level'],
-  { fr: string; ht: string }
-> = {
-  part: { fr: 'Partie', ht: 'Pati' },
-  book: { fr: 'Livre', ht: 'Liv' },
-  title: { fr: 'Titre', ht: 'Tit' },
-  chapter: { fr: 'Chapitre', ht: 'Chapit' },
-  section: { fr: 'Section', ht: 'Seksyon' },
-  subsection: { fr: 'Sous-section', ht: 'Sou-seksyon' },
-}
+// Heading-level labels live in src/lib/legal/headingLabels.ts and
+// honour per-code overrides (e.g. « Loi » instead of « Livre » for
+// the Code civil). Imported via getLevelLabel below.
 
 function formatEffectiveSince(
   from: string | null | undefined,
@@ -341,6 +334,10 @@ interface ArticleViewerProps {
    *  per-version date because their publication date lives on the
    *  parent text, not on the article_versions row. */
   lawPublicationDate?: string | null
+  /** Parent LegalText's `code_subcategory`. Drives breadcrumb
+   *  heading-label overrides (e.g. « Loi » instead of « Livre » for
+   *  the Code civil d'Haïti). */
+  codeSubcategory?: string | null
 }
 
 export default function ArticleViewer({
@@ -362,6 +359,7 @@ export default function ArticleViewer({
   lawSlug,
   lawId,
   lawPublicationDate,
+  codeSubcategory = null,
 }: ArticleViewerProps) {
   const { toast } = useToast()
 
@@ -860,7 +858,9 @@ export default function ArticleViewer({
             className="flex items-center gap-1.5 text-sm font-medium text-gray-500 flex-wrap min-w-0"
           >
             {breadcrumb.map((node, i) => {
-              const label = LEVEL_LABELS[node.level][currentLang]
+              const label =
+                getLevelLabel(node.level, currentLang, codeSubcategory) ??
+                node.level
               return (
                 <span key={node.id} className="flex items-center gap-1.5">
                   {i > 0 && <ChevronRight className="w-3 h-3 text-gray-300" />}

@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
+import { formatHeadingNumber as fmtHeadingNumberShared } from '@/lib/legal/headingLabels'
 import {
   ArrowDown,
   ArrowUp,
@@ -66,6 +67,9 @@ interface TableOfContentsProps {
   articles: Article[]
   headings?: Heading[]
   currentLang: 'fr' | 'ht'
+  /** When the parent text is a code, this drives heading-label
+   *  overrides (e.g. « Loi » instead of « Livre » for code_civil). */
+  codeSubcategory?: string | null
   onArticleSelect: (article: Article) => void
   selectedArticle?: string
   /** Search query driven by the page-level search panel above the article column. */
@@ -138,20 +142,9 @@ interface TableOfContentsProps {
   activeHeadingIds?: number[]
 }
 
-/** Human-readable label for a heading level, prefixed onto the bare
- *  identifier ("I", "1", "A") so the TOC shows "Titre I" / "Chapitre 1"
- *  / "Section A" instead of relying on indentation alone. Matches how
- *  Haitian/French lawyers reference structural divisions in citations
- *  ("Titre III, Chapitre II"), so the UI reads the same way the source
- *  does. Unknown / missing levels fall back to the bare number. */
-const LEVEL_LABELS: Record<string, { fr: string; ht: string }> = {
-  part: { fr: 'Partie', ht: 'Pati' },
-  book: { fr: 'Livre', ht: 'Liv' },
-  title: { fr: 'Titre', ht: 'Tit' },
-  chapter: { fr: 'Chapitre', ht: 'Chapit' },
-  section: { fr: 'Section', ht: 'Seksyon' },
-  subsection: { fr: 'Sous-section', ht: 'Sou-seksyon' },
-}
+// Heading level labels (Livre, Titre, …) and per-code overrides
+// (Code civil uses « Loi » instead of « Livre ») are centralised in
+// src/lib/legal/headingLabels.ts so every render site stays in sync.
 
 // Some headings use a French word as their "number" instead of a roman
 // numeral / letter — the 1987 Constitution's "Chapitre Préliminaire"
@@ -168,16 +161,15 @@ function formatHeadingNumber(
   level: string | null | undefined,
   number: string | null | undefined,
   lang: 'fr' | 'ht',
+  codeSubcategory?: string | null,
 ): string {
-  const num = (number ?? '').trim()
-  if (!num) return ''
-  const localised =
-    lang === 'ht' && HEADING_NUMBER_TRANSLATIONS[num]
-      ? HEADING_NUMBER_TRANSLATIONS[num]
-      : num
-  const lbl = level ? LEVEL_LABELS[level] : undefined
-  if (!lbl) return localised
-  return `${lbl[lang]} ${localised}`
+  return fmtHeadingNumberShared(
+    level,
+    number,
+    lang,
+    codeSubcategory,
+    HEADING_NUMBER_TRANSLATIONS,
+  )
 }
 
 /** Per-heading explanatory tooltip — shown next to the TOC row when an
@@ -350,6 +342,7 @@ export default function TableOfContents({
   articles = [],
   headings = [],
   currentLang = 'fr',
+  codeSubcategory = null,
   onArticleSelect,
   selectedArticle,
   externalQuery,
@@ -890,6 +883,7 @@ export default function TableOfContents({
                       heading.level,
                       heading.number,
                       currentLang,
+                      codeSubcategory,
                     )
                   ) : (
                     <span className="italic text-slate-400 normal-case tracking-normal">

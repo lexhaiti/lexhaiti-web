@@ -13,6 +13,7 @@ import { AddHeadingDialog } from '@/components/law-details/_panels/AddHeadingDia
 import { AddArticleDialog } from '@/components/law-details/_panels/AddArticleDialog'
 import { DeviseEditorDialog } from './_panels/DeviseEditorDialog'
 import { useLawDetail } from '@/lib/hooks/useLawDetail'
+import { getLevelLabel } from '@/lib/legal/headingLabels'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useT } from '@/i18n/useT'
 import { TextNotFound } from '@/components/law-details/TextNotFound'
@@ -156,14 +157,8 @@ export default function LawDetail() {
     if (!law?.articles || !law?.headings || currentArticleIndex < 0) {
       return { prev: null as string | null, next: null as string | null }
     }
-    const HEADING_LABEL: Record<string, { fr: string; ht: string }> = {
-      book: { fr: 'Livre', ht: 'Liv' },
-      title: { fr: 'Titre', ht: 'Tit' },
-      chapter: { fr: 'Chapitre', ht: 'Chapit' },
-      section: { fr: 'Section', ht: 'Seksyon' },
-      subsection: { fr: 'Sous-section', ht: 'Sou-seksyon' },
-    }
     const currentHeadingId = selectedArticle?.heading_id ?? null
+    const codeSubcategory = law.code_subcategory ?? null
 
     const hint = (article: ArticleEmbed | undefined): string | null => {
       if (!article) return null
@@ -183,8 +178,8 @@ export default function LawDetail() {
       if (!crosses || !article.heading_id) return numLabel
       const h = headingsById.get(article.heading_id)
       if (!h) return numLabel
-      const lvl = HEADING_LABEL[h.level as keyof typeof HEADING_LABEL]
-      const lvlLabel = lvl ? lvl[currentLang] : h.level
+      const lvlLabel =
+        getLevelLabel(h.level, currentLang, codeSubcategory) ?? h.level
       return `${numLabel} · ${lvlLabel} ${h.number ?? ''}`.trim()
     }
 
@@ -192,7 +187,7 @@ export default function LawDetail() {
       prev: hint(law.articles[currentArticleIndex - 1]),
       next: hint(law.articles[currentArticleIndex + 1]),
     }
-  }, [law?.articles, law?.headings, currentArticleIndex, selectedArticle?.heading_id, currentLang, headingsById])
+  }, [law?.articles, law?.headings, law?.code_subcategory, currentArticleIndex, selectedArticle?.heading_id, currentLang, headingsById])
 
   // Auto-select an article on mount.
   useEffect(() => {
