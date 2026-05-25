@@ -240,8 +240,8 @@ export default async function Page() {
 
       {/* Governance — who runs LexHaïti. Replaces the earlier "open
           source" framing with the truthful description: an editorial
-          project backed by a non-profit association (HDDI is an e.V.
-          incorporated under German law), not a community fork. */}
+          project backed by a non-profit association (Ayiti Dijital
+          e.V., incorporated under German law), not a community fork. */}
       <div className="container py-20 lg:py-24">
         <p className="text-xs font-bold uppercase tracking-widest text-primary/65 mb-3 flex items-center gap-2">
           <Users className="w-3.5 h-3.5" />
@@ -254,8 +254,8 @@ export default async function Page() {
         </h2>
         <p className="text-slate-600 leading-relaxed text-lg mb-4">
           {isFr
-            ? "LexHaïti est édité par HDDI (Haïti Digital Data Infrastructure), une association sans but lucratif (e.V. de droit allemand) dont la mission est de bâtir l'infrastructure numérique publique d'Haïti — en commençant par le droit."
-            : "LexHaïti edite pa HDDI (Haitian Digital Democracy Initiative), yon asosiyasyon san bi likratif (e.V. dwa alman) ki gen pou misyon bati enfrastrikti nimerik piblik Ayiti — kòmanse ak dwa."}
+            ? "LexHaïti est édité par Ayiti Dijital e.V., une association sans but lucratif de droit allemand dont la mission est de bâtir l'infrastructure numérique publique d'Haïti — en commençant par le droit."
+            : "LexHaïti edite pa Ayiti Dijital e.V., yon asosiyasyon san bi likratif dwa alman ki gen pou misyon bati enfrastrikti nimerik piblik Ayiti — kòmanse ak dwa."}
         </p>
         <p className="text-slate-600 leading-relaxed text-lg">
           {isFr

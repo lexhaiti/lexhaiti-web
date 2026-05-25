@@ -2,7 +2,7 @@
 // integration (Stripe etc.) is deliberately out of scope; this page
 // exists to (a) make giving discoverable, (b) state who receives the
 // money and what it funds, (c) list the channels that already work
-// (bank transfer to HDDI's e.V. account).
+// (bank transfer to Ayiti Dijital's e.V. account).
 //
 // RSC + cookie i18n + tailwindcss-animate, same shape as a-propos.
 
@@ -41,7 +41,7 @@ export default async function Page() {
   // Three concrete cost lines — money goes from "donate" → these.
   // No invented numbers; the figures are honest current-state
   // estimates the visitor can fact-check by reading the LICENSE
-  // (HDDI is an e.V., so accounts are public on request).
+  // (Ayiti Dijital is an e.V., so accounts are public on request).
   const fundedBy = [
     {
       icon: Globe2,
@@ -137,7 +137,7 @@ export default async function Page() {
         </div>
       </div>
 
-      {/* Channels — what to do RIGHT NOW. Bank transfer to HDDI is the
+      {/* Channels — what to do RIGHT NOW. Bank transfer to Ayiti Dijital is the
           one channel that works today; the Stripe / card row is a
           deliberate placeholder so the visitor can see the roadmap. */}
       <div className="border-y bg-slate-50/40">
@@ -154,8 +154,8 @@ export default async function Page() {
               </h2>
               <p className="text-slate-600 leading-relaxed text-lg">
                 {isFr
-                  ? "Les dons sont reçus par HDDI (Haïti Digital Data Infrastructure e.V.), l’association allemande sans but lucratif qui édite LexHaïti. HDDI publie son rapport annuel sur demande — chaque euro alloué à la plateforme est traçable."
-                  : "Don yo resevwa pa HDDI (Haïti Digital Data Infrastructure e.V.), asosiyasyon alman san bi likratif ki edite LexHaïti. HDDI pibliye rapò chak ane sou demand — chak ewo ki alwe nan platfòm nan ka swiv."}
+                  ? "Les dons sont reçus par Ayiti Dijital e.V., l’association allemande sans but lucratif qui édite LexHaïti. Ayiti Dijital publie son rapport annuel sur demande — chaque euro alloué à la plateforme est traçable."
+                  : "Don yo resevwa pa Ayiti Dijital e.V., asosiyasyon alman san bi likratif ki edite LexHaïti. Ayiti Dijital pibliye rapò chak ane sou demand — chak ewo ki alwe nan platfòm nan ka swiv."}
               </p>
             </div>
 
@@ -177,8 +177,8 @@ export default async function Page() {
                     </div>
                     <p className="text-sm text-slate-600 mb-4">
                       {isFr
-                        ? "Le canal historique : virement SEPA vers le compte de HDDI e.V. Contactez-nous pour recevoir l’IBAN et le reçu fiscal."
-                        : "Kanal istorik la : vìreman SEPA nan kont HDDI e.V. Kontakte nou pou resevwa IBAN ak resi taks la."}
+                        ? "Le canal historique : virement SEPA vers le compte de Ayiti Dijital e.V. Contactez-nous pour recevoir l’IBAN et le reçu fiscal."
+                        : "Kanal istorik la : vìreman SEPA nan kont Ayiti Dijital e.V. Kontakte nou pou resevwa IBAN ak resi taks la."}
                     </p>
                     <a
                       href="mailto:donate@lexhaiti.org?subject=Soutien%20LexHa%C3%AFti"
@@ -234,8 +234,8 @@ export default async function Page() {
           </h2>
           <p className="text-slate-600 leading-relaxed text-lg mb-4">
             {isFr
-              ? "Universités, fondations, ministères, ONG : HDDI accepte des financements ciblés sur un axe spécifique — un Code en entier, un demi-siècle du Moniteur, la traduction kreyòl d’un corpus existant. Le livrable est défini en amont, l’avancement publié sur la plateforme."
-              : "Inivèsite, fondasyon, ministè, ONG : HDDI aksepte finansman ki vize yon liy espesifik — yon Kòd antye, mwatye yon syèk Moniteur, tradiksyon kreyòl yon kòpis ki egziste. Liv ki gen pou bay defini davans, avansman an pibliye sou platfòm nan."}
+              ? "Universités, fondations, ministères, ONG : Ayiti Dijital accepte des financements ciblés sur un axe spécifique — un Code en entier, un demi-siècle du Moniteur, la traduction kreyòl d’un corpus existant. Le livrable est défini en amont, l’avancement publié sur la plateforme."
+              : "Inivèsite, fondasyon, ministè, ONG : Ayiti Dijital aksepte finansman ki vize yon liy espesifik — yon Kòd antye, mwatye yon syèk Moniteur, tradiksyon kreyòl yon kòpis ki egziste. Liv ki gen pou bay defini davans, avansman an pibliye sou platfòm nan."}
           </p>
           <a
             href="mailto:partnerships@lexhaiti.org?subject=Partenariat%20institutionnel"
