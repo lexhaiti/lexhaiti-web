@@ -514,6 +514,11 @@ export default function LawDetail() {
                   // editor can see what's already attached and toggle
                   // additions / removals.
                   theme_tags: law.theme_tags ?? [],
+                  // Per-document block-order toggle (mentions
+                  // procédurales before considérants for 19th-century
+                  // texts). Defaults to false / modern drafting.
+                  mentions_procedurales_before_considerants:
+                    (law as any).mentions_procedurales_before_considerants ?? false,
                 }}
                 headings={law.headings ?? []}
                 onChanged={refetch}

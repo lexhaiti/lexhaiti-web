@@ -129,6 +129,10 @@ export type LegalTextMetadata = {
     theme: string
     source: 'auto' | 'editor'
   }>
+  /** When true, « Mentions procédurales » prints BEFORE the
+   *  considérants block on the reader page. Default false (modern
+   *  drafting order). 19th-century Haitian laws often need this set. */
+  mentions_procedurales_before_considerants?: boolean
 }
 
 // Closed vocabulary of theme keys — kept in sync with the backend
@@ -237,6 +241,13 @@ export function MetadataEditor({
     () => seedThemeSet(text.theme_tags),
   )
 
+  // 19th-century-style ordering toggle. See LegalText column with
+  // the same name. Tracked separately from the main form because
+  // it's a boolean, while ``form`` carries only string fields.
+  const [mpBeforeConsiderants, setMpBeforeConsiderants] = useState<boolean>(
+    () => !!text.mentions_procedurales_before_considerants,
+  )
+
   // Reset form on each open so changes don't leak across openings.
   function handleOpenChange(next: boolean) {
     if (next) {
@@ -266,6 +277,7 @@ export function MetadataEditor({
       })
       setAbrogatingLaw(seedAbrogatingLaw(text.abrogated_by))
       setSelectedThemes(seedThemeSet(text.theme_tags))
+      setMpBeforeConsiderants(!!text.mentions_procedurales_before_considerants)
     }
     onOpenChange(next)
   }
@@ -367,6 +379,15 @@ export function MetadataEditor({
     if (originalAbrogatingSlug !== currentAbrogatingSlug) {
       ;(body as Record<string, string | null>).abrogated_by_slug =
         currentAbrogatingSlug
+    }
+
+    // Boolean toggle for the 19th-century block order.
+    if (
+      mpBeforeConsiderants !==
+      !!text.mentions_procedurales_before_considerants
+    ) {
+      ;(body as Record<string, boolean>).mentions_procedurales_before_considerants =
+        mpBeforeConsiderants
     }
 
     // Theme tag diff — separate API endpoint (PUT /themes). Editor-
@@ -706,6 +727,37 @@ export function MetadataEditor({
               placeholder="(facultatif)"
               className="font-mono text-xs"
             />
+          </Field>
+
+          {/* Pre-article block-order toggle. Defaults to false (modern
+              drafting: considérants before mentions procédurales).
+              Many 19th-century Haitian laws print the order inverted —
+              the editor flips this checkbox to mirror the source. */}
+          <Field
+            label={
+              isFr
+                ? "Ordre d'affichage : mentions avant considérants"
+                : 'Lòd afichaj : mansyon anvan konsideran'
+            }
+            hint={
+              isFr
+                ? "À activer pour les textes historiques (XIXᵉ siècle) qui impriment « Sur le rapport du… » AVANT les « Considérant que… ». Laissé décoché, l'affichage suit l'ordre moderne (considérants en premier)."
+                : 'Aktive li pou tèks istorik yo (XIXyèm syèk) ki ekri « Sur le rapport du… » AVAN « Considérant que… ». Si w pa chèke l, afichaj la swiv lòd modèn nan (konsideran an premye).'
+            }
+          >
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={mpBeforeConsiderants}
+                onChange={(e) => setMpBeforeConsiderants(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-2 focus:ring-amber-300 focus:ring-offset-1"
+              />
+              <span className="text-sm text-slate-700 group-hover:text-slate-900 transition-colors">
+                {isFr
+                  ? 'Afficher « Mentions procédurales » avant « Considérants »'
+                  : 'Montre « Mansyon pwosedi » anvan « Konsideran »'}
+              </span>
+            </label>
           </Field>
 
           {/* Official metadata block — page-1 + post-dispositif fields.
