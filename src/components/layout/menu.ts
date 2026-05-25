@@ -202,6 +202,11 @@ export const MENU_DATA: MenuItem[] = [
 
   { labelKey: 'menu.top.moniteur', href: '/moniteur', type: 'link' },
 
+  // Jurisprudence — Haitian court decisions (Cour de cassation,
+  // Cour d'appel, TPI, …). Placed after LE MONITEUR and before
+  // THÉMATIQUES so the corpus-content items stay clustered.
+  { labelKey: 'menu.top.jurisprudence', href: '/jurisprudence', type: 'link' },
+
   {
     labelKey: 'menu.top.themes',
     href: '/thematiques',

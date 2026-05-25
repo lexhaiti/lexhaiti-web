@@ -940,6 +940,210 @@ export async function citationsToArticle(articleId: number) {
 }
 
 // -----------------------------------------------------------------------
+// Jurisprudence (court decisions) — public read endpoints.
+//
+// The base `DecisionListItem` / `DecisionRead` types come from the
+// generated OpenAPI spec (`@/lib/api-types`). The detail page renders
+// considerably more structure than the current backend schema exposes
+// (parties, procedural history, moyens with court responses, judges,
+// dispositif, cited articles). Those richer fields are declared as
+// optional supplemental types below — keep them as `?` so existing
+// records (and the live backend response) continue to type-check until
+// the backend agent catches up. Whatever the backend omits, the UI
+// gracefully degrades.
+//
+// TODO(backend): mirror the structures below in the Pydantic
+// `DecisionRead` schema so the OpenAPI codegen pulls them in.
+// -----------------------------------------------------------------------
+
+/** Role a party takes in a court proceeding. Mirrors the prospective
+ *  backend enum. Open-ended `string` fallback so unexpected legacy
+ *  values render with a generic label instead of crashing. */
+export type DecisionPartyRole =
+  | 'pourvoyante'
+  | 'intimee'
+  | 'demandeur'
+  | 'defendeur'
+  | 'appelant'
+  | 'intime'
+  | 'demanderesse'
+  | 'defenderesse'
+  | 'partie_civile'
+  | 'consort'
+  | 'representant'
+  | string
+
+/** Role a magistrate plays on the bench. */
+export type DecisionJudgeRole =
+  | 'president'
+  | 'juge'
+  | 'rapporteur'
+  | 'substitut'
+  | 'greffier'
+  | 'commissaire_gouvernement'
+  | 'avocat_general'
+  | string
+
+/** Whether a moyen (ground) was accepted, rejected, or unaddressed. */
+export type MoyenOutcome = 'accepted' | 'rejected' | 'unaddressed' | string
+
+/** Outcome of the decision itself. Common Haitian/civil-law verbs. */
+export type DecisionOutcome =
+  | 'rejet'
+  | 'cassation'
+  | 'cassation_partielle'
+  | 'confirmation'
+  | 'infirmation'
+  | 'irrecevabilite'
+  | 'desistement'
+  | 'autre'
+  | string
+
+/** One party to the proceeding. `name` is post-anonymization when
+ *  `parties_anonymized=true` on the parent decision. */
+export type DecisionParty = {
+  id?: number
+  name: string
+  role: DecisionPartyRole
+  /** Free-text qualifier — "et consorts", "société anonyme", etc. */
+  qualifier?: string | null
+  /** Counsel for this party — typed string "Me X, avocat". */
+  counsel?: string | null
+}
+
+/** One magistrate on the bench. */
+export type DecisionJudge = {
+  id?: number
+  name: string
+  role: DecisionJudgeRole
+}
+
+/** One ground of appeal / cassation. Each moyen typically has a
+ *  petitioner's argument and the court's response. */
+export type DecisionMoyen = {
+  id?: number
+  /** 1-based position within the decision. */
+  number: number
+  /** Optional short label — "Premier moyen", "Deuxième moyen, …". */
+  title_fr?: string | null
+  title_ht?: string | null
+  /** The petitioner's argument as paraphrased in the decision. */
+  argument_fr?: string | null
+  argument_ht?: string | null
+  /** The court's response / motif. */
+  response_fr?: string | null
+  response_ht?: string | null
+  /** Did the court accept or reject this moyen? */
+  outcome?: MoyenOutcome | null
+}
+
+/** A prior decision in the procedural chain — TPI → appel → cassation. */
+export type DecisionProceduralStep = {
+  id?: number
+  /** Court that rendered the prior decision. */
+  court: CourtType | string
+  /** ISO yyyy-mm-dd. */
+  date: string
+  /** Short description — "Jugement du TPI", "Arrêt de la Cour d'appel", … */
+  label_fr?: string | null
+  label_ht?: string | null
+  /** Optional case number / docket reference. */
+  case_number?: string | null
+  /** Outcome at that step, free-text. */
+  outcome?: string | null
+}
+
+/** An article cited by the decision — resolved to a legal text + article. */
+export type DecisionCitedArticle = {
+  id?: number
+  /** The cited article's number ("1382", "2228", "8-1"). */
+  article_number: string
+  /** Parent text slug for the `/loi/<slug>?article=<n>` link. May be
+   *  null when the citation points at a text not yet in the corpus. */
+  text_slug?: string | null
+  text_title_fr?: string | null
+  text_title_ht?: string | null
+  /** Optional context — "à l'appui du premier moyen", etc. */
+  context_fr?: string | null
+  context_ht?: string | null
+}
+
+/** Subject tag attached to a decision — droit civil, droit immobilier,
+ *  etc. Same shape as the legal-text theme tags. */
+export type DecisionSubjectTag = {
+  /** Backend enum / slug — used as the filter key. */
+  key: string
+  /** Display label (bilingual). */
+  label_fr?: string | null
+  label_ht?: string | null
+}
+
+/** Rich detail payload — extends the OpenAPI-typed `DecisionRead` with
+ *  the structured fields the detail page renders. */
+export type DecisionDetail = DecisionRead & {
+  /** Parties to the proceeding. */
+  parties?: DecisionParty[]
+  /** Procedural history — prior decisions, in chronological order. */
+  procedural_history?: DecisionProceduralStep[]
+  /** Grounds raised and the court's response. */
+  moyens?: DecisionMoyen[]
+  /** Dispositif text ("PAR CES MOTIFS, …"). Plain prose; pre-formatted. */
+  dispositif_fr?: string | null
+  dispositif_ht?: string | null
+  /** Magistrates on the bench. */
+  judges?: DecisionJudge[]
+  /** Articles cited in the reasoning. */
+  cited_articles?: DecisionCitedArticle[]
+  /** Subject tags. */
+  subject_tags?: DecisionSubjectTag[]
+}
+
+/** Rich list-item payload — extends the OpenAPI-typed
+ *  `DecisionListItem` with counts and tags used in the row card. */
+export type DecisionListItemRich = DecisionListItem & {
+  /** Number of moyens — shown in the row's footer stat strip. */
+  moyens_count?: number
+  /** Number of cited articles. */
+  cited_articles_count?: number
+  /** Subject chips on the row card. */
+  subject_tags?: DecisionSubjectTag[]
+  /** Convenience: title or first line of the summary (FR). When the
+   *  backend hasn't synthesized this, the UI falls back to summary_fr. */
+  title_fr?: string | null
+  title_ht?: string | null
+}
+
+/** Paginated list response — same shape as the OpenAPI version, just
+ *  re-aliased to the enriched item type. */
+export type PaginatedDecisionsResponseRich = {
+  items: DecisionListItemRich[]
+  total: number
+  page: number
+  size: number
+}
+
+/** Paginated list of court decisions. */
+export async function listDecisions(params?: {
+  q?: string
+  court?: CourtType
+  /** ISO yyyy-mm-dd, inclusive lower bound for `decision_date`. */
+  from?: string
+  /** ISO yyyy-mm-dd, inclusive upper bound. */
+  to?: string
+  /** Subject filter — backend `DecisionSubjectTag.key`. */
+  subject?: string
+  limit?: number
+  offset?: number
+}) {
+  return apiGet<PaginatedDecisionsResponseRich>('/decisions', { params })
+}
+
+/** Single decision by slug. */
+export async function getDecisionBySlug(slug: string) {
+  return apiGet<DecisionDetail>(`/decisions/${encodeURIComponent(slug)}`)
+}
+
+// -----------------------------------------------------------------------
 // Editorial — import pipeline
 // -----------------------------------------------------------------------
 
@@ -1682,4 +1886,212 @@ export async function updateAdminUser(userId: number, patch: AdminUserUpdate) {
 
 export async function deleteAdminUser(userId: number) {
   return apiDelete<void>(`/admin/users/${userId}`)
+}
+
+// -----------------------------------------------------------------------
+// Editorial — Jurisprudence (court decisions)
+//
+// Mirror of the LegalText editorial surface: list-all-statuses, get-with-
+// drafts, create, patch, delete, submit-for-review, publish, unpublish,
+// request-changes. The backend routes below follow the same naming
+// convention as ``/editorial/legal-texts/*``; until the backend agent
+// catches up, these helpers will surface 404s as ApiError(status=404)
+// and the UI gracefully degrades with an "Editorial API not available"
+// toast.
+//
+// TODO(backend): mirror the route shapes below in
+// ``api/routes/editorial/decisions.py``.
+// -----------------------------------------------------------------------
+
+export type EditorialStatus = 'draft' | 'pending_review' | 'published' | 'rejected'
+
+/** Roles accepted on the editor side — wider than the public read type
+ *  to cover party shapes the editor types in. */
+export type EditorialPartyRole =
+  | 'pourvoyante'
+  | 'intimee'
+  | 'demandeur'
+  | 'defendeur'
+  | 'appelant'
+  | 'intime'
+  | 'partie_civile'
+  | 'consort'
+
+/** Roles a magistrate can hold on the bench during the editor flow. */
+export type EditorialJudgeRole =
+  | 'president'
+  | 'vice_president'
+  | 'juge'
+  | 'rapporteur'
+  | 'substitut'
+  | 'greffier'
+
+export type DecisionPartyInput = {
+  /** Pourvoyante, intimée, etc. */
+  role: EditorialPartyRole | string
+  name: string
+  /** Person ⇒ no representative; company ⇒ representative_name surfaces. */
+  party_type?: 'person' | 'company' | null
+  representative_name?: string | null
+  /** Counsel — typically "Me X, du Barreau de Y" — kept as nested rows
+   *  so we can render them as cards on the editor panel. */
+  lawyers?: Array<{ name: string; barreau?: string | null }>
+}
+
+export type DecisionJudgeInput = {
+  name: string
+  role: EditorialJudgeRole | string
+  /** 1-based display order; null leaves backend default (insertion order). */
+  order?: number | null
+}
+
+export type DecisionProceduralStepInput = {
+  /** Court that rendered the prior decision — free-text (TPI X, Cour
+   *  d'appel de …) since the historical chain isn't constrained to the
+   *  CourtType enum. */
+  court: string
+  /** ISO yyyy-mm-dd. */
+  decision_date: string
+  case_number?: string | null
+  outcome?: string | null
+}
+
+export type DecisionMoyenInput = {
+  /** 1-based position. Editor can renumber for re-ordering. */
+  number: number
+  title?: string | null
+  body_fr?: string | null
+  body_ht?: string | null
+  court_response_fr?: string | null
+  court_response_ht?: string | null
+  outcome?: 'accepted' | 'rejected' | 'partial' | string | null
+}
+
+/** Full create / replace payload for a decision. PATCH endpoints accept
+ *  a partial form of the same shape — the helper types
+ *  ``DecisionPatch`` below picks the relevant subset. */
+export type DecisionCreatePayload = {
+  slug: string
+  court: CourtType
+  chamber?: string | null
+  formation?: string | null
+  case_number?: string | null
+  /** ISO yyyy-mm-dd. */
+  decision_date: string
+  hearing_date?: string | null
+  outcome?: DecisionOutcome | null
+  parties_anonymized?: boolean
+  /** Subject tag keys — backend resolves to DecisionSubjectTag rows. */
+  subject_matter?: string[]
+  parties?: DecisionPartyInput[]
+  judges?: DecisionJudgeInput[]
+  procedural_history?: DecisionProceduralStepInput[]
+  moyens?: DecisionMoyenInput[]
+  dispositif_fr?: string | null
+  dispositif_ht?: string | null
+  full_text_fr?: string | null
+  full_text_ht?: string | null
+  summary_fr?: string | null
+  summary_ht?: string | null
+  headnotes_fr?: string | null
+  headnotes_ht?: string | null
+  comment?: string | null
+}
+
+/** PATCH body for an existing decision. Same shape as the create
+ *  payload but every field optional — only send what changed. */
+export type DecisionPatch = Partial<DecisionCreatePayload>
+
+/** Rich list-item that mirrors the public ``DecisionListItemRich`` but
+ *  adds the editorial_status pill — the editor list shows all statuses,
+ *  not just published. */
+export type EditorialDecisionListItem = DecisionListItemRich & {
+  editorial_status?: EditorialStatus
+}
+
+export type PaginatedEditorialDecisions = {
+  items: EditorialDecisionListItem[]
+  total: number
+  page: number
+  size: number
+}
+
+/** Editor list — sees every editorial status (draft + pending + …).
+ *  Pass ``editorial_status`` to narrow. Empty ⇒ no filter. */
+export async function listEditorialDecisions(params?: {
+  q?: string
+  court?: CourtType
+  from?: string
+  to?: string
+  subject?: string
+  editorial_status?: EditorialStatus
+  limit?: number
+  offset?: number
+}) {
+  return apiGet<PaginatedEditorialDecisions>('/editorial/decisions', {
+    params,
+  })
+}
+
+/** Editorial detail — returns drafts the public route 404s on. */
+export async function getEditorialDecisionBySlug(slug: string) {
+  return apiGet<DecisionDetail>(
+    `/editorial/decisions/${encodeURIComponent(slug)}`,
+  )
+}
+
+/** Create a new draft decision. Returns the freshly-inserted row so the
+ *  caller can redirect to its editorial detail page. */
+export async function createDecision(body: DecisionCreatePayload) {
+  return apiPost<DecisionDetail>('/editorial/decisions', body)
+}
+
+/** Patch metadata / structured fields of an existing decision. Backend
+ *  no-ops unchanged keys; the helper sends only the fields the caller
+ *  passes. */
+export async function updateDecision(slug: string, patch: DecisionPatch) {
+  return apiPatch<DecisionDetail>(
+    `/editorial/decisions/${encodeURIComponent(slug)}`,
+    patch,
+  )
+}
+
+/** Hard-delete a draft decision (and cascade its parties / judges /
+ *  moyens / procedural steps). Refuses on published rows — editor must
+ *  unpublish first. */
+export async function deleteDecision(slug: string): Promise<void> {
+  return apiDelete(`/editorial/decisions/${encodeURIComponent(slug)}`)
+}
+
+/** Submit a draft for peer review. Flips ``editorial_status`` to
+ *  ``pending_review``; idempotent on already-pending rows. */
+export async function submitDecisionForReview(slug: string) {
+  return apiPost<DecisionDetail>(
+    `/editorial/decisions/${encodeURIComponent(slug)}/submit-for-review`,
+  )
+}
+
+/** Publish (or approve a pending review and publish in one shot). */
+export async function publishDecision(slug: string) {
+  return apiPost<DecisionDetail>(
+    `/editorial/decisions/${encodeURIComponent(slug)}/publish`,
+  )
+}
+
+/** Unpublish a published decision back to draft. Comment is required
+ *  for the audit log. */
+export async function unpublishDecision(slug: string, comment: string) {
+  return apiPost<{ ok: boolean }>(
+    `/editorial/decisions/${encodeURIComponent(slug)}/unpublish`,
+    { comment },
+  )
+}
+
+/** Send a "needs changes" signal back to the author. Flips
+ *  ``editorial_status`` to ``rejected`` with a comment attached. */
+export async function requestDecisionChanges(slug: string, comment: string) {
+  return apiPost<{ ok: boolean }>(
+    `/editorial/decisions/${encodeURIComponent(slug)}/request-changes`,
+    { comment },
+  )
 }
