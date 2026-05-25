@@ -827,7 +827,13 @@ export default function TableOfContents({
                     value={numberDraft}
                     disabled={numberSaving}
                     onChange={(e) => setNumberDraft(e.target.value)}
+                    // Same reason as the title input: stop the
+                    // Space-bar (and every other key) from bubbling
+                    // to the parent button, which would toggle the
+                    // accordion. Numbers can contain spaces too
+                    // ("2 bis", "9-1 ter"), so this matters here.
                     onKeyDown={(e) => {
+                      e.stopPropagation()
                       if (e.key === 'Enter') {
                         e.preventDefault()
                         saveEditNumber(heading)
@@ -977,7 +983,14 @@ export default function TableOfContents({
                     value={headingDraft}
                     disabled={headingSaving}
                     onChange={(e) => setHeadingDraft(e.target.value)}
+                    // Stop *all* keydowns from bubbling up to the
+                    // parent <div role="button"> wrapper — otherwise
+                    // pressing Space inside the input toggles the
+                    // accordion (the wrapper handles Space/Enter as
+                    // "open/close section"). Enter + Escape get
+                    // their own handling here.
                     onKeyDown={(e) => {
+                      e.stopPropagation()
                       if (e.key === 'Enter') {
                         e.preventDefault()
                         saveEditHeading(heading)
