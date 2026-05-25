@@ -32,14 +32,33 @@ export function MoyenAccordion({ moyen, defaultOpen = false }: Props) {
   const lang: 'fr' | 'ht' = language === 'ht' ? 'ht' : 'fr'
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
+  // Field names match the backend Pydantic Moyen schema (see
+  // schemas/decision.py): ``title``, ``body_fr/ht``, ``court_response_fr/ht``.
+  // The frontend used to look for ``title_fr`` / ``argument_fr`` / ``response_fr``
+  // which never matched anything coming off the API and rendered every
+  // moyen as an empty card.
+  const m = moyen as DecisionMoyen & {
+    title?: string | null
+    body_fr?: string | null
+    body_ht?: string | null
+    court_response_fr?: string | null
+    court_response_ht?: string | null
+  }
   const title =
-    (lang === 'ht' && moyen.title_ht) ||
-    moyen.title_fr ||
-    `${t('jurisprudence.moyen.ground')} ${moyen.number}`
+    m.title ||
+    (lang === 'ht' && m.title_ht) ||
+    m.title_fr ||
+    `${t('jurisprudence.moyen.ground')} ${m.number}`
   const argument =
-    (lang === 'ht' && moyen.argument_ht) || moyen.argument_fr || null
+    (lang === 'ht' && (m.body_ht || m.argument_ht)) ||
+    m.body_fr ||
+    m.argument_fr ||
+    null
   const response =
-    (lang === 'ht' && moyen.response_ht) || moyen.response_fr || null
+    (lang === 'ht' && (m.court_response_ht || m.response_ht)) ||
+    m.court_response_fr ||
+    m.response_fr ||
+    null
 
   return (
     <div

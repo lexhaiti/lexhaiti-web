@@ -12,6 +12,7 @@ import {
   FileCheck,
   FilePen,
   FileText,
+  Gavel,
   GitMerge,
   Languages,
   Loader2,
@@ -318,6 +319,19 @@ export default function EditorialDashboardPage() {
             isFr
               ? '1 728 références (1804-2000) à vérifier'
               : '1,728 referans (1804-2000) pou verifye'
+          }
+        />
+        {/* Jurisprudence — full editorial console for court decisions
+            (list, create from JSON, inline metadata + body editing).
+            Mirrors the legal-text editorial flow. */}
+        <DashboardCard
+          href="/editorial/jurisprudence"
+          icon={Gavel}
+          title={isFr ? 'Jurisprudence' : 'Jirispridans'}
+          subtitle={
+            isFr
+              ? 'Arrêts et jugements — brouillons et publications'
+              : 'Arè ak jijman — bouyon ak piblikasyon'
           }
         />
         {/* Ajouter un amendement — wire an amending law to N target

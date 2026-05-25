@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 
 import { useT } from '@/i18n/useT'
+import { useEditorMode } from '@/lib/hooks/useEditorMode'
 import { cn } from '@/lib/utils'
 import type { DecisionDetail } from '@/lib/api/endpoints'
 
@@ -15,6 +17,7 @@ import { MoyenAccordion } from '@/components/jurisprudence/MoyenAccordion'
 import { JudgesList } from '@/components/jurisprudence/JudgesList'
 import { ProceduralTimeline } from '@/components/jurisprudence/ProceduralTimeline'
 import { CitedArticleLink } from '@/components/jurisprudence/CitedArticleLink'
+import { DecisionEditorBar } from '@/components/jurisprudence/DecisionEditorBar'
 
 interface Props {
   decision: DecisionDetail
@@ -28,11 +31,23 @@ interface Props {
 export default function DecisionDetailClient({ decision }: Props) {
   const { t, language } = useT()
   const lang: 'fr' | 'ht' = language === 'ht' ? 'ht' : 'fr'
+  const { isEditor, user } = useEditorMode()
+  const router = useRouter()
 
   // Section presence flags — drive both the TOC and the in-page
   // section rendering. We don't render headings for sections that
   // have no data; the TOC greys them out but doesn't link.
-  const hasParties = (decision.parties?.length ?? 0) > 0
+
+  // The ministère public is a court officer (renders conclusions),
+  // not a partie au litige. Filter it out of the parties list so it
+  // only appears under "Composition de la juridiction" where the
+  // substitut belongs. Same for any stray "representant" entries
+  // that older seeds might have stuffed into parties.
+  const litigantParties =
+    decision.parties?.filter(
+      (p) => p.role !== 'ministere_public' && p.role !== 'representant',
+    ) ?? []
+  const hasParties = litigantParties.length > 0
   const hasProcedure = (decision.procedural_history?.length ?? 0) > 0
   const hasMoyens = (decision.moyens?.length ?? 0) > 0
   const hasDispositif = Boolean(
@@ -56,7 +71,7 @@ export default function DecisionDetailClient({ decision }: Props) {
       id: 'section-parties',
       labelKey: 'jurisprudence.toc.parties',
       active: hasParties,
-      count: decision.parties?.length,
+      count: litigantParties.length,
     },
     {
       id: 'section-procedure',
@@ -133,7 +148,7 @@ export default function DecisionDetailClient({ decision }: Props) {
                 title={t('jurisprudence.sections.partiesTitle')}
               >
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {decision.parties!.map((p, i) => (
+                  {litigantParties.map((p, i) => (
                     <PartyBlock key={p.id ?? `${p.name}-${i}`} party={p} />
                   ))}
                 </div>
@@ -229,6 +244,20 @@ export default function DecisionDetailClient({ decision }: Props) {
           </article>
         </div>
       </div>
+
+      {isEditor && (
+        <DecisionEditorBar
+          decision={decision}
+          editorEmail={user?.email ?? null}
+          onChanged={() => {
+            // Public route is RSC-rendered — easiest way to pull a
+            // fresh copy after the editor edits / publishes is to ask
+            // Next to re-fetch this segment. The editor bar's own
+            // delete / status flips already navigate away.
+            router.refresh()
+          }}
+        />
+      )}
     </div>
   )
 }

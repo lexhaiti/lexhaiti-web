@@ -1868,3 +1868,211 @@ export async function updateAdminUser(userId: number, patch: AdminUserUpdate) {
 export async function deleteAdminUser(userId: number) {
   return apiDelete<void>(`/admin/users/${userId}`)
 }
+
+// -----------------------------------------------------------------------
+// Editorial — Jurisprudence (court decisions)
+//
+// Mirror of the LegalText editorial surface: list-all-statuses, get-with-
+// drafts, create, patch, delete, submit-for-review, publish, unpublish,
+// request-changes. The backend routes below follow the same naming
+// convention as ``/editorial/legal-texts/*``; until the backend agent
+// catches up, these helpers will surface 404s as ApiError(status=404)
+// and the UI gracefully degrades with an "Editorial API not available"
+// toast.
+//
+// TODO(backend): mirror the route shapes below in
+// ``api/routes/editorial/decisions.py``.
+// -----------------------------------------------------------------------
+
+export type EditorialStatus = 'draft' | 'pending_review' | 'published' | 'rejected'
+
+/** Roles accepted on the editor side — wider than the public read type
+ *  to cover party shapes the editor types in. */
+export type EditorialPartyRole =
+  | 'pourvoyante'
+  | 'intimee'
+  | 'demandeur'
+  | 'defendeur'
+  | 'appelant'
+  | 'intime'
+  | 'partie_civile'
+  | 'consort'
+
+/** Roles a magistrate can hold on the bench during the editor flow. */
+export type EditorialJudgeRole =
+  | 'president'
+  | 'vice_president'
+  | 'juge'
+  | 'rapporteur'
+  | 'substitut'
+  | 'greffier'
+
+export type DecisionPartyInput = {
+  /** Pourvoyante, intimée, etc. */
+  role: EditorialPartyRole | string
+  name: string
+  /** Person ⇒ no representative; company ⇒ representative_name surfaces. */
+  party_type?: 'person' | 'company' | null
+  representative_name?: string | null
+  /** Counsel — typically "Me X, du Barreau de Y" — kept as nested rows
+   *  so we can render them as cards on the editor panel. */
+  lawyers?: Array<{ name: string; barreau?: string | null }>
+}
+
+export type DecisionJudgeInput = {
+  name: string
+  role: EditorialJudgeRole | string
+  /** 1-based display order; null leaves backend default (insertion order). */
+  order?: number | null
+}
+
+export type DecisionProceduralStepInput = {
+  /** Court that rendered the prior decision — free-text (TPI X, Cour
+   *  d'appel de …) since the historical chain isn't constrained to the
+   *  CourtType enum. */
+  court: string
+  /** ISO yyyy-mm-dd. */
+  decision_date: string
+  case_number?: string | null
+  outcome?: string | null
+}
+
+export type DecisionMoyenInput = {
+  /** 1-based position. Editor can renumber for re-ordering. */
+  number: number
+  title?: string | null
+  body_fr?: string | null
+  body_ht?: string | null
+  court_response_fr?: string | null
+  court_response_ht?: string | null
+  outcome?: 'accepted' | 'rejected' | 'partial' | string | null
+}
+
+/** Full create / replace payload for a decision. PATCH endpoints accept
+ *  a partial form of the same shape — the helper types
+ *  ``DecisionPatch`` below picks the relevant subset. */
+export type DecisionCreatePayload = {
+  slug: string
+  court: CourtType
+  chamber?: string | null
+  formation?: string | null
+  case_number?: string | null
+  /** ISO yyyy-mm-dd. */
+  decision_date: string
+  hearing_date?: string | null
+  outcome?: DecisionOutcome | null
+  parties_anonymized?: boolean
+  /** Subject tag keys — backend resolves to DecisionSubjectTag rows. */
+  subject_matter?: string[]
+  parties?: DecisionPartyInput[]
+  judges?: DecisionJudgeInput[]
+  procedural_history?: DecisionProceduralStepInput[]
+  moyens?: DecisionMoyenInput[]
+  dispositif_fr?: string | null
+  dispositif_ht?: string | null
+  full_text_fr?: string | null
+  full_text_ht?: string | null
+  summary_fr?: string | null
+  summary_ht?: string | null
+  headnotes_fr?: string | null
+  headnotes_ht?: string | null
+  comment?: string | null
+}
+
+/** PATCH body for an existing decision. Same shape as the create
+ *  payload but every field optional — only send what changed. */
+export type DecisionPatch = Partial<DecisionCreatePayload>
+
+/** Rich list-item that mirrors the public ``DecisionListItemRich`` but
+ *  adds the editorial_status pill — the editor list shows all statuses,
+ *  not just published. */
+export type EditorialDecisionListItem = DecisionListItemRich & {
+  editorial_status?: EditorialStatus
+}
+
+export type PaginatedEditorialDecisions = {
+  items: EditorialDecisionListItem[]
+  total: number
+  page: number
+  size: number
+}
+
+/** Editor list — sees every editorial status (draft + pending + …).
+ *  Pass ``editorial_status`` to narrow. Empty ⇒ no filter. */
+export async function listEditorialDecisions(params?: {
+  q?: string
+  court?: CourtType
+  from?: string
+  to?: string
+  subject?: string
+  editorial_status?: EditorialStatus
+  limit?: number
+  offset?: number
+}) {
+  return apiGet<PaginatedEditorialDecisions>('/editorial/decisions', {
+    params,
+  })
+}
+
+/** Editorial detail — returns drafts the public route 404s on. */
+export async function getEditorialDecisionBySlug(slug: string) {
+  return apiGet<DecisionDetail>(
+    `/editorial/decisions/${encodeURIComponent(slug)}`,
+  )
+}
+
+/** Create a new draft decision. Returns the freshly-inserted row so the
+ *  caller can redirect to its editorial detail page. */
+export async function createDecision(body: DecisionCreatePayload) {
+  return apiPost<DecisionDetail>('/editorial/decisions', body)
+}
+
+/** Patch metadata / structured fields of an existing decision. Backend
+ *  no-ops unchanged keys; the helper sends only the fields the caller
+ *  passes. */
+export async function updateDecision(slug: string, patch: DecisionPatch) {
+  return apiPatch<DecisionDetail>(
+    `/editorial/decisions/${encodeURIComponent(slug)}`,
+    patch,
+  )
+}
+
+/** Hard-delete a draft decision (and cascade its parties / judges /
+ *  moyens / procedural steps). Refuses on published rows — editor must
+ *  unpublish first. */
+export async function deleteDecision(slug: string): Promise<void> {
+  return apiDelete(`/editorial/decisions/${encodeURIComponent(slug)}`)
+}
+
+/** Submit a draft for peer review. Flips ``editorial_status`` to
+ *  ``pending_review``; idempotent on already-pending rows. */
+export async function submitDecisionForReview(slug: string) {
+  return apiPost<DecisionDetail>(
+    `/editorial/decisions/${encodeURIComponent(slug)}/submit-for-review`,
+  )
+}
+
+/** Publish (or approve a pending review and publish in one shot). */
+export async function publishDecision(slug: string) {
+  return apiPost<DecisionDetail>(
+    `/editorial/decisions/${encodeURIComponent(slug)}/publish`,
+  )
+}
+
+/** Unpublish a published decision back to draft. Comment is required
+ *  for the audit log. */
+export async function unpublishDecision(slug: string, comment: string) {
+  return apiPost<{ ok: boolean }>(
+    `/editorial/decisions/${encodeURIComponent(slug)}/unpublish`,
+    { comment },
+  )
+}
+
+/** Send a "needs changes" signal back to the author. Flips
+ *  ``editorial_status`` to ``rejected`` with a comment attached. */
+export async function requestDecisionChanges(slug: string, comment: string) {
+  return apiPost<{ ok: boolean }>(
+    `/editorial/decisions/${encodeURIComponent(slug)}/request-changes`,
+    { comment },
+  )
+}
