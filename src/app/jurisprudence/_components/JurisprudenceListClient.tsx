@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'motion/react'
-import { ArrowRight, Filter, RotateCcw, Search } from 'lucide-react'
+import { ArrowRight, Filter, RotateCcw, Search, ShieldCheck } from 'lucide-react'
 
 import { useT } from '@/i18n/useT'
 import { Button } from '@/components/ui/button'
@@ -11,11 +11,15 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import { StandardPageHeader } from '@/components/shared/StandardPageHeader'
 import { DecisionListItem } from '@/components/jurisprudence/DecisionListItem'
 import { cn } from '@/lib/utils'
+import { useEditorMode } from '@/lib/hooks/useEditorMode'
 import {
   listDecisions,
+  listEditorialDecisions,
   type CourtType,
   type DecisionListItemRich,
   type DecisionSubjectTag,
+  type EditorialDecisionListItem,
+  type EditorialStatus,
 } from '@/lib/api/endpoints'
 
 const COURT_OPTIONS: CourtType[] = [
@@ -29,6 +33,24 @@ const COURT_OPTIONS: CourtType[] = [
 
 const PAGE_SIZE = 20
 
+const EDITOR_STATUS_FILTERS: Array<{
+  value: 'all' | EditorialStatus
+  labelKey: string
+}> = [
+  { value: 'all', labelKey: 'decisionEditor.list.statusAll' },
+  { value: 'draft', labelKey: 'decisionEditor.list.statusDraft' },
+  { value: 'pending_review', labelKey: 'decisionEditor.list.statusPending' },
+  { value: 'published', labelKey: 'decisionEditor.list.statusPublished' },
+  { value: 'rejected', labelKey: 'decisionEditor.list.statusRejected' },
+]
+
+const EDITOR_STATUS_TONE: Record<EditorialStatus, string> = {
+  draft: 'bg-amber-100 text-amber-900 border-amber-200',
+  pending_review: 'bg-sky-100 text-sky-900 border-sky-200',
+  published: 'bg-emerald-100 text-emerald-900 border-emerald-200',
+  rejected: 'bg-red-100 text-red-900 border-red-200',
+}
+
 /**
  * Interactive index of court decisions — search, court/year/subject
  * filters, paginated list. Server-rendered shell wraps this client
@@ -37,8 +59,9 @@ const PAGE_SIZE = 20
 export default function JurisprudenceListClient() {
   const { t, language } = useT()
   const isFr = language === 'fr'
+  const { isEditor } = useEditorMode()
 
-  const [items, setItems] = useState<DecisionListItemRich[]>([])
+  const [items, setItems] = useState<EditorialDecisionListItem[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -50,6 +73,11 @@ export default function JurisprudenceListClient() {
   const [court, setCourt] = useState<CourtType | 'all'>('all')
   const [year, setYear] = useState<string>('all')
   const [subject, setSubject] = useState<string>('all')
+  // Editor-only — defaults to "all" so editors see drafts alongside
+  // published; ignored entirely for non-editors (we always go through
+  // the public endpoint, which already filters to published).
+  const [editorialStatus, setEditorialStatus] =
+    useState<'all' | EditorialStatus>('all')
   const [page, setPage] = useState(1)
 
   // Debounce the search input so we don't hammer the API on every
@@ -80,15 +108,30 @@ export default function JurisprudenceListClient() {
 
     const run = async () => {
       try {
-        const res = await listDecisions({
-          q: debouncedQuery || undefined,
-          court: court === 'all' ? undefined : court,
-          from,
-          to,
-          subject: subject === 'all' ? undefined : subject,
-          limit: PAGE_SIZE,
-          offset: (page - 1) * PAGE_SIZE,
-        })
+        // Editors get the editorial endpoint so drafts / pending-review
+        // rows are visible alongside published ones. Non-editors stay on
+        // the public endpoint which silently filters drafts out.
+        const res = isEditor
+          ? await listEditorialDecisions({
+              q: debouncedQuery || undefined,
+              court: court === 'all' ? undefined : court,
+              from,
+              to,
+              subject: subject === 'all' ? undefined : subject,
+              editorial_status:
+                editorialStatus === 'all' ? undefined : editorialStatus,
+              limit: PAGE_SIZE,
+              offset: (page - 1) * PAGE_SIZE,
+            })
+          : await listDecisions({
+              q: debouncedQuery || undefined,
+              court: court === 'all' ? undefined : court,
+              from,
+              to,
+              subject: subject === 'all' ? undefined : subject,
+              limit: PAGE_SIZE,
+              offset: (page - 1) * PAGE_SIZE,
+            })
         if (cancelled) return
         setItems(res.items ?? [])
         setTotal(res.total ?? 0)
@@ -110,7 +153,7 @@ export default function JurisprudenceListClient() {
     return () => {
       cancelled = true
     }
-  }, [debouncedQuery, court, year, subject, page])
+  }, [debouncedQuery, court, year, subject, page, isEditor, editorialStatus])
 
   // Filter setters that also reset the page cursor and flip the
   // loading flag on, sidestepping Next 16's set-state-in-effect
@@ -133,6 +176,11 @@ export default function JurisprudenceListClient() {
   }
   const handlePageChange = (next: number) => {
     setPage(next)
+    setLoading(true)
+  }
+  const handleEditorialStatusChange = (next: 'all' | EditorialStatus) => {
+    setEditorialStatus(next)
+    setPage(1)
     setLoading(true)
   }
 
@@ -168,6 +216,7 @@ export default function JurisprudenceListClient() {
     setCourt('all')
     setYear('all')
     setSubject('all')
+    setEditorialStatus('all')
     setPage(1)
     setLoading(true)
   }
@@ -214,6 +263,36 @@ export default function JurisprudenceListClient() {
       </StandardPageHeader>
 
       <div className="container py-8 lg:py-12">
+        {/* Editor-only status switcher — drafts/pending live in the
+            editorial table; this row gives editors a one-click way to
+            surface them on the same public surface they edit on. */}
+        {isEditor && (
+          <div className="mb-4 flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-amber-700">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              {isFr ? 'Vue éditeur' : 'Vi editè'}
+            </span>
+            {EDITOR_STATUS_FILTERS.map((f) => {
+              const active = editorialStatus === f.value
+              return (
+                <button
+                  key={f.value}
+                  type="button"
+                  onClick={() => handleEditorialStatusChange(f.value)}
+                  className={cn(
+                    'inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
+                    active
+                      ? 'bg-primary text-white'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200',
+                  )}
+                >
+                  {t(f.labelKey)}
+                </button>
+              )
+            })}
+          </div>
+        )}
+
         {/* Filter bar */}
         <div className="mb-8 rounded-2xl border border-slate-200 bg-slate-50/40 p-4">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">
@@ -300,17 +379,40 @@ export default function JurisprudenceListClient() {
               }}
               className="space-y-4"
             >
-              {items.map((decision) => (
-                <motion.div
-                  key={decision.id}
-                  variants={{
-                    hidden: { opacity: 0, y: 8 },
-                    visible: { opacity: 1, y: 0 },
-                  }}
-                >
-                  <DecisionListItem decision={decision} />
-                </motion.div>
-              ))}
+              {items.map((decision) => {
+                const status = decision.editorial_status as
+                  | EditorialStatus
+                  | undefined
+                const showBadge =
+                  isEditor && status && status !== 'published'
+                return (
+                  <motion.div
+                    key={decision.id}
+                    variants={{
+                      hidden: { opacity: 0, y: 8 },
+                      visible: { opacity: 1, y: 0 },
+                    }}
+                    className="relative"
+                  >
+                    {showBadge && (
+                      <span
+                        className={cn(
+                          'absolute -top-2 left-4 z-10 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm',
+                          EDITOR_STATUS_TONE[status],
+                        )}
+                      >
+                        <ShieldCheck className="w-3 h-3" />
+                        {t(`decisionEditor.list.status${
+                          status === 'pending_review'
+                            ? 'Pending'
+                            : status.charAt(0).toUpperCase() + status.slice(1)
+                        }`)}
+                      </span>
+                    )}
+                    <DecisionListItem decision={decision} />
+                  </motion.div>
+                )
+              })}
             </motion.div>
 
             {/* Pagination */}
