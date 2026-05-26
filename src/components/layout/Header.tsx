@@ -133,8 +133,7 @@ export default function Header() {
             and merges seamlessly with the megamenu's own top accent when open. */}
         <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-red-500 via-red-600 to-red-500" />
 
-        <div className="container h-full flex items-center justify-between">
-          {/* 1. LOGO (Always Visible) */}
+        <div className="h-full flex items-center justify-between w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           {/* 1. LOGO (Always Visible) */}
           <div className="flex-shrink-0 z-20 relative">
             <BrandLogo
