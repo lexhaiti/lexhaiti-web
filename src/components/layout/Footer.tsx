@@ -16,8 +16,12 @@ export default function Footer() {
 
   return (
     <footer className="relative bg-primary text-slate-300 overflow-hidden">
-      {/* 1. Red Gradient Top Border */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-red-600 to-red-500" />
+      {/* Top accent — a flag-inspired red/blue hairline, faded at the
+          edges. The previous 1px solid-red stripe read as a glitch
+          when stacked under a same-navy section (e.g. the closing
+          maxim on /a-propos); the gradient-with-transparency endpoints
+          let the footer dissolve into whatever sits above it. */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/70 to-transparent" />
 
       {/* Decorative Background Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-64 bg-blue-900/10 blur-[100px] rounded-full pointer-events-none" />

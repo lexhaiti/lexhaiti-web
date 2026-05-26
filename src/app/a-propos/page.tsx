@@ -264,51 +264,72 @@ export default async function Page() {
         </p>
       </div>
 
-      {/* Closing maxim — dark authoritative band that mirrors the hero,
-          giving the page a strong bookend. The Latin maxim sits
-          centered with the translation below, separated by an amber
-          accent. No decorative quote glyphs — the typography does the
-          heavy lifting. */}
-      <div className="relative bg-primary text-white overflow-hidden">
+      {/* Closing maxim — a single dignified bookend. Same navy as the
+          footer below, but with a soft top gradient that lifts the
+          maxim off the white "association" panel above, and a CTA
+          band at the bottom that gives the page somewhere to land
+          before the footer's structural content takes over. The
+          previous version stacked too many elements (body line + CTA
+          button) under the quote and ran straight into the footer's
+          red stripe with no breathing room; we let the typography
+          carry the moment instead. */}
+      <section className="relative bg-primary text-white overflow-hidden">
+        {/* Top fade — softens the join with the preceding white panel
+            so the navy doesn't slam in. */}
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/20 to-transparent pointer-events-none" />
+        {/* Subtle grid texture, kept very low contrast. */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:32px_32px]" />
-        <div className="relative container py-20 lg:py-28">
-          <figure className="max-w-4xl mx-auto text-center animate-in fade-in slide-in-from-bottom-2 duration-700">
-            <div className="h-[3px] w-16 bg-amber-400 mx-auto mb-10" />
+        {/* Centered radial glow behind the maxim — warms the navy
+            wall and pulls the eye to the quote. */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[640px] h-[640px] bg-amber-500/[0.06] blur-[120px] rounded-full pointer-events-none" />
+
+        <div className="relative container py-24 lg:py-32">
+          <figure className="max-w-3xl mx-auto text-center animate-in fade-in slide-in-from-bottom-2 duration-700">
+            {/* Amber hairline — thinner & shorter than before so the
+                quote doesn't feel framed by hardware. */}
+            <div className="h-px w-10 bg-amber-400/80 mx-auto mb-10" />
 
             <blockquote>
               <p
-                className="font-serif text-2xl sm:text-3xl lg:text-[2.5rem] font-semibold leading-tight tracking-wide text-white/95"
+                className="font-serif text-3xl sm:text-4xl lg:text-[2.75rem] font-medium leading-[1.15] tracking-tight text-white"
                 lang="la"
               >
                 Publicitas iuris fundamentum libertatis.
               </p>
-              <p className="mt-6 font-serif text-lg sm:text-xl lg:text-2xl italic leading-relaxed text-white/60">
+              <p className="mt-7 font-serif text-lg sm:text-xl italic leading-relaxed text-amber-200/80">
                 {isFr
                   ? 'La publicité du droit est le fondement de la liberté.'
                   : 'Piblisite dwa a se fondasyon libète a.'}
               </p>
             </blockquote>
 
-            <div className="mt-10 pt-8 border-t border-white/10">
-              <figcaption className="text-sm lg:text-base text-white/50 leading-relaxed">
-                {isFr
-                  ? 'Chaque citoyen·ne a le droit de lire la loi qui le gouverne.'
-                  : 'Chak sitwayen gen dwa li lwa ki gouvène l la.'}
-              </figcaption>
-
-              <div className="mt-7 flex justify-center">
-                <Link
-                  href="/lois"
-                  className="inline-flex items-center gap-2 bg-white text-primary hover:bg-slate-100 px-7 py-3 rounded-full font-semibold transition-all active:scale-[0.99] shadow-sm hover:shadow-md"
-                >
-                  <BookOpen className="w-4 h-4 text-amber-500" />
-                  {isFr ? 'Explorer les textes' : 'Eksplore tèks yo'}
-                </Link>
-              </div>
-            </div>
+            <figcaption className="mt-12 text-[11px] uppercase tracking-[0.22em] text-white/40">
+              {isFr ? 'Maxime fondatrice' : 'Maksim fondatè'}
+            </figcaption>
           </figure>
         </div>
-      </div>
+
+        {/* Bottom-of-section CTA strip — moved out of the figure and
+            given its own quiet band so the maxim breathes, and so the
+            section visually steps down into the footer instead of
+            ending on an isolated white button surrounded by navy. */}
+        <div className="relative border-t border-white/[0.07] bg-black/15">
+          <div className="container py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-white/55 text-center sm:text-left max-w-xl">
+              {isFr
+                ? 'Chaque citoyen·ne a le droit de lire la loi qui le gouverne.'
+                : 'Chak sitwayen gen dwa li lwa ki gouvène l la.'}
+            </p>
+            <Link
+              href="/lois"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/[0.08] hover:border-white/25 transition-colors"
+            >
+              <BookOpen className="w-4 h-4 text-amber-300" />
+              {isFr ? 'Explorer les textes' : 'Eksplore tèks yo'}
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
