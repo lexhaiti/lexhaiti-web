@@ -74,9 +74,10 @@ export default async function Page() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Dark hero band — matches the rest of the site */}
-      <div className="relative bg-primary text-white border-b border-white/5">
-        <div className="container py-16 lg:py-24 pt-28 lg:pt-36">
+      {/* Dark hero band — subtle grid texture for depth */}
+      <div className="relative bg-primary text-white border-b border-white/5 overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:32px_32px]" />
+        <div className="relative container py-16 lg:py-24 pt-28 lg:pt-36">
           <Breadcrumb
             className="mb-6"
             items={[
@@ -95,21 +96,21 @@ export default async function Page() {
               : "LexHaïti se enfrastrikti nimerik dwa ayisyen — yon kòpis estriktire, sitabl ak bileng, ouvè pou tout moun, fèt pou li dire."}
           </p>
         </div>
+        {/* Amber accent line — matches Explorer cards design language */}
+        <div className="h-[3px] w-full bg-amber-400" />
       </div>
 
-
-      {/* Stats — full-width band, no max-width on the row so the three
-          numbers stretch comfortably on big screens too. */}
+      {/* Stats — three key numbers in bordered cards */}
       <div className="border-b bg-gradient-to-b from-slate-50/60 to-white">
         <div className="container py-14 lg:py-16">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 lg:gap-6">
             {stats.map((stat, idx) => (
               <div
                 key={idx}
-                className="text-center sm:text-left animate-in fade-in slide-in-from-bottom-2 duration-500"
+                className="relative rounded-xl border border-slate-200/80 bg-white p-6 animate-in fade-in slide-in-from-bottom-2 duration-500"
                 style={{ animationDelay: `${idx * 80}ms` }}
               >
-                <p className="text-5xl lg:text-6xl font-black text-slate-900 leading-none tabular-nums">
+                <p className="text-4xl lg:text-5xl font-black text-slate-900 leading-none tabular-nums">
                   {stat.value}
                 </p>
                 <p className="text-sm text-slate-700 mt-3 font-bold uppercase tracking-wider">
@@ -124,9 +125,7 @@ export default async function Page() {
         </div>
       </div>
 
-      {/* Values — 4 cards, two rows on tablet, one row on lg+. The
-          icon tile flips to filled-primary on hover for a tactile
-          read. */}
+      {/* Values — two principle cards with amber top accents */}
       <div className="container py-20 lg:py-24">
         <div className="mb-12 max-w-2xl">
           <p className="text-xs font-bold uppercase tracking-widest text-primary/65 mb-3">
@@ -138,22 +137,25 @@ export default async function Page() {
               : 'De prensip ki gide chak desizyon teknik.'}
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
           {values.map((value, idx) => (
             <div
               key={idx}
-              className="group animate-in fade-in slide-in-from-bottom-2 duration-500"
+              className="group rounded-2xl border border-slate-200/80 bg-white overflow-hidden hover:border-slate-300 hover:shadow-lg transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 duration-500"
               style={{ animationDelay: `${idx * 80}ms` }}
             >
-              <div className="mb-5 inline-flex p-3.5 rounded-xl bg-primary/[0.06] border border-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:border-primary group-hover:shadow-md">
-                <value.icon className="w-6 h-6" />
+              <div className="h-[2px] w-full bg-amber-400" />
+              <div className="p-7 lg:p-8">
+                <div className="mb-5 inline-flex p-3.5 rounded-xl bg-primary/[0.06] border border-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:border-primary">
+                  <value.icon className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-slate-900 leading-tight">
+                  {value.title}
+                </h3>
+                <p className="text-slate-600 leading-relaxed">
+                  {value.description}
+                </p>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-slate-900 leading-tight">
-                {value.title}
-              </h3>
-              <p className="text-slate-600 leading-relaxed">
-                {value.description}
-              </p>
             </div>
           ))}
         </div>
@@ -213,7 +215,7 @@ export default async function Page() {
               ].map((item, idx) => (
                 <li
                   key={idx}
-                  className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5"
+                  className="flex items-start gap-4 rounded-xl border border-slate-200/80 bg-white p-5 hover:border-slate-300 hover:shadow-sm transition-all duration-200"
                 >
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary/[0.06] border border-primary/10 text-primary">
                     <item.icon className="w-5 h-5" />
@@ -233,30 +235,45 @@ export default async function Page() {
         </div>
       </div>
 
-      {/* Governance — who runs LexHaïti. Replaces the earlier "open
-          source" framing with the truthful description: an editorial
-          project backed by a non-profit association (Ayiti Dijital
-          e.V., incorporated under German law), not a community fork. */}
+      {/* Governance — editorial card with amber left accent */}
       <div className="container py-20 lg:py-24">
-        <p className="text-xs font-bold uppercase tracking-widest text-primary/65 mb-3 flex items-center gap-2">
-          <Users className="w-3.5 h-3.5" />
-          {isFr ? 'Gouvernance' : 'Gouvènans'}
-        </p>
-        <h2 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight mb-5">
-          {isFr
-            ? "Une association au service de l'accès au droit."
-            : 'Yon asosiyasyon pou ouvri aksè dwa.'}
-        </h2>
-        <p className="text-slate-600 leading-relaxed text-lg mb-4">
-          {isFr
-            ? "LexHaïti est édité par Ayiti Dijital e.V., une association sans but lucratif de droit allemand dont la mission est de bâtir l'infrastructure numérique publique d'Haïti — en commençant par le droit."
-            : "LexHaïti edite pa Ayiti Dijital e.V., yon asosiyasyon san bi likratif dwa alman ki gen pou misyon bati enfrastrikti nimerik piblik Ayiti — kòmanse ak dwa."}
-        </p>
-        <p className="text-slate-600 leading-relaxed text-lg">
-          {isFr
-            ? 'La plateforme reste gratuite, ouverte à toutes les juridictions, et financée par des partenariats institutionnels — pas par la publicité ou les abonnements.'
-            : 'Platfòm nan rete gratis, ouvè pou tout jiridiksyon, ak finanse pa patenarya enstitisyonèl — pa pa piblisite oswa abònman.'}
-        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 lg:gap-16 items-start">
+          <div className="relative pl-6 border-l-[3px] border-amber-400">
+            <p className="text-xs font-bold uppercase tracking-widest text-primary/65 mb-3 flex items-center gap-2">
+              <Users className="w-3.5 h-3.5" />
+              {isFr ? 'Gouvernance' : 'Gouvènans'}
+            </p>
+            <h2 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight mb-5">
+              {isFr
+                ? "Une association au service de l'accès au droit."
+                : 'Yon asosiyasyon pou ouvri aksè dwa.'}
+            </h2>
+            <p className="text-slate-600 leading-relaxed text-lg mb-4 max-w-3xl">
+              {isFr
+                ? "LexHaïti est édité par Ayiti Dijital e.V., une association sans but lucratif de droit allemand dont la mission est de bâtir l'infrastructure numérique publique d'Haïti — en commençant par le droit."
+                : "LexHaïti edite pa Ayiti Dijital e.V., yon asosiyasyon san bi likratif dwa alman ki gen pou misyon bati enfrastrikti nimerik piblik Ayiti — kòmanse ak dwa."}
+            </p>
+            <p className="text-slate-600 leading-relaxed text-lg max-w-3xl">
+              {isFr
+                ? 'La plateforme reste gratuite, ouverte à toutes les juridictions, et financée par des partenariats institutionnels — pas par la publicité ou les abonnements.'
+                : 'Platfòm nan rete gratis, ouvè pou tout jiridiksyon, ak finanse pa patenarya enstitisyonèl — pa pa piblisite oswa abònman.'}
+            </p>
+          </div>
+
+          {/* Organisation badge */}
+          <div className="flex-shrink-0 rounded-2xl border border-slate-200/80 bg-white p-6 lg:p-8 text-center">
+            <div className="inline-flex p-3.5 rounded-xl bg-primary/[0.06] border border-primary/10 text-primary mb-4">
+              <Building2 className="w-6 h-6" />
+            </div>
+            <p className="text-sm font-bold text-slate-900">Ayiti Dijital e.V.</p>
+            <p className="text-xs text-slate-500 mt-1">
+              {isFr ? 'Association à but non lucratif' : 'Asosyasyon san bi likratif'}
+            </p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {isFr ? 'Droit allemand' : 'Dwa alman'}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Maxim — closing editorial beat. Light-card design on a
@@ -268,7 +285,7 @@ export default async function Page() {
           sentence + CTA sit under the divider as the call to
           action. Lighter palette than the dark hero so the page
           breathes at its close. */}
-      <div className="bg-slate-50/70 border-y border-slate-200/60 py-20 lg:py-28">
+      <div className="bg-slate-50/70 border-y border-slate-200/60 py-16 lg:py-20">
         <div className="container">
           <figure className="relative max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03),0_8px_24px_-12px_rgba(15,23,42,0.08)] px-8 sm:px-12 lg:px-16 py-12 lg:py-16 animate-in fade-in slide-in-from-bottom-2 duration-700">
             {/* Decorative quote glyphs — bronze, anchored to the
