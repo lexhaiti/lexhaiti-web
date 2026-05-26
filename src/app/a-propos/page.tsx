@@ -75,14 +75,8 @@ export default async function Page() {
   return (
     <div className="min-h-screen bg-white">
       {/* Dark hero band — matches the rest of the site */}
-      <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
-          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px]" />
-        </div>
-
-        <div className="relative z-10 container py-16 lg:py-24 pt-28 lg:pt-36">
+      <div className="relative bg-primary text-white border-b border-white/5">
+        <div className="container py-16 lg:py-24 pt-28 lg:pt-36">
           <Breadcrumb
             className="mb-6"
             items={[
@@ -102,6 +96,7 @@ export default async function Page() {
           </p>
         </div>
       </div>
+
 
       {/* Stats — full-width band, no max-width on the row so the three
           numbers stretch comfortably on big screens too. */}
@@ -332,7 +327,7 @@ export default async function Page() {
               <div className="mt-7 flex justify-center">
                 <Link
                   href="/lois"
-                  className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-md font-semibold transition-all active:scale-[0.99] shadow-sm hover:shadow-md"
+                  className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-7 py-3 rounded-full font-semibold transition-all active:scale-[0.99] shadow-sm hover:shadow-md"
                 >
                   <BookOpen className="w-4 h-4 text-amber-300" />
                   {isFr ? 'Explorer les textes' : 'Eksplore tèks yo'}

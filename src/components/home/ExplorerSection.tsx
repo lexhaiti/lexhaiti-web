@@ -1,41 +1,39 @@
-// Server Component — no client state. Entrance animation runs on
-// mount via tailwindcss-animate utilities; the previous staggered
-// framer-motion reveal is replaced by a single fade-in (the stagger
-// nuance was barely visible on a 4-card row anyway).
+// Server Component — no client state.
 
 import Link from 'next/link'
-import Image from 'next/image'
+import { ArrowRight, BookOpen, Landmark, Scale, HelpCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SectionHeading } from '@/components/shared/SectionHeading'
 import { getT } from '@/i18n/server'
 
-// Copy lives at `home.explorer.*` in i18n/{fr,ht}.ts.
-// Card hrefs + image paths stay here because they are routing/asset
-// data, not translatable strings.
 const CARDS = [
   {
     key: 'constitutions' as const,
     href: '/lois?category=constitution',
-    image: '/constitutions.png',
-    alt: 'Constitutions haïtiennes',
+    Icon: Landmark,
+    accent: 'from-primary to-blue-900',
+    number: '01',
   },
   {
     key: 'codes' as const,
     href: '/lois?category=code',
-    image: '/codes.png',
-    alt: 'Codes juridiques',
+    Icon: BookOpen,
+    accent: 'from-primary to-slate-800',
+    number: '02',
   },
   {
     key: 'lois' as const,
     href: '/lois?category=loi',
-    image: '/decrets-lois.png',
-    alt: 'Lois et décrets',
+    Icon: Scale,
+    accent: 'from-slate-800 to-primary',
+    number: '03',
   },
   {
     key: 'aide' as const,
     href: '/a-propos',
-    image: '/faq.png',
-    alt: 'Aide et FAQ',
+    Icon: HelpCircle,
+    accent: 'from-slate-700 to-slate-900',
+    number: '04',
   },
 ]
 
@@ -47,66 +45,53 @@ export default async function ExplorerSection() {
       <div className="container">
         <SectionHeading title={t('home.explorer.eyebrow')} />
 
-        {/* Card grid — 4 cards.
-            Mobile: 1 col. md/lg (incl. iPad Pro 12.9" portrait at 1024): 2x2.
-            xl+ (real desktop): single row of 4. */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 lg:gap-6">
           {CARDS.map((card) => (
-            <div key={card.key}>
-              {/* Whole-card link — entire card is clickable. No underline
-                  on hover; the lift + shadow + border shift signal
-                  interactivity instead. */}
-              <Link
-                href={card.href}
+            <Link
+              key={card.key}
+              href={card.href}
+              className={cn(
+                'group relative flex flex-col rounded-2xl overflow-hidden',
+                'border border-slate-200/80 bg-white',
+                'hover:border-slate-300 hover:shadow-lg',
+                'hover:-translate-y-1 transition-all duration-300',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
+              )}
+            >
+              {/* Icon header — gradient background with centered icon */}
+              <div
                 className={cn(
-                  'group block h-full rounded-xl overflow-hidden',
-                  'border border-slate-200 bg-white',
-                  'shadow-sm hover:shadow-xl hover:border-slate-300',
-                  'hover:-translate-y-1 transition-all duration-300',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
+                  'relative flex items-center justify-center h-40 sm:h-44',
+                  'bg-gradient-to-br',
+                  card.accent,
                 )}
               >
-                {/* Photographic image — taller image area + a baseline
-                    zoom-in (scale-110) so the subject reads with presence
-                    even when the card is narrow (e.g. 4-col xl layout). */}
-                <div className="relative h-48 sm:h-56 lg:h-60 xl:h-56 w-full overflow-hidden bg-primary">
-                  {/* ``next/image`` swap: serves WebP/AVIF + width-
-                      targeted srcset, so we ship the right pixel size
-                      per viewport instead of the same 1-6 MB PNG. The
-                      ``sizes`` value mirrors the card grid breakpoints
-                      (4-col xl, 2-col md, 1-col mobile). */}
-                  <Image
-                    src={card.image}
-                    alt={card.alt}
-                    fill
-                    sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
-                    className={cn(
-                      'object-cover object-center origin-center',
-                      // Baseline zoom keeps the focal subject prominent when
-                      // the image is squeezed into a narrow card.
-                      'scale-110 group-hover:scale-[1.18]',
-                      'transition-transform duration-500',
-                    )}
-                  />
-                  {/* Soft bottom vignette for depth + a touch of edge
-                      darkening so the amber line below pops. */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
-                </div>
+                {/* Subtle grid texture */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:20px_20px]" />
+                <card.Icon className="relative w-10 h-10 text-white/90 group-hover:scale-110 transition-transform duration-300" />
+                {/* Number badge */}
+                <span className="absolute top-4 right-4 text-[10px] font-bold tracking-widest text-white/40 uppercase">
+                  {card.number}
+                </span>
+              </div>
 
-                {/* Amber accent — Justice-Canada signature element. */}
-                <div className="h-[3px] w-full bg-amber-400 transition-colors duration-300 group-hover:bg-amber-500" />
+              {/* Amber accent line */}
+              <div className="h-[2px] w-full bg-amber-400" />
 
-                {/* Text body */}
-                <div className="flex flex-col p-6 lg:p-7">
-                  <h3 className="text-lg lg:text-xl font-bold text-primary">
-                    {t(`home.explorer.cards.${card.key}.title`)}
-                  </h3>
-                  <p className="mt-3 text-sm text-slate-600 leading-relaxed">
-                    {t(`home.explorer.cards.${card.key}.description`)}
-                  </p>
-                </div>
-              </Link>
-            </div>
+              {/* Text content */}
+              <div className="flex flex-col flex-1 p-6">
+                <h3 className="text-base lg:text-lg font-bold text-slate-900 leading-tight">
+                  {t(`home.explorer.cards.${card.key}.title`)}
+                </h3>
+                <p className="mt-2.5 text-sm text-slate-500 leading-relaxed flex-1">
+                  {t(`home.explorer.cards.${card.key}.description`)}
+                </p>
+                <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  Explorer
+                  <ArrowRight className="w-3 h-3" />
+                </span>
+              </div>
+            </Link>
           ))}
         </div>
       </div>
