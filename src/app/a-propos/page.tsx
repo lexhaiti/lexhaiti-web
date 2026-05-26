@@ -74,10 +74,15 @@ export default async function Page() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Dark hero band — subtle grid texture for depth */}
-      <div className="relative bg-primary text-white border-b border-white/5 overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:32px_32px]" />
-        <div className="relative container py-16 lg:py-24 pt-28 lg:pt-36">
+      {/* Dark hero band — matches the rest of the site */}
+      <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px]" />
+        </div>
+
+        <div className="relative z-10 container py-16 lg:py-24 pt-28 lg:pt-36">
           <Breadcrumb
             className="mb-6"
             items={[
@@ -96,21 +101,20 @@ export default async function Page() {
               : "LexHaïti se enfrastrikti nimerik dwa ayisyen — yon kòpis estriktire, sitabl ak bileng, ouvè pou tout moun, fèt pou li dire."}
           </p>
         </div>
-        {/* Amber accent line — matches Explorer cards design language */}
-        <div className="h-[3px] w-full bg-amber-400" />
       </div>
 
-      {/* Stats — three key numbers in bordered cards */}
+      {/* Stats — full-width band, no max-width on the row so the three
+          numbers stretch comfortably on big screens too. */}
       <div className="border-b bg-gradient-to-b from-slate-50/60 to-white">
         <div className="container py-14 lg:py-16">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 lg:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             {stats.map((stat, idx) => (
               <div
                 key={idx}
-                className="relative rounded-xl border border-slate-200/80 bg-white p-6 animate-in fade-in slide-in-from-bottom-2 duration-500"
+                className="text-center sm:text-left animate-in fade-in slide-in-from-bottom-2 duration-500"
                 style={{ animationDelay: `${idx * 80}ms` }}
               >
-                <p className="text-4xl lg:text-5xl font-black text-slate-900 leading-none tabular-nums">
+                <p className="text-5xl lg:text-6xl font-black text-slate-900 leading-none tabular-nums">
                   {stat.value}
                 </p>
                 <p className="text-sm text-slate-700 mt-3 font-bold uppercase tracking-wider">
@@ -125,7 +129,9 @@ export default async function Page() {
         </div>
       </div>
 
-      {/* Values — two principle cards with amber top accents */}
+      {/* Values — 4 cards, two rows on tablet, one row on lg+. The
+          icon tile flips to filled-primary on hover for a tactile
+          read. */}
       <div className="container py-20 lg:py-24">
         <div className="mb-12 max-w-2xl">
           <p className="text-xs font-bold uppercase tracking-widest text-primary/65 mb-3">
@@ -137,25 +143,22 @@ export default async function Page() {
               : 'De prensip ki gide chak desizyon teknik.'}
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
           {values.map((value, idx) => (
             <div
               key={idx}
-              className="group rounded-2xl border border-slate-200/80 bg-white overflow-hidden hover:border-slate-300 hover:shadow-lg transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 duration-500"
+              className="group animate-in fade-in slide-in-from-bottom-2 duration-500"
               style={{ animationDelay: `${idx * 80}ms` }}
             >
-              <div className="h-[2px] w-full bg-amber-400" />
-              <div className="p-7 lg:p-8">
-                <div className="mb-5 inline-flex p-3.5 rounded-xl bg-primary/[0.06] border border-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:border-primary">
-                  <value.icon className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-slate-900 leading-tight">
-                  {value.title}
-                </h3>
-                <p className="text-slate-600 leading-relaxed">
-                  {value.description}
-                </p>
+              <div className="mb-5 inline-flex p-3.5 rounded-xl bg-primary/[0.06] border border-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:border-primary group-hover:shadow-md">
+                <value.icon className="w-6 h-6" />
               </div>
+              <h3 className="text-xl font-bold mb-3 text-slate-900 leading-tight">
+                {value.title}
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                {value.description}
+              </p>
             </div>
           ))}
         </div>
@@ -215,7 +218,7 @@ export default async function Page() {
               ].map((item, idx) => (
                 <li
                   key={idx}
-                  className="flex items-start gap-4 rounded-xl border border-slate-200/80 bg-white p-5 hover:border-slate-300 hover:shadow-sm transition-all duration-200"
+                  className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5"
                 >
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary/[0.06] border border-primary/10 text-primary">
                     <item.icon className="w-5 h-5" />
@@ -235,107 +238,59 @@ export default async function Page() {
         </div>
       </div>
 
-      {/* Governance — editorial card with amber left accent */}
+      {/* Governance — who runs LexHaïti. Replaces the earlier "open
+          source" framing with the truthful description: an editorial
+          project backed by a non-profit association (Ayiti Dijital
+          e.V., incorporated under German law), not a community fork. */}
       <div className="container py-20 lg:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 lg:gap-16 items-start">
-          <div className="relative pl-6 border-l-[3px] border-amber-400">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary/65 mb-3 flex items-center gap-2">
-              <Users className="w-3.5 h-3.5" />
-              {isFr ? 'Gouvernance' : 'Gouvènans'}
-            </p>
-            <h2 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight mb-5">
-              {isFr
-                ? "Une association au service de l'accès au droit."
-                : 'Yon asosiyasyon pou ouvri aksè dwa.'}
-            </h2>
-            <p className="text-slate-600 leading-relaxed text-lg mb-4 max-w-3xl">
-              {isFr
-                ? "LexHaïti est édité par Ayiti Dijital e.V., une association sans but lucratif de droit allemand dont la mission est de bâtir l'infrastructure numérique publique d'Haïti — en commençant par le droit."
-                : "LexHaïti edite pa Ayiti Dijital e.V., yon asosiyasyon san bi likratif dwa alman ki gen pou misyon bati enfrastrikti nimerik piblik Ayiti — kòmanse ak dwa."}
-            </p>
-            <p className="text-slate-600 leading-relaxed text-lg max-w-3xl">
-              {isFr
-                ? 'La plateforme reste gratuite, ouverte à toutes les juridictions, et financée par des partenariats institutionnels — pas par la publicité ou les abonnements.'
-                : 'Platfòm nan rete gratis, ouvè pou tout jiridiksyon, ak finanse pa patenarya enstitisyonèl — pa pa piblisite oswa abònman.'}
-            </p>
-          </div>
-
-          {/* Organisation badge */}
-          <div className="flex-shrink-0 rounded-2xl border border-slate-200/80 bg-white p-6 lg:p-8 text-center">
-            <div className="inline-flex p-3.5 rounded-xl bg-primary/[0.06] border border-primary/10 text-primary mb-4">
-              <Building2 className="w-6 h-6" />
-            </div>
-            <p className="text-sm font-bold text-slate-900">Ayiti Dijital e.V.</p>
-            <p className="text-xs text-slate-500 mt-1">
-              {isFr ? 'Association à but non lucratif' : 'Asosyasyon san bi likratif'}
-            </p>
-            <p className="text-xs text-slate-400 mt-0.5">
-              {isFr ? 'Droit allemand' : 'Dwa alman'}
-            </p>
-          </div>
-        </div>
+        <p className="text-xs font-bold uppercase tracking-widest text-primary/65 mb-3 flex items-center gap-2">
+          <Users className="w-3.5 h-3.5" />
+          {isFr ? 'Gouvernance' : 'Gouvènans'}
+        </p>
+        <h2 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight mb-5">
+          {isFr
+            ? "Une association au service de l'accès au droit."
+            : 'Yon asosiyasyon pou ouvri aksè dwa.'}
+        </h2>
+        <p className="text-slate-600 leading-relaxed text-lg mb-4">
+          {isFr
+            ? "LexHaïti est édité par Ayiti Dijital e.V., une association sans but lucratif de droit allemand dont la mission est de bâtir l'infrastructure numérique publique d'Haïti — en commençant par le droit."
+            : "LexHaïti edite pa Ayiti Dijital e.V., yon asosiyasyon san bi likratif dwa alman ki gen pou misyon bati enfrastrikti nimerik piblik Ayiti — kòmanse ak dwa."}
+        </p>
+        <p className="text-slate-600 leading-relaxed text-lg">
+          {isFr
+            ? 'La plateforme reste gratuite, ouverte à toutes les juridictions, et financée par des partenariats institutionnels — pas par la publicité ou les abonnements.'
+            : 'Platfòm nan rete gratis, ouvè pou tout jiridiksyon, ak finanse pa patenarya enstitisyonèl — pa pa piblisite oswa abònman.'}
+        </p>
       </div>
 
-      {/* Maxim — closing editorial beat. Light-card design on a
-          slate-50 ribbon: the Latin sentence sits LEFT in small-caps
-          serif bronze, the French translation sits RIGHT in italic
-          serif, separated by a vertical divider — like a facing-page
-          translation in a printed edition. Quote glyphs anchor the
-          corners as the only decoration. The closing programme
-          sentence + CTA sit under the divider as the call to
-          action. Lighter palette than the dark hero so the page
-          breathes at its close. */}
-      <div className="bg-slate-50/70 border-y border-slate-200/60 py-16 lg:py-20">
-        <div className="container">
-          <figure className="relative max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03),0_8px_24px_-12px_rgba(15,23,42,0.08)] px-8 sm:px-12 lg:px-16 py-12 lg:py-16 animate-in fade-in slide-in-from-bottom-2 duration-700">
-            {/* Decorative quote glyphs — bronze, anchored to the
-                corners of the card. ``aria-hidden`` because the
-                ``<figure>`` + ``<blockquote>`` already convey the
-                citation semantics to assistive tech. */}
-            <span
-              aria-hidden="true"
-              className="absolute top-4 left-5 font-serif text-4xl leading-none text-stone-400/70 select-none pointer-events-none"
-            >
-              ”
-            </span>
-            <span
-              aria-hidden="true"
-              className="absolute bottom-4 right-5 font-serif text-4xl leading-none text-stone-400/70 select-none pointer-events-none"
-            >
-              ”
-            </span>
+      {/* Closing maxim — dark authoritative band that mirrors the hero,
+          giving the page a strong bookend. The Latin maxim sits
+          centered with the translation below, separated by an amber
+          accent. No decorative quote glyphs — the typography does the
+          heavy lifting. */}
+      <div className="relative bg-primary text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:32px_32px]" />
+        <div className="relative container py-20 lg:py-28">
+          <figure className="max-w-4xl mx-auto text-center animate-in fade-in slide-in-from-bottom-2 duration-700">
+            <div className="h-[3px] w-16 bg-amber-400 mx-auto mb-10" />
 
-            {/* Facing-page layout: Latin LEFT, translation RIGHT,
-                divider between. Collapses to stacked on phones so
-                neither side gets squeezed. */}
-            <blockquote className="grid grid-cols-1 md:grid-cols-2 md:divide-x md:divide-stone-200 gap-8 md:gap-0">
-              <div className="md:pr-10 lg:pr-14">
-                <p
-                  // Small-caps serif in warm bronze — gives the
-                  // sentence the weight of a printed inscription
-                  // without screaming.
-                  className="font-serif text-2xl sm:text-3xl lg:text-4xl font-semibold leading-[1.15] tracking-wide uppercase text-stone-700"
-                  lang="la"
-                >
-                  Publicitas iuris fundamentum libertatis.
-                </p>
-              </div>
-              <div className="md:pl-10 lg:pl-14">
-                <p className="font-serif text-xl sm:text-2xl lg:text-3xl italic leading-snug text-slate-700">
-                  {isFr
-                    ? 'La publicité du droit est le fondement de la liberté.'
-                    : 'Piblisite dwa a se fondasyon libète a.'}
-                </p>
-              </div>
+            <blockquote>
+              <p
+                className="font-serif text-2xl sm:text-3xl lg:text-[2.5rem] font-semibold leading-tight tracking-wide text-white/95"
+                lang="la"
+              >
+                Publicitas iuris fundamentum libertatis.
+              </p>
+              <p className="mt-6 font-serif text-lg sm:text-xl lg:text-2xl italic leading-relaxed text-white/60">
+                {isFr
+                  ? 'La publicité du droit est le fondement de la liberté.'
+                  : 'Piblisite dwa a se fondasyon libète a.'}
+              </p>
             </blockquote>
 
-            {/* Hairline divider + closing programme. The closing
-                sentence is tighter than the previous version
-                ("...qui le gouverne, en ligne, gratuitement") —
-                the maxim already does the rhetorical lifting; the
-                tagline just lands the practical point. */}
-            <div className="mt-10 pt-8 border-t border-slate-200/80 text-center">
-              <figcaption className="text-sm lg:text-base text-slate-600 leading-relaxed">
+            <div className="mt-10 pt-8 border-t border-white/10">
+              <figcaption className="text-sm lg:text-base text-white/50 leading-relaxed">
                 {isFr
                   ? 'Chaque citoyen·ne a le droit de lire la loi qui le gouverne.'
                   : 'Chak sitwayen gen dwa li lwa ki gouvène l la.'}
@@ -344,9 +299,9 @@ export default async function Page() {
               <div className="mt-7 flex justify-center">
                 <Link
                   href="/lois"
-                  className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-7 py-3 rounded-full font-semibold transition-all active:scale-[0.99] shadow-sm hover:shadow-md"
+                  className="inline-flex items-center gap-2 bg-white text-primary hover:bg-slate-100 px-7 py-3 rounded-full font-semibold transition-all active:scale-[0.99] shadow-sm hover:shadow-md"
                 >
-                  <BookOpen className="w-4 h-4 text-amber-300" />
+                  <BookOpen className="w-4 h-4 text-amber-500" />
                   {isFr ? 'Explorer les textes' : 'Eksplore tèks yo'}
                 </Link>
               </div>
