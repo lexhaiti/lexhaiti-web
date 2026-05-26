@@ -6,7 +6,6 @@
 // is handled by tailwindcss-animate utilities.
 
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import {
   BookOpen,
   Building2,
@@ -264,141 +263,21 @@ export default async function Page() {
         </p>
       </div>
 
-      {/* Closing quote — horizontal scrolling banner. The previous
-          static maxim band felt flat against the footer; turning the
-          quote into a slow infinite marquee gives the page a living
-          outro that doubles as a visual transition. Same Latin maxim
-          + bilingual translation, repeated with diamond dividers; the
-          whole strip pauses on hover so the words can be read. Edges
-          fade to navy with a mask-image so the loop seam is invisible. */}
-      <section
-        aria-label={
-          isFr
-            ? 'Maxime fondatrice de LexHaïti'
-            : 'Maksim fondatè LexHaïti'
-        }
-        className="group relative bg-primary text-white overflow-hidden py-14 lg:py-20"
-      >
-        {/* Soft fade from the white panel above into the navy band. */}
-        <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/15 to-transparent pointer-events-none" />
-        {/* Subtle grid texture. */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:32px_32px]" />
-
-        {/* Marquee viewport: clip horizontally; mask the left/right
-            edges so words appear/disappear without a hard cut. */}
-        <div
-          className="relative overflow-hidden"
-          style={{
-            maskImage:
-              'linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%)',
-            WebkitMaskImage:
-              'linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%)',
-          }}
-        >
-          {/* Two identical halves side by side; translateX(-50%) loops
-              seamlessly. `w-max` lets the content set its own width. */}
-          <div className="flex w-max animate-marquee">
-            {[0, 1].map((i) => (
-              <div
-                key={i}
-                aria-hidden={i === 1 ? 'true' : undefined}
-                className="flex items-center gap-12 lg:gap-20 pr-12 lg:pr-20 shrink-0"
-              >
-                <MarqueeQuote
-                  primary="Publicitas iuris fundamentum libertatis."
-                  secondary={
-                    isFr
-                      ? 'La publicité du droit est le fondement de la liberté.'
-                      : 'Piblisite dwa a se fondasyon libète a.'
-                  }
-                />
-                <MarqueeDiamond />
-                <MarqueeQuote
-                  primary={
-                    isFr
-                      ? 'Chaque citoyen·ne a le droit de lire la loi qui le gouverne.'
-                      : 'Chak sitwayen gen dwa li lwa ki gouvène l la.'
-                  }
-                />
-                <MarqueeDiamond />
-                <MarqueeQuote
-                  primary="Lex est quod populus iubet atque constituit."
-                  secondary={
-                    isFr
-                      ? 'La loi est ce que le peuple ordonne et établit.'
-                      : 'Lwa a se sa pèp la kòmande epi etabli.'
-                  }
-                />
-                <MarqueeDiamond />
-                <MarqueeQuote
-                  primary="Ignorantia legis neminem excusat."
-                  secondary={
-                    isFr
-                      ? "Nul n'est censé ignorer la loi."
-                      : 'Pèsòn pa gen dwa inyore lwa a.'
-                  }
-                />
-                <MarqueeDiamond />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Quiet outro strip — gives the page somewhere to land before
-            the footer's links take over. */}
-        <div className="relative mt-10 lg:mt-14 border-t border-white/[0.07] bg-black/15">
-          <div className="container py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-white/55 text-center sm:text-left max-w-xl">
-              {isFr
-                ? 'LexHaïti — la loi haïtienne, accessible à toutes et tous.'
-                : 'LexHaïti — lwa Ayisyen an, aksesib pou tout moun.'}
+      {/* Closing quote banner */}
+      <div className="bg-primary text-white py-12 lg:py-16">
+        <div className="container text-center">
+          <blockquote className="max-w-3xl mx-auto">
+            <p className="font-serif text-xl sm:text-2xl lg:text-3xl font-medium leading-snug text-white/90 italic" lang="la">
+              Publicitas iuris fundamentum libertatis.
             </p>
-            <Link
-              href="/lois"
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/[0.08] hover:border-white/25 transition-colors"
-            >
-              <BookOpen className="w-4 h-4 text-amber-300" />
-              {isFr ? 'Explorer les textes' : 'Eksplore tèks yo'}
-            </Link>
-          </div>
+            <p className="mt-3 text-sm sm:text-base text-amber-200/70 italic">
+              {isFr
+                ? 'La publicité du droit est le fondement de la liberté.'
+                : 'Piblisite dwa a se fondasyon libète a.'}
+            </p>
+          </blockquote>
         </div>
-      </section>
+      </div>
     </div>
-  )
-}
-
-/** Single quote unit inside the marquee strip — primary line in big
- *  serif, optional translation underneath in smaller italic amber.
- *  Sized to read at a glance as it passes; `whitespace-nowrap` keeps
- *  each unit on one line so the loop math stays clean. */
-function MarqueeQuote({
-  primary,
-  secondary,
-}: {
-  primary: string
-  secondary?: string
-}) {
-  return (
-    <div className="flex flex-col items-start whitespace-nowrap">
-      <span className="font-serif text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight text-white/95">
-        {primary}
-      </span>
-      {secondary && (
-        <span className="mt-1 font-serif text-sm sm:text-base italic text-amber-200/70">
-          {secondary}
-        </span>
-      )}
-    </div>
-  )
-}
-
-/** Diamond divider between quote units — amber accent that nods to
- *  the brand's gold without screaming. */
-function MarqueeDiamond() {
-  return (
-    <span
-      aria-hidden="true"
-      className="block w-2.5 h-2.5 rotate-45 bg-amber-400/60 shrink-0"
-    />
   )
 }
