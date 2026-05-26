@@ -774,8 +774,6 @@ function ModifiedCard({
       {historyOpen && versions.length > 0 && (
         <ol className="divide-y divide-slate-100">
           {versions.map((v, idx) => {
-            const vp = STATUS_PILL[v.status]
-            const VIcon = vp.icon
             const fromLabel = formatDate(v.effective_from)
             const toLabel = formatDate(v.effective_to)
             const dateLabel = historicalDateRange(fromLabel, toLabel, lang)
@@ -783,19 +781,17 @@ function ModifiedCard({
             const title = lang === 'ht' && v.title_ht ? v.title_ht : v.title_fr
             return (
               <li key={v.id} className="px-6 py-5">
+                {/* Version header — was "EN VIGUEUR · Version N sur M ·
+                    Depuis le …"; the EN VIGUEUR pill was misleading
+                    because it rendered on every row including
+                    superseded versions. The "Version actuellement
+                    applicable" footnote on the most-recent row already
+                    flags which one is in force, and the article-level
+                    status pill at the top of the card handles the
+                    "is this still law?" question for the whole
+                    article. So we drop the per-row pill and keep just
+                    Version N sur M · date. */}
                 <div className="flex items-center flex-wrap gap-2 mb-3">
-                  {!parentRetired && !isBlock && (
-                    <span
-                      className={cn(
-                        'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md',
-                        'border text-[11px] font-bold uppercase tracking-wider',
-                        vp.cls,
-                      )}
-                    >
-                      <VIcon className="w-3 h-3" />
-                      {t(vp.labelKey)}
-                    </span>
-                  )}
                   <span className="text-[11px] font-semibold uppercase tracking-widest text-slate-400 tabular-nums">
                     {t('amendments.versionLabel')} {v.version_number}{' '}
                     <span className="text-slate-300">{t('amendments.of')}</span>{' '}
