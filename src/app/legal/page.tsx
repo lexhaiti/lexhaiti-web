@@ -25,8 +25,8 @@ export default async function Page() {
     {
       title: isFr ? 'Éditeur du site' : 'Editè sit la',
       content: isFr
-        ? "Le site LexHaïti est une initiative open-source dédiée à la diffusion du droit haïtien. Le portail est exploité par l'équipe LexHaïti et publié comme un bien public numérique."
-        : "Sit LexHaïti se yon inisyativ open-source ki la pou gaye dwa ayisyen an. Pòtal la jere pa ekip LexHaïti epi pibliye kòm yon byen piblik nimerik.",
+        ? "Le site LexHaïti est une initiative open-source dédiée à la diffusion du droit haïtien. Le portail est exploité par Ayiti Dijital e.V., association à but non lucratif de droit allemand, et publié comme un bien public numérique."
+        : "Sit LexHaïti se yon inisyativ open-source ki la pou gaye dwa ayisyen an. Pòtal la jere pa Ayiti Dijital e.V., yon asosyasyon ki pa fè benefis selon lwa alman, epi pibliye kòm yon byen piblik nimerik.",
     },
     {
       title: isFr ? 'Hébergement' : 'Hebèjman',

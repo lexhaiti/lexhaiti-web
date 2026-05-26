@@ -72,7 +72,7 @@ export default async function PartenairesSection() {
         <div className="flex justify-center sm:justify-start">
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 rounded-md bg-primary text-white px-6 py-3 text-sm font-semibold hover:bg-primary/90 transition-colors group shadow-sm"
+            className="inline-flex items-center gap-2 rounded-full bg-primary text-white px-7 py-3 text-sm font-semibold hover:bg-primary/90 transition-colors group shadow-sm"
           >
             {t('home.partenaires.cta')}
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />

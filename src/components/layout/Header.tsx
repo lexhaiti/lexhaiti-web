@@ -327,7 +327,7 @@ export default function Header() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 right-0 z-[61] w-[85%] max-w-sm bg-white shadow-2xl xl:hidden flex flex-col"
+              className="fixed inset-y-0 right-0 z-[61] w-full md:w-1/2 bg-white shadow-2xl xl:hidden flex flex-col"
             >
               <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-slate-50">
                 <BrandLogo
