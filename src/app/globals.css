@@ -406,4 +406,28 @@ button:focus-visible {
             opacity: 0.7;
         }
     }
+
+    /* Horizontal marquee — used by the closing-quote banner on
+       /a-propos. The track holds two identical copies of the content
+       side by side; translating -50% moves the second copy into the
+       first's slot so the loop is seamless. Duration is intentionally
+       slow (40s) so the eye can read fragments as they pass. Honors
+       prefers-reduced-motion by pausing entirely. */
+    .animate-marquee {
+        animation: marquee 40s linear infinite;
+    }
+
+    .group:hover .animate-marquee,
+    .animate-marquee:hover {
+        animation-play-state: paused;
+    }
+
+    @keyframes marquee {
+        from { transform: translateX(0); }
+        to   { transform: translateX(-50%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .animate-marquee { animation: none; }
+    }
 }
