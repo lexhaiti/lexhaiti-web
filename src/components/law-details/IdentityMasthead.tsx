@@ -14,11 +14,14 @@ import { EditableHeroField } from '@/components/law-details/_helpers/EditableHer
 import { DeviseBanner } from './_panels/DeviseBanner'
 import { IssuingAuthorityHeader } from './_panels/IssuingAuthorityHeader'
 import { categoryLabels } from './_helpers/categoryLabels'
+import type { components } from '@/lib/api-types'
 import { updateLegalTextMetadata } from '@/lib/api/endpoints'
 import { useToast } from '@/components/ui/toast-simple'
 
+type LegalTextRead = components['schemas']['LegalTextRead']
+
 interface IdentityMastheadProps {
-  law: any
+  law: LegalTextRead
   currentLang: 'fr' | 'ht'
   isEditor: boolean
   category: { fr: string; ht: string; color: string }
@@ -48,14 +51,14 @@ export function IdentityMasthead({
       <div className="flex flex-col items-center gap-3 lg:gap-4 text-slate-700 max-w-2xl">
         {/* Universal Haitian devise banner. Editor can hide
             when the source printing didn't carry it. */}
-        {(law as any).show_devise_banner !== false && (
+        {law.show_devise_banner !== false && (
           <div className="relative group/devise w-full flex justify-center">
             <DeviseBanner
               lang={currentLang}
               customText={
                 currentLang === 'ht'
-                  ? ((law as any).devise_ht || (law as any).devise_fr || null)
-                  : ((law as any).devise_fr || null)
+                  ? (law.devise_ht || law.devise_fr || null)
+                  : (law.devise_fr || null)
               }
             />
             {isEditor && (
@@ -93,7 +96,7 @@ export function IdentityMasthead({
                     try {
                       await updateLegalTextMetadata(law.slug, {
                         show_devise_banner: false,
-                      } as any)
+                      })
                       refetch()
                     } catch (e) {
                       toast(
@@ -127,14 +130,14 @@ export function IdentityMasthead({
           </div>
         )}
         {/* Editor-only "Afficher la devise" affordance */}
-        {isEditor && (law as any).show_devise_banner === false && (
+        {isEditor && law.show_devise_banner === false && (
           <button
             type="button"
             onClick={async () => {
               try {
                 await updateLegalTextMetadata(law.slug, {
                   show_devise_banner: true,
-                } as any)
+                })
                 refetch()
               } catch (e) {
                 toast(
@@ -159,17 +162,17 @@ export function IdentityMasthead({
         )}
 
         {/* Doc-type heading -- editor can hide on a per-text basis */}
-        {(law as any).show_doc_type !== false && (
+        {law.show_doc_type !== false && (
         <div className="mt-1 flex flex-col items-center text-center group/cat relative">
           {isEditor ? (
             <Select
               value={law.category}
-              onValueChange={async (next) => {
+              onValueChange={async (next: string) => {
                 if (next === law.category) return
                 try {
                   await updateLegalTextMetadata(law.slug, {
-                    category: next,
-                  } as any)
+                    category: next as LegalTextRead['category'],
+                  })
                   refetch()
                 } catch (e) {
                   toast(
@@ -212,7 +215,7 @@ export function IdentityMasthead({
                 try {
                   await updateLegalTextMetadata(law.slug, {
                     show_doc_type: false,
-                  } as any)
+                  })
                   refetch()
                 } catch (e) {
                   toast(
@@ -245,14 +248,14 @@ export function IdentityMasthead({
           )}
         </div>
         )}
-        {isEditor && (law as any).show_doc_type === false && (
+        {isEditor && law.show_doc_type === false && (
           <button
             type="button"
             onClick={async () => {
               try {
                 await updateLegalTextMetadata(law.slug, {
                   show_doc_type: true,
-                } as any)
+                })
                 refetch()
               } catch (e) {
                 toast(
@@ -300,7 +303,7 @@ export function IdentityMasthead({
                   : 'official_title_fr'
               await updateLegalTextMetadata(law.slug, {
                 [field]: next || null,
-              } as any)
+              })
               refetch()
             }}
           >
@@ -339,7 +342,7 @@ export function IdentityMasthead({
             onSave={async (next) => {
               await updateLegalTextMetadata(law.slug, {
                 issuing_authority: next || null,
-              } as any)
+              })
               refetch()
             }}
           >

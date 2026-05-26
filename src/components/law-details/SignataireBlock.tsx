@@ -4,6 +4,7 @@ import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Check, ChevronDown, Loader2, PenLine, Plus, X } from 'lucide-react'
 
+import { ApiError } from '@/lib/api/client'
 import {
   updateLegalTextMetadata,
   type LegalSignerRead,
@@ -107,11 +108,11 @@ export function SignataireBlock({
       const value = formulaDraft.trim()
       await updateLegalTextMetadata(slug, {
         official_formula: value || null,
-      } as any)
+      })
       onChanged()
       setEditFormula(false)
-    } catch (e: any) {
-      setFormulaError(e?.body?.detail ?? String(e))
+    } catch (e: unknown) {
+      setFormulaError(e instanceof ApiError ? String((e.body as Record<string, unknown>)?.detail ?? e.message) : String(e))
     } finally {
       setFormulaSaving(false)
     }

@@ -9,9 +9,12 @@ import { DocumentBody } from './DocumentBody'
 import { updateLegalTextMetadata } from '@/lib/api/endpoints'
 import { mapTextStatusToArticleStatus } from './_helpers/textStatus'
 import type { SelectedArticle } from './_helpers/lawDetailTypes'
+import type { components } from '@/lib/api-types'
+
+type LegalTextRead = components['schemas']['LegalTextRead']
 
 interface ArticleSectionProps {
-  law: any
+  law: LegalTextRead
   currentLang: 'fr' | 'ht'
   isEditor: boolean
   isDocumentMode: boolean

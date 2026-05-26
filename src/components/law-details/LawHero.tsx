@@ -37,6 +37,9 @@ import {
   TEXT_STATUS_PILL,
   type TextStatus,
 } from './_helpers/textStatus'
+import type { components } from '@/lib/api-types'
+
+type LegalTextRead = components['schemas']['LegalTextRead']
 
 interface ArticleCounts {
   total: number
@@ -48,7 +51,7 @@ interface ArticleCounts {
 }
 
 interface LawHeroProps {
-  law: any
+  law: LegalTextRead
   slug: string
   title: string
   description: string | null | undefined
@@ -339,7 +342,7 @@ export function LawHero({
                 <Tags className="w-3.5 h-3.5" />
                 {currentLang === 'fr' ? 'Thématiques' : 'Tèm'}
               </span>
-              {law.theme_tags.map((tag: any) => {
+              {law.theme_tags.map((tag: components['schemas']['LegalThemeTagRead']) => {
                 const label = themeLabel(tag.theme, currentLang) ?? tag.theme
                 const isEditorTag = tag.source === 'editor'
                 return (
@@ -541,7 +544,7 @@ function MoniteurReference({
   law,
   currentLang,
 }: {
-  law: any
+  law: LegalTextRead
   currentLang: 'fr' | 'ht'
 }) {
   if (law.moniteur_issue_id) {
@@ -636,7 +639,7 @@ function AmendedByChip({
   law,
   currentLang,
 }: {
-  law: any
+  law: LegalTextRead
   currentLang: 'fr' | 'ht'
 }) {
   return (
@@ -672,7 +675,7 @@ function AmendedByChip({
             sideOffset={8}
             className="max-w-md"
           >
-            {law.amended_by.map((a: any) => {
+            {law.amended_by.map((a: components['schemas']['AmendedByRef']) => {
               const aTitle =
                 currentLang === 'ht' && a.title_ht
                   ? a.title_ht
@@ -710,7 +713,7 @@ function SourceTile({
   law,
   currentLang,
 }: {
-  law: any
+  law: LegalTextRead
   currentLang: 'fr' | 'ht'
 }) {
   const mp = (law as any).mentions_procedurales_fr as

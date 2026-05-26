@@ -3,9 +3,12 @@
 import React from 'react'
 import { EditableFormalBlock } from './EditableFormalBlock'
 import { updateLegalTextMetadata } from '@/lib/api/endpoints'
+import type { components } from '@/lib/api-types'
+
+type LegalTextRead = components['schemas']['LegalTextRead']
 
 interface ClosingAddendumProps {
-  law: any
+  law: LegalTextRead
   currentLang: 'fr' | 'ht'
   isEditor: boolean
   refetch: () => void

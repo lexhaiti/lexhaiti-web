@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react'
 
+import { ApiError } from '@/lib/api/client'
 import {
   bulkCreateLegalSigners,
   createLegalSigner,
@@ -147,8 +148,8 @@ export function SignersEditor({
       }
       onChanged()
       setDraft(null)
-    } catch (e: any) {
-      setError(e?.body?.detail ?? String(e))
+    } catch (e: unknown) {
+      setError(e instanceof ApiError ? String((e.body as Record<string, unknown>)?.detail ?? e.message) : String(e))
     } finally {
       setBusy(false)
     }
@@ -179,8 +180,8 @@ export function SignersEditor({
       await deleteLegalSigner(pendingDelete.id)
       onChanged()
       setPendingDelete(null)
-    } catch (e: any) {
-      setError(e?.body?.detail ?? String(e))
+    } catch (e: unknown) {
+      setError(e instanceof ApiError ? String((e.body as Record<string, unknown>)?.detail ?? e.message) : String(e))
       setPendingDelete(null)
     } finally {
       setBusy(false)
@@ -194,8 +195,8 @@ export function SignersEditor({
       await deleteAllLegalSigners(slug)
       onChanged()
       setPendingDeleteAll(false)
-    } catch (e: any) {
-      setError(e?.body?.detail ?? String(e))
+    } catch (e: unknown) {
+      setError(e instanceof ApiError ? String((e.body as Record<string, unknown>)?.detail ?? e.message) : String(e))
       setPendingDeleteAll(false)
     } finally {
       setBusy(false)
@@ -217,8 +218,8 @@ export function SignersEditor({
     try {
       await reorderLegalSigners(slug, order)
       onChanged()
-    } catch (e: any) {
-      setError(e?.body?.detail ?? String(e))
+    } catch (e: unknown) {
+      setError(e instanceof ApiError ? String((e.body as Record<string, unknown>)?.detail ?? e.message) : String(e))
     } finally {
       setBusy(false)
     }

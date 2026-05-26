@@ -1575,6 +1575,16 @@ export type LegalTextMetadataPatch = {
   /** 'left' (default) or 'center' — display alignment of the
    *  enacting-formula block on the reader page. */
   enacting_formula_align?: 'left' | 'center'
+  /** Whether to show the national devise banner above the document. */
+  show_devise_banner?: boolean
+  /** Whether to show the document-type heading (e.g. "LOI" / "DÉCRET"). */
+  show_doc_type?: boolean
+  /** Custom devise text (overrides default Haitian motto). */
+  devise_fr?: string | null
+  devise_ht?: string | null
+  /** Custom document-type label (e.g. "ARRÊTÉ" instead of auto-generated). */
+  doc_type_label_fr?: string | null
+  doc_type_label_ht?: string | null
   comment?: string | null
 }
 
