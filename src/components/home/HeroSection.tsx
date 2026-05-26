@@ -109,7 +109,7 @@ export default function HeroSection() {
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-50 to-transparent" />
       </div>
 
-      <div className="relative z-10 container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14 min-h-[calc(100vh-5rem)] flex flex-col justify-center">
+      <div className="relative z-10 container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 min-h-[calc(100vh-5rem)] flex flex-col justify-center">
         {/* 1) H1 + short intro paragraph. The previous monumental
             ``LexHaïti`` wordmark is gone — the brand already lives in
             the global header, and the surface now leads with the
@@ -128,7 +128,7 @@ export default function HeroSection() {
             divider; small SVG icons (BadgeCheck for provenance,
             Unlock for posture) give each half a glyph. Reads as the
             project's quality cue before the user even types. */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs sm:text-sm text-slate-600">
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs sm:text-sm text-slate-600">
           <span className="inline-flex items-center gap-2">
             <BadgeCheck
               className="w-4 h-4 text-emerald-600 flex-shrink-0"
@@ -153,7 +153,7 @@ export default function HeroSection() {
             so the card lifts off the slate-50 surface but doesn't
             shout. No chip row inside any more; the POPULAIRES row
             below takes that role. */}
-        <div className="mt-8 sm:mt-10 rounded-2xl bg-white ring-1 ring-slate-100 shadow-[0_24px_60px_-20px_rgba(15,23,42,0.18)] px-4 sm:px-6 py-4 sm:py-5">
+        <div className="mt-6 sm:mt-8 rounded-2xl bg-white ring-1 ring-slate-100 shadow-[0_24px_60px_-20px_rgba(15,23,42,0.18)] px-4 sm:px-6 py-4 sm:py-5">
           <label htmlFor="hero-search" className="sr-only">
             {t('home.hero.findLabel')}
           </label>
@@ -231,7 +231,7 @@ export default function HeroSection() {
             tints the icon, gives a polished interactive feel without
             shouting. The bare label row above (was an ``h2`` eyebrow)
             is gone — pills are self-explanatory at this scale. */}
-        <div className="mt-10 sm:mt-12 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+        <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
           {POPULAR[lang].map((p) => {
             const inner = (
               <span className="text-sm font-semibold text-slate-800 group-hover:text-slate-950 transition-colors">
