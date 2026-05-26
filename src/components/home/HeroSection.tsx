@@ -6,11 +6,6 @@ import { useState } from 'react'
 import {
   ArrowRight,
   BadgeCheck,
-  BookOpen,
-  BookMarked,
-  Briefcase,
-  Gavel,
-  Newspaper,
   Search,
   SlidersHorizontal,
   Unlock,
@@ -27,27 +22,22 @@ type PopularCard = {
   label: string
   href?: string
   q?: string
-  Icon: React.ComponentType<{ className?: string }>
 }
 
 const POPULAR: Record<'fr' | 'ht', PopularCard[]> = {
   fr: [
-    { label: 'Constitution 1987', q: 'Constitution 1987', Icon: BookOpen },
-    { label: 'Code Civil', q: 'Code Civil', Icon: Gavel },
-    { label: 'Code Pénal', q: 'Code Pénal', Icon: BookMarked },
-    {
-      label: 'Droit du Travail',
-      href: '/lois?theme=droit_travail',
-      Icon: Briefcase,
-    },
-    { label: 'Le Moniteur', href: '/moniteur', Icon: Newspaper },
+    { label: 'Constitution 1987', q: 'Constitution 1987' },
+    { label: 'Code Civil', q: 'Code Civil' },
+    { label: 'Code Pénal', q: 'Code Pénal' },
+    { label: 'Droit du Travail', href: '/lois?theme=droit_travail' },
+    { label: 'Le Moniteur', href: '/moniteur' },
   ],
   ht: [
-    { label: 'Konstitisyon 1987', q: 'Constitution 1987', Icon: BookOpen },
-    { label: 'Kòd Sivil', q: 'Code Civil', Icon: Gavel },
-    { label: 'Kòd Penal', q: 'Code Pénal', Icon: BookMarked },
-    { label: 'Dwa travay', href: '/lois?theme=droit_travail', Icon: Briefcase },
-    { label: 'Le Moniteur', href: '/moniteur', Icon: Newspaper },
+    { label: 'Konstitisyon 1987', q: 'Constitution 1987' },
+    { label: 'Kòd Sivil', q: 'Code Civil' },
+    { label: 'Kòd Penal', q: 'Code Pénal' },
+    { label: 'Dwa travay', href: '/lois?theme=droit_travail' },
+    { label: 'Le Moniteur', href: '/moniteur' },
   ],
 }
 
@@ -244,18 +234,12 @@ export default function HeroSection() {
         <div className="mt-10 sm:mt-12 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
           {POPULAR[lang].map((p) => {
             const inner = (
-              <>
-                <p.Icon
-                  className="w-4 h-4 text-amber-600 group-hover:text-amber-700 transition-colors flex-shrink-0"
-                  aria-hidden
-                />
-                <span className="text-sm font-semibold text-slate-800 group-hover:text-slate-950 transition-colors">
-                  {p.label}
-                </span>
-              </>
+              <span className="text-sm font-semibold text-slate-800 group-hover:text-slate-950 transition-colors">
+                {p.label}
+              </span>
             )
             const cls = cn(
-              'group inline-flex items-center gap-2',
+              'group inline-flex items-center',
               'rounded-full bg-white ring-1 ring-slate-200 px-4 py-2.5',
               'shadow-[0_1px_3px_-1px_rgba(15,23,42,0.08)]',
               'hover:ring-slate-300 hover:shadow-[0_6px_16px_-6px_rgba(15,23,42,0.18)] hover:-translate-y-0.5',
