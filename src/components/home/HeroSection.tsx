@@ -30,14 +30,12 @@ const POPULAR: Record<'fr' | 'ht', PopularCard[]> = {
     { label: 'Code Civil', q: 'Code Civil' },
     { label: 'Code Pénal', q: 'Code Pénal' },
     { label: 'Droit du Travail', href: '/lois?theme=droit_travail' },
-    { label: 'Le Moniteur', href: '/moniteur' },
   ],
   ht: [
     { label: 'Konstitisyon 1987', q: 'Constitution 1987' },
     { label: 'Kòd Sivil', q: 'Code Civil' },
     { label: 'Kòd Penal', q: 'Code Pénal' },
     { label: 'Dwa travay', href: '/lois?theme=droit_travail' },
-    { label: 'Le Moniteur', href: '/moniteur' },
   ],
 }
 
@@ -231,7 +229,7 @@ export default function HeroSection() {
             tints the icon, gives a polished interactive feel without
             shouting. The bare label row above (was an ``h2`` eyebrow)
             is gone — pills are self-explanatory at this scale. */}
-        <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+        <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-5">
           {POPULAR[lang].map((p) => {
             const inner = (
               <span className="text-sm font-semibold text-slate-800 group-hover:text-slate-950 transition-colors">
@@ -263,6 +261,21 @@ export default function HeroSection() {
               </button>
             )
           })}
+        </div>
+
+        {/* 6) Latin maxim — decorative stroke + quote anchors the
+            bottom of the hero. The thin rule gives it a typographic
+            "drawn" feel; italic serif keeps it classical. */}
+        <div className="mt-8 sm:mt-10 flex items-center justify-center">
+          <p
+            className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold italic tracking-wide text-transparent select-none"
+            lang="la"
+            style={{
+              WebkitTextStroke: '1px rgb(148 163 184)',
+            }}
+          >
+            Publicitas iuris fundamentum libertatis.
+          </p>
         </div>
       </div>
     </section>

@@ -6,6 +6,13 @@
 
 @config "../../tailwind.config.ts";
 
+/* Force pointer cursor on all interactive elements — Tailwind v4's
+   preflight resets ``button`` to ``cursor: default``. Unlayered styles
+   always beat ``@layer base`` in the CSS cascade. */
+a, button, [role="button"], input[type="submit"], input[type="button"], summary {
+    cursor: pointer;
+}
+
 /* Accessibility: smooth scrolling with header offset.
    `scrollbar-gutter: stable` always reserves space for the scrollbar so opening
    any modal/dropdown that locks body scroll doesn't shift the page horizontally. */
@@ -280,7 +287,7 @@ button:focus-visible {
 
     a, button {
         cursor: pointer;
-    };
+    }
 }
 
 @layer components {

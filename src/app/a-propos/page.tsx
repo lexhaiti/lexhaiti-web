@@ -262,22 +262,6 @@ export default async function Page() {
             : 'Platfòm nan rete gratis, ouvè pou tout jiridiksyon, ak finanse pa patenarya enstitisyonèl — pa pa piblisite oswa abònman.'}
         </p>
       </div>
-
-      {/* Closing quote banner */}
-      <div className="bg-primary text-white py-12 lg:py-16">
-        <div className="container text-center">
-          <blockquote className="max-w-3xl mx-auto">
-            <p className="font-serif text-xl sm:text-2xl lg:text-3xl font-medium leading-snug text-white/90 italic" lang="la">
-              Publicitas iuris fundamentum libertatis.
-            </p>
-            <p className="mt-3 text-sm sm:text-base text-amber-200/70 italic">
-              {isFr
-                ? 'La publicité du droit est le fondement de la liberté.'
-                : 'Piblisite dwa a se fondasyon libète a.'}
-            </p>
-          </blockquote>
-        </div>
-      </div>
     </div>
   )
 }
