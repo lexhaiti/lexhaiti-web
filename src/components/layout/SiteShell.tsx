@@ -2,6 +2,7 @@
 
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import { ScrollToTop } from '@/components/layout/ScrollToTop'
 
 export default function SiteShell({ children }: { children: React.ReactNode }) {
   return (
@@ -9,6 +10,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
       <Header />
       <main id="main-content" className="flex-1 flex flex-col">{children}</main>
       <Footer />
+      <ScrollToTop />
     </div>
   )
 }
