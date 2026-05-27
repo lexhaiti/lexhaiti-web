@@ -15,7 +15,7 @@
  * panel adds nothing to the initial law-page load.
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import {
   CalendarClock,
@@ -118,6 +118,21 @@ export function ChronoTimelinePanel({
   const [expandedDates, setExpandedDates] = useState<Set<string>>(
     new Set(),
   )
+  const sectionRef = useRef<HTMLElement | null>(null)
+
+  // When the panel opens, scroll its top under the sticky toolbar
+  // (the page's top chrome is ~240px tall on mobile, less on
+  // desktop — ``scroll-mt-[15rem]`` below covers the offset).
+  useEffect(() => {
+    if (!open) return
+    const id = window.setTimeout(() => {
+      sectionRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    }, 50)
+    return () => window.clearTimeout(id)
+  }, [open])
 
   // Lazy fetch on first open. Subsequent opens reuse the cache.
   useEffect(() => {
@@ -254,10 +269,11 @@ export function ChronoTimelinePanel({
 
   return (
     <section
+      ref={sectionRef}
       aria-label={
         isFr ? 'Versions dans le temps' : 'Vèsyon yo nan tan'
       }
-      className="mb-6 rounded-xl border border-slate-200 bg-slate-50/40 p-5"
+      className="mb-6 rounded-xl border border-slate-200 bg-slate-50/40 p-5 scroll-mt-[15rem] sm:scroll-mt-[10rem]"
     >
       <header className="flex items-center gap-2 mb-4">
         <CalendarClock className="w-4 h-4 text-primary" aria-hidden />

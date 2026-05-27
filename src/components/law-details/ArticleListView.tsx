@@ -392,7 +392,7 @@ const HeadingBanner = memo(function HeadingBanner({
       onClick={() => onToggle(headingId)}
       aria-expanded={!collapsed}
       className={cn(
-        'group/heading w-full text-left flex items-center gap-3 transition-colors',
+        'group/heading w-full text-left flex items-start gap-3 transition-colors',
         'mt-10 mb-4 first:mt-0',
         'rounded-xl border border-primary/20 bg-gradient-to-r from-primary/[0.05] to-transparent',
         'px-4 py-3 hover:border-primary/40',
@@ -400,19 +400,26 @@ const HeadingBanner = memo(function HeadingBanner({
     >
       <ChevronDown
         className={cn(
-          'w-4 h-4 flex-shrink-0 transition-transform text-primary/60 group-hover/heading:text-primary',
+          'w-4 h-4 flex-shrink-0 mt-0.5 transition-transform text-primary/60 group-hover/heading:text-primary',
           collapsed && '-rotate-90',
         )}
         aria-hidden
       />
-      <span className="font-bold uppercase tracking-[0.18em] text-sm text-primary whitespace-nowrap">
-        {numberLabel}
-      </span>
-      {title && (
-        <span className="leading-snug min-w-0 text-base font-semibold text-slate-800">
-          — {title}
+      {/* Number + title — stack on mobile so a long title (e.g.
+          "DE LA REPUBLIQUE D'HAÏTI: SON EMBLÈME – SES SYMBOLES")
+          doesn't squash next to the chip. From sm up we keep the
+          inline "TITRE I — title" reading. */}
+      <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-3">
+        <span className="font-bold uppercase tracking-[0.18em] text-sm text-primary whitespace-nowrap">
+          {numberLabel}
         </span>
-      )}
+        {title && (
+          <span className="leading-snug text-base font-semibold text-slate-800">
+            <span className="hidden sm:inline">— </span>
+            {title}
+          </span>
+        )}
+      </div>
     </button>
   )
 })
@@ -448,25 +455,30 @@ const HeadingChip = memo(function HeadingChip({
         onClick={() => onToggle(headingId)}
         aria-expanded={!collapsed}
         className={cn(
-          'inline-flex items-center gap-2 px-3 py-1.5 rounded-md',
+          'inline-flex items-start gap-2 px-3 py-1.5 rounded-md max-w-full',
           'text-slate-700 hover:text-primary hover:bg-slate-100 transition-colors',
         )}
       >
         <ChevronDown
           className={cn(
-            'w-3.5 h-3.5 transition-transform text-slate-400',
+            'w-3.5 h-3.5 flex-shrink-0 mt-0.5 transition-transform text-slate-400',
             collapsed && '-rotate-90',
           )}
           aria-hidden
         />
-        <span className="font-semibold uppercase tracking-[0.16em] text-[12px] text-primary/80 whitespace-nowrap">
-          {numberLabel}
-        </span>
-        {title && (
-          <span className="text-[13px] font-medium text-slate-700">
-            — {title}
+        {/* Mirror the banner: stack on mobile so the chip stays
+            compact when a section title is long. */}
+        <div className="min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-2 text-left">
+          <span className="font-semibold uppercase tracking-[0.16em] text-[12px] text-primary/80 whitespace-nowrap">
+            {numberLabel}
           </span>
-        )}
+          {title && (
+            <span className="text-[13px] font-medium text-slate-700">
+              <span className="hidden sm:inline">— </span>
+              {title}
+            </span>
+          )}
+        </div>
       </button>
     </div>
   )

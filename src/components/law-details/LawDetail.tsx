@@ -47,6 +47,7 @@ import { useViewMode } from '@/lib/hooks/useViewMode'
 import { useHeadingCollapse } from '@/lib/hooks/useHeadingCollapse'
 import { useInitialVersions } from '@/lib/hooks/useInitialVersions'
 import { lawShortCite } from '@/lib/legal/cite'
+import { cn } from '@/lib/utils'
 
 
 export default function LawDetail() {
@@ -521,45 +522,128 @@ export default function LawDetail() {
 
           {/* Main Content Area */}
           <div className="flex-1 min-w-0 pb-12 sm:pb-16 lg:py-8">
-            {showStructuralUi && (
-              <SearchPanel
-                currentLang={currentLang}
-                pageSearchScope={pageSearchScope}
-                pageSearchQuery={pageSearchQuery}
-                onScopeChange={setPageSearchScope}
-                onQueryChange={setPageSearchQuery}
-                isSidebarOpen={isSidebarOpen}
-                onToggleSidebar={() => handleSidebarToggle(!isSidebarOpen)}
-                rightControls={
-                  // Switcher renders for any shape that gives the
-                  // user a real choice — switchable (chaptered) and
-                  // also document (flat short decree, where it
-                  // collapses to Tous + Un article so "Vue article
-                  // unique" can actually swap layouts).
-                  shape !== 'richtext' &&
+            {/* Sticky page chrome — search + version toolbar pin to
+                the top of the viewport so the reader can switch
+                versions or re-search from any scroll position. The
+                wrapper sits flush against the navbar (h-20 = 80px),
+                spans the column edge-to-edge via negative margins,
+                and uses bg-white/95 + backdrop-blur so article text
+                slides cleanly under it instead of bleeding through.
+                ChronoTimelinePanel stays OUTSIDE so it can expand
+                inline to its natural height. */}
+            {(showStructuralUi ||
+              (shape !== 'richtext' &&
+                hasArticles &&
+                !(shape === 'switchable' && viewMode === 'article'))) && (
+              <div
+                className={cn(
+                  'sticky top-20 z-30',
+                  '-mx-4 sm:-mx-6 lg:-mx-8',
+                  'px-4 sm:px-6 lg:px-8',
+                  'pt-3 pb-2 mb-4',
+                  'bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85',
+                  'border-b border-slate-200 shadow-[0_2px_8px_-4px_rgba(15,23,42,0.08)]',
+                )}
+              >
+                {showStructuralUi && (
+                  <SearchPanel
+                    currentLang={currentLang}
+                    pageSearchScope={pageSearchScope}
+                    pageSearchQuery={pageSearchQuery}
+                    onScopeChange={setPageSearchScope}
+                    onQueryChange={setPageSearchQuery}
+                    isSidebarOpen={isSidebarOpen}
+                    onToggleSidebar={() =>
+                      handleSidebarToggle(!isSidebarOpen)
+                    }
+                    rightControls={
+                      // Switcher renders for any shape that gives the
+                      // user a real choice — switchable (chaptered) and
+                      // also document (flat short decree, where it
+                      // collapses to Tous + Un article so "Vue article
+                      // unique" can actually swap layouts).
+                      shape !== 'richtext' &&
+                      hasArticles &&
+                      availableModes.length > 1 ? (
+                        <ViewModeSwitcher
+                          mode={viewMode}
+                          available={availableModes}
+                          onChange={setViewMode}
+                          visibleCount={(() => {
+                            if (viewMode === 'article')
+                              return selectedArticle ? 1 : 0
+                            if (viewMode === 'chapitre' && selectedArticle) {
+                              return (law.articles ?? []).filter(
+                                (a: any) =>
+                                  a.heading_id === selectedArticle.heading_id,
+                              ).length
+                            }
+                            return law.articles?.length ?? 0
+                          })()}
+                          lang={currentLang}
+                        />
+                      ) : null
+                    }
+                  />
+                )}
+
+                {shape !== 'richtext' &&
                   hasArticles &&
-                  availableModes.length > 1 ? (
-                    <ViewModeSwitcher
-                      mode={viewMode}
-                      available={availableModes}
-                      onChange={setViewMode}
-                      visibleCount={(() => {
-                        if (viewMode === 'article')
-                          return selectedArticle ? 1 : 0
-                        if (viewMode === 'chapitre' && selectedArticle) {
-                          return (law.articles ?? []).filter(
-                            (a: any) =>
-                              a.heading_id === selectedArticle.heading_id,
-                          ).length
-                        }
-                        return law.articles?.length ?? 0
-                      })()}
+                  !(shape === 'switchable' && viewMode === 'article') && (
+                    <DocumentToolbar
                       lang={currentLang}
+                      viewAsOfDate={viewAsOfDate}
+                      onChangeViewAsOfDate={(next) => {
+                        setViewAsOfDate(next)
+                        if (next === 'initial' && law.articles?.[0]) {
+                          // Scroll to the first article so the user
+                          // sees where the "initial" reading starts.
+                          const el = document.getElementById(
+                            `article-${String(law.articles[0].number)}`,
+                          )
+                          el?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start',
+                          })
+                        }
+                      }}
+                      chronoOpen={chronoOpen}
+                      onToggleChrono={() => setChronoOpen((v) => !v)}
+                      hideAbrogated={hideAbrogated}
+                      onToggleHideAbrogated={() =>
+                        setHideAbrogated((v) => !v)
+                      }
+                      onCollapseAll={
+                        (law.headings?.length ?? 0) > 0
+                          ? headingCollapse.collapseAll
+                          : undefined
+                      }
+                      onExpandAll={
+                        (law.headings?.length ?? 0) > 0
+                          ? headingCollapse.expandAll
+                          : undefined
+                      }
                     />
-                  ) : null
-                }
-              />
+                  )}
+              </div>
             )}
+
+            {shape !== 'richtext' &&
+              hasArticles &&
+              !(shape === 'switchable' && viewMode === 'article') && (
+                <ChronoTimelinePanel
+                  lawSlug={law.slug}
+                  lang={currentLang}
+                  lawPublicationDate={
+                    law.publication_date ??
+                    law.moniteur_issue_publication_date ??
+                    law.issuing_date ??
+                    null
+                  }
+                  open={chronoOpen}
+                  onClose={() => setChronoOpen(false)}
+                />
+              )}
 
             {/* IdentityMasthead removed — it re-printed the devise
                 + "CONSTITUTION" header that the hero already shows. */}
@@ -578,69 +662,6 @@ export default function LawDetail() {
               considerantsRef={considerantsRef}
               refetch={refetch}
             />
-
-            {/* Document toolbar — sits between the SearchPanel and
-                the article content. Renders the "Accéder à la
-                version initiale" link, the "Masquer les articles
-                abrogés" toggle, and "Copier le lien". The Imprimer
-                button is gone (the hero already has a PDF download
-                tile). The toolbar self-hides on shapes / view modes
-                that don't need it (focused single-article view,
-                richtext blob). */}
-            {shape !== 'richtext' &&
-              hasArticles &&
-              !(shape === 'switchable' && viewMode === 'article') && (
-                <>
-                  <DocumentToolbar
-                    lang={currentLang}
-                    viewAsOfDate={viewAsOfDate}
-                    onChangeViewAsOfDate={(next) => {
-                      setViewAsOfDate(next)
-                      if (next === 'initial' && law.articles?.[0]) {
-                        // Scroll to the first article so the user
-                        // sees where the "initial" reading starts.
-                        // Actual V1 text-swap is queued for a
-                        // backend follow-up.
-                        const el = document.getElementById(
-                          `article-${String(law.articles[0].number)}`,
-                        )
-                        el?.scrollIntoView({
-                          behavior: 'smooth',
-                          block: 'start',
-                        })
-                      }
-                    }}
-                    chronoOpen={chronoOpen}
-                    onToggleChrono={() => setChronoOpen((v) => !v)}
-                    hideAbrogated={hideAbrogated}
-                    onToggleHideAbrogated={() =>
-                      setHideAbrogated((v) => !v)
-                    }
-                    onCollapseAll={
-                      (law.headings?.length ?? 0) > 0
-                        ? headingCollapse.collapseAll
-                        : undefined
-                    }
-                    onExpandAll={
-                      (law.headings?.length ?? 0) > 0
-                        ? headingCollapse.expandAll
-                        : undefined
-                    }
-                  />
-                  <ChronoTimelinePanel
-                    lawSlug={law.slug}
-                    lang={currentLang}
-                    lawPublicationDate={
-                      law.publication_date ??
-                      law.moniteur_issue_publication_date ??
-                      law.issuing_date ??
-                      null
-                    }
-                    open={chronoOpen}
-                    onClose={() => setChronoOpen(false)}
-                  />
-                </>
-              )}
 
             <div ref={articleViewerRef} className="mb-8 scroll-mt-24">
               {/* ── Article rendering branches by view mode ───────────

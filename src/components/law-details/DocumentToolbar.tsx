@@ -114,17 +114,19 @@ export function DocumentToolbar({
 
   // Plain text + outline button — uniform across the row.
   const baseChip =
-    'inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-medium transition-colors'
+    'inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-medium transition-colors whitespace-nowrap shrink-0'
   const idleChip =
     'border-slate-200 bg-white text-slate-700 hover:border-primary hover:text-primary'
   const activeChip =
     'bg-primary text-white border-primary hover:bg-primary/90'
 
   return (
-    // Single row that wraps cleanly on narrow viewports. Every chip
-    // shares the same gap so Copier reads as part of the group
-    // rather than being banished to the right edge with ml-auto.
-    <div className="flex items-center flex-wrap gap-2 mb-4 text-[12px]">
+    // Mobile: horizontal scroll strip so the sticky bar stays short
+    // and the chrono panel + article content underneath aren't
+    // buried beneath a 7-row button stack. Desktop/tablet: wrap to
+    // the existing 1–2 row layout. Scrollbar hidden so the chip
+    // strip reads cleanly without an underline.
+    <div className="flex items-center flex-nowrap sm:flex-wrap gap-2 mt-3 text-[12px] overflow-x-auto sm:overflow-visible -mx-2 px-2 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {showViewAsOf && (
         <>
           <button

@@ -38,7 +38,7 @@ export function SearchPanel({
   const showSidebarToggle = onToggleSidebar !== undefined
 
   return (
-    <div className="mb-6">
+    <div>
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-6 text-sm text-slate-700 flex-wrap">
           <label className="flex items-center gap-2 cursor-pointer">
