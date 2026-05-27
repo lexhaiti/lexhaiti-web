@@ -62,8 +62,11 @@ export function detectShape(input: ShapeInput): LegalTextShape {
 /**
  * Which view-mode buttons make sense for this shape.
  *
- *  - ``'document'`` and ``'richtext'`` get nothing (the layout already
- *    fits the shape).
+ *  - ``'richtext'`` gets nothing (the whole text is one HTML blob,
+ *    nothing to switch between).
+ *  - ``'document'`` (flat short decree) gets ``tous`` + ``article``
+ *    — no chapter mode because there are no chapters, but the user
+ *    can still focus on a single article + share its URL.
  *  - ``'switchable'`` with chapters → all three modes.
  *  - ``'switchable'`` without chapters → only ``tous`` and ``article``.
  */
@@ -73,7 +76,8 @@ export function availableViewModes(
   shape: LegalTextShape,
   hasChapters: boolean,
 ): ViewMode[] {
-  if (shape !== 'switchable') return []
+  if (shape === 'richtext') return []
+  if (shape === 'document') return ['tous', 'article']
   if (hasChapters) return ['tous', 'chapitre', 'article']
   return ['tous', 'article']
 }

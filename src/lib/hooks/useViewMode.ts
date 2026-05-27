@@ -97,8 +97,13 @@ export function useViewMode({
   }, [urlValue, available, mode])
 
   // Drop the URL ``view`` param if the chosen mode isn't available
-  // (e.g. the user lands with ``?view=chapitre`` on a flat décret).
+  // for this law (e.g. the user lands with ``?view=chapitre`` on a
+  // flat décret without chapters). Skip when ``available`` is empty
+  // — that means the law is still loading; we'd otherwise strip a
+  // valid ``view=article`` before the shape settles and the param
+  // would be lost forever.
   useEffect(() => {
+    if (available.length === 0) return
     if (urlValue && !available.includes(urlValue as ViewMode)) {
       const next = new URLSearchParams(searchParams?.toString() ?? '')
       next.delete('view')

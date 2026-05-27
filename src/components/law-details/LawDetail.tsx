@@ -32,7 +32,6 @@ import { EditorPreviewBanner } from './EditorPreviewBanner'
 import { LawHero } from './LawHero'
 import { TocSidebar } from './TocSidebar'
 import { SearchPanel } from './SearchPanel'
-import { IdentityMasthead } from './IdentityMasthead'
 import { FormalBlocksSection } from './FormalBlocksSection'
 import { ArticleSection } from './ArticleSection'
 import { ArticleListView } from './ArticleListView'
@@ -498,7 +497,12 @@ export default function LawDetail() {
                 isSidebarOpen={isSidebarOpen}
                 onToggleSidebar={() => handleSidebarToggle(!isSidebarOpen)}
                 rightControls={
-                  shape === 'switchable' &&
+                  // Switcher renders for any shape that gives the
+                  // user a real choice — switchable (chaptered) and
+                  // also document (flat short decree, where it
+                  // collapses to Tous + Un article so "Vue article
+                  // unique" can actually swap layouts).
+                  shape !== 'richtext' &&
                   hasArticles &&
                   availableModes.length > 1 ? (
                     <ViewModeSwitcher
@@ -523,15 +527,8 @@ export default function LawDetail() {
               />
             )}
 
-            <IdentityMasthead
-              law={law}
-              currentLang={currentLang}
-              isEditor={isEditor}
-              category={category}
-              officialTitleStored={officialTitleStored}
-              refetch={refetch}
-              onDeviseEditorOpen={() => setDeviseEditorOpen(true)}
-            />
+            {/* IdentityMasthead removed — it re-printed the devise
+                + "CONSTITUTION" header that the hero already shows. */}
 
             <FormalBlocksSection
               law={law}
@@ -596,6 +593,36 @@ export default function LawDetail() {
                   )
                 }
                 if (shape === 'document') {
+                  // Flat short decree: switcher offers Tous + Un
+                  // article (no chapter). When viewMode is 'article'
+                  // we route to the focused viewer so "Vue article
+                  // unique" actually swaps the layout (used to fall
+                  // back to the list view, which made the link a
+                  // no-op).
+                  if (viewMode === 'article') {
+                    return (
+                      <ArticleSection
+                        law={law}
+                        currentLang={currentLang}
+                        isEditor={isEditor}
+                        isDocumentMode={isDocumentMode}
+                        hasArticles={hasArticles}
+                        selectedArticle={selectedArticle}
+                        currentArticleIndex={currentArticleIndex}
+                        title={title}
+                        articleBreadcrumb={articleBreadcrumb}
+                        blocHints={blocHints}
+                        onPrevious={handlePrevious}
+                        onNext={handleNext}
+                        onShare={handleShare}
+                        onCopyLink={handleCopyLink}
+                        onEmptyAddArticle={() =>
+                          setEmptyAddArticleOpen(true)
+                        }
+                        refetch={refetch}
+                      />
+                    )
+                  }
                   return (
                     <ArticleListView
                       articles={law.articles ?? []}
