@@ -68,7 +68,6 @@ import dynamic from 'next/dynamic'
 import { VersionsPanel, type VersionEntry } from './_panels/VersionsPanel'
 import { ComparePanel } from './_panels/ComparePanel'
 import { PlainExplainerBox } from './PlainExplainerBox'
-import { CrossReferencesPanel } from './CrossReferencesPanel'
 import { CitationColumn } from './_panels/CitationColumn'
 // Heavy editor + dialog bundles are pulled in only when an editor
 // actually opens them — so public readers (the 99% case) never pay
@@ -1319,21 +1318,17 @@ export default function ArticleViewer({
             {/* Plain-language explainer — appears under the formal text
                 in the focused viewer too, not just in the list view.
                 Reads (article as any).explainer_* so it's empty until
-                an editor fills it in. */}
+                an editor fills it in. The cross-references / versions
+                / compare panels remain handled by the existing
+                AccordionTrigger row below this block — kept separate
+                so the focused viewer's bespoke editor affordances
+                (Ajouter une version, Corriger le parser, …) don't
+                end up duplicated by ArticleAccordions. */}
             <PlainExplainerBox
               explainerFr={(article as any).explainer_fr ?? null}
               explainerHt={(article as any).explainer_ht ?? null}
               lang={displayLang}
             />
-            {/* Cross-references panel — lazy-fetches incoming &
-                outgoing citations on first expand. Same component used
-                by the list view, here gated by article.id. */}
-            {article.id != null && (
-              <CrossReferencesPanel
-                articleId={article.id}
-                lang={displayLang}
-              />
-            )}
             {/* Per-article override pill — when the user toggled this
                 article into a different language than the page-level
                 ``currentLang``, show a small reset chip. */}

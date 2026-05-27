@@ -538,6 +538,7 @@ export default function LawDetail() {
                       lawShortTitle={lawShortCite(law.title_fr)}
                       codeSubcategory={law.code_subcategory ?? null}
                       currentLang={currentLang}
+                      isEditor={isEditor}
                     />
                   )
                 }
@@ -578,6 +579,7 @@ export default function LawDetail() {
                     lawShortTitle={lawShortCite(law.title_fr)}
                     codeSubcategory={law.code_subcategory ?? null}
                     currentLang={currentLang}
+                    isEditor={isEditor}
                     emptyLabel={
                       viewMode === 'chapitre'
                         ? currentLang === 'fr'

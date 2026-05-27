@@ -30,9 +30,7 @@ import { cn } from '@/lib/utils'
 import { getLevelLabel } from '@/lib/legal/headingLabels'
 import { CiteArticleButton } from './CiteArticleButton'
 import { PlainExplainerBox } from './PlainExplainerBox'
-import { InlineVersionsDisclosure } from './InlineVersionsDisclosure'
-import { InlineCompareDisclosure } from './InlineCompareDisclosure'
-import { CrossReferencesPanel } from './CrossReferencesPanel'
+import { ArticleAccordions } from './ArticleAccordions'
 import type { components } from '@/lib/api-types'
 
 type ArticleEmbed = components['schemas']['ArticleEmbed']
@@ -51,6 +49,9 @@ interface Props {
   currentLang: 'fr' | 'ht'
   /** Empty-state label override (e.g. "No articles in this chapter"). */
   emptyLabel?: string
+  /** Drives editor-only affordances in the per-row ArticleAccordions
+   *  (always-visible Textes-liés / Versions chips even at zero). */
+  isEditor?: boolean
 }
 
 export function ArticleListView({
@@ -61,6 +62,7 @@ export function ArticleListView({
   codeSubcategory,
   currentLang,
   emptyLabel,
+  isEditor = false,
 }: Props) {
   const lang = currentLang
   const isFr = lang === 'fr'
@@ -217,33 +219,25 @@ export function ArticleListView({
                 lang={lang}
               />
 
-              {/* Versions + compare disclosures — both only render
-                  when the article actually has history
-                  (version_number > 1). Each lazy-loads its own data
-                  on first expand. */}
-              {a.id != null && (a.version_number ?? 1) > 1 && (
-                <>
-                  <InlineVersionsDisclosure
-                    articleId={a.id}
-                    versionCount={a.version_number ?? 1}
-                    defaultFromDate={null}
-                    lang={lang}
-                  />
-                  <InlineCompareDisclosure
-                    articleId={a.id}
-                    versionCount={a.version_number ?? 1}
-                    lang={lang}
-                  />
-                </>
-              )}
-
-              {/* Cross-references — lazy-fetches from
-                  /articles/{id}/references on first expand so the
-                  list view doesn't fan out N+1 fetches at page load.
-                  Renders a disclosure button; nothing visible until
-                  the user clicks. */}
+              {/* Unified action row — Textes liés / Versions /
+                  Comparer pills + expandable panels. Same visual
+                  vocabulary as the focused ArticleViewer. Each chip
+                  lazy-loads its own data; the public visibility
+                  rule hides chips with no content (editors always
+                  see them so empty articles can be diagnosed). */}
               {a.id != null && (
-                <CrossReferencesPanel articleId={a.id} lang={lang} />
+                <ArticleAccordions
+                  articleId={a.id}
+                  versionNumber={a.version_number ?? 1}
+                  lawSlug={lawSlug}
+                  siblingArticles={articles.map((x) => ({
+                    id: x.id,
+                    number: x.number,
+                    slug: x.slug,
+                  }))}
+                  isEditor={isEditor}
+                  currentLang={lang}
+                />
               )}
             </article>
           </div>
