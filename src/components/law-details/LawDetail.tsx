@@ -539,6 +539,8 @@ export default function LawDetail() {
                       codeSubcategory={law.code_subcategory ?? null}
                       currentLang={currentLang}
                       isEditor={isEditor}
+                      lawId={law.id}
+                      onArticleChanged={refetch}
                     />
                   )
                 }
@@ -580,6 +582,8 @@ export default function LawDetail() {
                     codeSubcategory={law.code_subcategory ?? null}
                     currentLang={currentLang}
                     isEditor={isEditor}
+                    lawId={law.id}
+                    onArticleChanged={refetch}
                     emptyLabel={
                       viewMode === 'chapitre'
                         ? currentLang === 'fr'

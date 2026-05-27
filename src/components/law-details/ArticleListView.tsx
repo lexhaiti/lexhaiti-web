@@ -50,8 +50,17 @@ interface Props {
   /** Empty-state label override (e.g. "No articles in this chapter"). */
   emptyLabel?: string
   /** Drives editor-only affordances in the per-row ArticleAccordions
-   *  (always-visible Textes-liés / Versions chips even at zero). */
+   *  (always-visible Textes-liés / Versions chips even at zero +
+   *  Ajouter une version / Corriger le parser / Supprimer pills). */
   isEditor?: boolean
+  /** Parent legal text id — needed by the editor dialogs (source-law
+   *  picker exclusion, after-anchor insertion). Required when
+   *  isEditor is true; ignored for public viewers. */
+  lawId?: number | null
+  /** Called when an editor action (add version / add article /
+   *  delete) succeeds, so the parent can refetch the law and the
+   *  list re-renders. */
+  onArticleChanged?: () => void
 }
 
 export function ArticleListView({
@@ -63,6 +72,8 @@ export function ArticleListView({
   currentLang,
   emptyLabel,
   isEditor = false,
+  lawId,
+  onArticleChanged,
 }: Props) {
   const lang = currentLang
   const isFr = lang === 'fr'
@@ -228,7 +239,12 @@ export function ArticleListView({
               {a.id != null && (
                 <ArticleAccordions
                   articleId={a.id}
+                  articleNumber={String(a.number ?? '')}
                   versionNumber={a.version_number ?? 1}
+                  currentTextFr={a.content_fr ?? null}
+                  currentTextHt={a.content_ht ?? null}
+                  currentTitleFr={(a as any).title_fr ?? null}
+                  lawId={lawId ?? null}
                   lawSlug={lawSlug}
                   siblingArticles={articles.map((x) => ({
                     id: x.id,
@@ -237,6 +253,7 @@ export function ArticleListView({
                   }))}
                   isEditor={isEditor}
                   currentLang={lang}
+                  onArticleChanged={onArticleChanged}
                 />
               )}
             </article>

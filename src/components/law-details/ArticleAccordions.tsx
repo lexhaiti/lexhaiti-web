@@ -41,7 +41,7 @@
  *      only affordances like "Ajouter une version".)
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import {
   ChevronRight,
@@ -49,11 +49,16 @@ import {
   GitCompare,
   Layers,
   Loader2,
+  Plus,
+  Trash2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useToast } from '@/components/ui/toast-simple'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
   citationsFromArticle,
   citationsToArticle,
+  deleteArticle,
   listArticleVersions,
   resolveArticles,
   type ArticleResolved,
@@ -68,6 +73,8 @@ import {
 import { CitationColumn } from './_panels/CitationColumn'
 import { VersionsPanel, type VersionEntry } from './_panels/VersionsPanel'
 import { ComparePanel } from './_panels/ComparePanel'
+import { AddVersionDialog } from './_panels/AddVersionDialog'
+import { AddArticleDialog } from './_panels/AddArticleDialog'
 
 type PanelKey = 'links' | 'versions' | 'compare'
 
@@ -76,6 +83,20 @@ interface Props {
   /** From the embed — used by the public visibility rule (don't fire
    *  the versions fetch if there's nothing to show). */
   versionNumber?: number | null
+  /** Display number of THIS article (e.g. "premier", "1382"). Used
+   *  to seed the Add-Version dialog's title and the delete-confirm
+   *  prompt. Optional — falls back to a generic label. */
+  articleNumber?: string
+  /** Current text bodies — pre-fill the Add-Version dialog so the
+   *  editor starts from the existing content rather than typing
+   *  from scratch. */
+  currentTextFr?: string | null
+  currentTextHt?: string | null
+  currentTitleFr?: string | null
+  /** ``ArticleViewer`` already requires this — passed through so
+   *  AddVersionDialog can exclude the law from its source-picker
+   *  (no self-amendments). */
+  lawId?: number | null
   /** The current article's slug + number — passed through to the
    *  citation column so the resolver builds correct same-text deep
    *  links. ``lawSlug`` is needed for the version-row "Modifié par
@@ -87,18 +108,37 @@ interface Props {
   siblingArticles?: SiblingArticle[]
   isEditor?: boolean
   currentLang: 'fr' | 'ht'
+  /** Called after Add-Version / Add-Article / Delete succeeds so the
+   *  parent can refetch the law and re-render rows. */
+  onArticleChanged?: () => void
 }
 
 export function ArticleAccordions({
   articleId,
   versionNumber,
+  articleNumber,
+  currentTextFr,
+  currentTextHt,
+  currentTitleFr,
+  lawId,
   lawSlug,
   siblingArticles,
   isEditor = false,
   currentLang,
+  onArticleChanged,
 }: Props) {
   const isFr = currentLang === 'fr'
+  const { toast } = useToast()
   const [openPanel, setOpenPanel] = useState<PanelKey | null>(null)
+
+  // Editor-only dialog state (mirrors ArticleViewer 1:1).
+  const [addVersionOpen, setAddVersionOpen] = useState(false)
+  const [addArticleOpen, setAddArticleOpen] = useState(false)
+  const [addArticleMode, setAddArticleMode] = useState<
+    'amendment' | 'correction'
+  >('amendment')
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   // ────────────────────────────────────────────────────────────────
   // Citations (Textes liés) — lazy
@@ -276,11 +316,37 @@ export function ArticleAccordions({
   const showLinks = isEditor || (citationsLoaded && totalCitations > 0)
   const showVersions = isEditor || hasHistory
   const showCompare = isEditor || hasHistory
-  const anyPill = showLinks || showVersions || showCompare
+  const anyPill = showLinks || showVersions || showCompare || isEditor
   if (!anyPill) return null
 
   const togglePanel = (k: PanelKey) =>
     setOpenPanel((cur) => (cur === k ? null : k))
+
+  // ────────────────────────────────────────────────────────────────
+  // Editor action handlers
+  // ────────────────────────────────────────────────────────────────
+  async function handleDelete() {
+    setDeleting(true)
+    try {
+      await deleteArticle(articleId)
+      toast(isFr ? 'Article supprimé.' : 'Atik efase.')
+      setDeleteOpen(false)
+      onArticleChanged?.()
+    } catch (e) {
+      toast(isFr ? 'Erreur lors de la suppression.' : 'Erè pandan efasaj la.')
+    } finally {
+      setDeleting(false)
+    }
+  }
+  const articleLabel = articleNumber
+    ? /^article|^atik/i.test(articleNumber)
+      ? articleNumber
+      : isFr
+        ? `Art. ${articleNumber === 'premier' ? '1ᵉʳ' : articleNumber}`
+        : `Atik ${articleNumber === 'premier' ? '1' : articleNumber}`
+    : isFr
+      ? 'cet article'
+      : 'atik sa a'
 
   return (
     <div className="mt-5 pt-4 border-t border-slate-100">
@@ -320,6 +386,86 @@ export function ArticleAccordions({
                 : 'Disponib depi dezyèm vèsyon an'
             }
           />
+        )}
+
+        {/* Editor-only pills — match the focused viewer 1:1 so the
+            same affordances are reachable from every list row. Each
+            opens an existing dialog component. */}
+        {isEditor && lawId != null && (
+          <button
+            type="button"
+            onClick={() => setAddVersionOpen(true)}
+            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 hover:border-amber-300 transition-colors"
+            title={
+              isFr
+                ? 'Créer une nouvelle version ancrée à une loi modifiante'
+                : 'Kreye yon nouvo vèsyon ankre nan yon lwa modifikatè'
+            }
+          >
+            <Plus className="w-4 h-4" />
+            <span className="font-medium">
+              {isFr ? 'Ajouter une version' : 'Ajoute yon vèsyon'}
+            </span>
+          </button>
+        )}
+        {isEditor && lawId != null && (
+          <button
+            type="button"
+            onClick={() => {
+              setAddArticleMode('amendment')
+              setAddArticleOpen(true)
+            }}
+            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 hover:border-amber-300 transition-colors"
+            title={
+              isFr
+                ? 'Insérer un nouvel article via amendement (ex. Article 9-1, 9 bis…)'
+                : 'Mete yon nouvo atik via amannman (egz. Atik 9-1, 9 bis…)'
+            }
+          >
+            <Plus className="w-4 h-4" />
+            <span className="font-medium">
+              {isFr
+                ? 'Ajouter un article (amendement)'
+                : 'Ajoute yon atik (amannman)'}
+            </span>
+          </button>
+        )}
+        {isEditor && lawId != null && (
+          <button
+            type="button"
+            onClick={() => {
+              setAddArticleMode('correction')
+              setAddArticleOpen(true)
+            }}
+            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm bg-white text-slate-700 border border-slate-200 hover:border-slate-400 hover:text-slate-900 transition-colors"
+            title={
+              isFr
+                ? 'Le parser a oublié un article du texte original ? Ajoutez-le ici.'
+                : 'Pasè a bliye yon atik nan tèks orijinal la ? Ajoute l isit.'
+            }
+          >
+            <Plus className="w-4 h-4" />
+            <span className="font-medium">
+              {isFr ? 'Corriger le parser' : 'Korije pasè a'}
+            </span>
+          </button>
+        )}
+        {isEditor && (
+          <button
+            type="button"
+            onClick={() => setDeleteOpen(true)}
+            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm bg-white text-red-700 border border-red-200 hover:bg-red-50 hover:border-red-300 transition-colors"
+            title={
+              isFr
+                ? 'Supprimer cet article du texte (parser-cleanup)'
+                : 'Efase atik sa nan tèks la (netwaye pasè)'
+            }
+          >
+            <Trash2 className="w-4 h-4" />
+            <span className="font-medium">
+              {isFr ? 'Supprimer' : 'Efase'}
+            </span>
+          </button>
         )}
       </div>
 
@@ -411,6 +557,70 @@ export function ArticleAccordions({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Editor-only dialogs — gated behind ``isEditor`` so non-
+          editor bundles can tree-shake them. Each call onArticleChanged
+          on success so the parent can refetch the law and re-render
+          the affected row(s). */}
+      {isEditor && lawId != null && (
+        <AddVersionDialog
+          open={addVersionOpen}
+          onOpenChange={setAddVersionOpen}
+          articleId={articleId}
+          articleNumber={articleNumber ?? ''}
+          currentTextFr={currentTextFr ?? null}
+          currentTextHt={currentTextHt ?? null}
+          currentTitleFr={currentTitleFr ?? null}
+          excludeLegalTextId={lawId}
+          lang={currentLang}
+          onCreated={() => {
+            setAddVersionOpen(false)
+            onArticleChanged?.()
+          }}
+        />
+      )}
+      {isEditor && lawId != null && (
+        <AddArticleDialog
+          open={addArticleOpen}
+          onOpenChange={setAddArticleOpen}
+          lawSlug={lawSlug}
+          lawId={lawId}
+          afterArticleId={articleId}
+          afterArticleLabel={articleLabel}
+          mode={addArticleMode}
+          lang={currentLang}
+          onCreated={() => {
+            setAddArticleOpen(false)
+            onArticleChanged?.()
+          }}
+        />
+      )}
+      {isEditor && (
+        <ConfirmDialog
+          open={deleteOpen}
+          onOpenChange={(o) => {
+            if (!o && !deleting) setDeleteOpen(false)
+          }}
+          onConfirm={handleDelete}
+          title={isFr ? 'Supprimer cet article ?' : 'Efase atik sa a?'}
+          description={
+            <>
+              {isFr
+                ? "L'article et toutes ses versions seront supprimés. Cette action est irréversible."
+                : 'Atik la ak tout vèsyon li yo ap efase. Aksyon sa pa ka anile.'}
+              <br />
+              <br />
+              <span className="font-semibold text-slate-900">
+                {articleLabel}
+              </span>
+            </>
+          }
+          confirmLabel={isFr ? 'Supprimer' : 'Efase'}
+          cancelLabel={isFr ? 'Annuler' : 'Anile'}
+          destructive
+          loading={deleting}
+        />
+      )}
     </div>
   )
 }
