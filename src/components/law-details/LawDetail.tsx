@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Loader2, PanelLeft, PanelLeftClose } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import {
   TooltipProvider,
 } from '@/components/ui/tooltip'
@@ -498,35 +498,34 @@ export default function LawDetail() {
 
           {/* Main Content Area */}
           <div className="flex-1 min-w-0 pb-12 sm:pb-16 lg:py-8">
-            {/* Voir / Masquer sommaire — desktop-only chip above the
-                search panel. The mobile accordion + the bottom-right
-                floating button (rendered by TocSidebar) cover the
-                other surfaces; this one is the explicit affordance
-                for the new "sommaire hidden by default in Tous/Par
-                chapitre" behavior. */}
-            {showStructuralUi && (
-              <div className="hidden lg:flex items-center justify-end mb-3">
-                <button
-                  type="button"
-                  onClick={() => handleSidebarToggle(!isSidebarOpen)}
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:border-primary hover:text-primary transition-colors"
-                  aria-pressed={isSidebarOpen}
-                >
-                  {isSidebarOpen ? (
-                    <PanelLeftClose className="w-3.5 h-3.5" />
-                  ) : (
-                    <PanelLeft className="w-3.5 h-3.5" />
-                  )}
-                  {currentLang === 'fr'
-                    ? isSidebarOpen
-                      ? 'Masquer le sommaire'
-                      : 'Voir le sommaire'
-                    : isSidebarOpen
-                      ? 'Kache somè a'
-                      : 'Wè somè a'}
-                </button>
-              </div>
-            )}
+            {/* View-mode switcher — top-right of the content area
+                where the user expects "page-level controls". The
+                Voir/Masquer sommaire chip lives inside SearchPanel
+                below, on the same row as the search-scope radios. */}
+            {shape === 'switchable' &&
+              hasArticles &&
+              availableModes.length > 1 && (
+                <div className="mb-4 flex items-center justify-end">
+                  <ViewModeSwitcher
+                    mode={viewMode}
+                    available={availableModes}
+                    onChange={setViewMode}
+                    visibleCount={(() => {
+                      if (viewMode === 'article')
+                        return selectedArticle ? 1 : 0
+                      if (viewMode === 'chapitre' && selectedArticle) {
+                        return (law.articles ?? []).filter(
+                          (a: any) =>
+                            a.heading_id === selectedArticle.heading_id,
+                        ).length
+                      }
+                      return law.articles?.length ?? 0
+                    })()}
+                    lang={currentLang}
+                  />
+                </div>
+              )}
+
             {showStructuralUi && (
               <SearchPanel
                 currentLang={currentLang}
@@ -534,6 +533,8 @@ export default function LawDetail() {
                 pageSearchQuery={pageSearchQuery}
                 onScopeChange={setPageSearchScope}
                 onQueryChange={setPageSearchQuery}
+                isSidebarOpen={isSidebarOpen}
+                onToggleSidebar={() => handleSidebarToggle(!isSidebarOpen)}
               />
             )}
 
@@ -561,34 +562,6 @@ export default function LawDetail() {
               considerantsRef={considerantsRef}
               refetch={refetch}
             />
-
-            {/* ──────────────────────────────────────────────────────
-                View-mode switcher — visible only on switchable shapes
-                (hidden for richtext blobs and flat-document layouts).
-                Sits right above the article content so the user sees
-                "you can read this differently" before they commit.
-                ────────────────────────────────────────────────────── */}
-            {shape === 'switchable' && hasArticles && availableModes.length > 1 && (
-              <div className="mb-5 flex items-center justify-between gap-3 flex-wrap">
-                <ViewModeSwitcher
-                  mode={viewMode}
-                  available={availableModes}
-                  onChange={setViewMode}
-                  visibleCount={(() => {
-                    if (viewMode === 'article')
-                      return selectedArticle ? 1 : 0
-                    if (viewMode === 'chapitre' && selectedArticle) {
-                      return (law.articles ?? []).filter(
-                        (a: any) =>
-                          a.heading_id === selectedArticle.heading_id,
-                      ).length
-                    }
-                    return law.articles?.length ?? 0
-                  })()}
-                  lang={currentLang}
-                />
-              </div>
-            )}
 
             <div ref={articleViewerRef} className="mb-8 scroll-mt-24">
               {/* ── Article rendering branches by view mode ───────────

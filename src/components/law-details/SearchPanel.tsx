@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { RotateCcw, Search } from 'lucide-react'
+import { PanelLeft, PanelLeftClose, RotateCcw, Search } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/toast-simple'
 
 interface SearchPanelProps {
@@ -10,6 +11,11 @@ interface SearchPanelProps {
   pageSearchQuery: string
   onScopeChange: (scope: 'sommaire' | 'code') => void
   onQueryChange: (query: string) => void
+  /** Optional sommaire toggle — when both are passed the panel
+   *  renders a Voir/Masquer le sommaire chip at the right end of the
+   *  search-scope radio row. Desktop only. */
+  isSidebarOpen?: boolean
+  onToggleSidebar?: () => void
 }
 
 /**
@@ -22,8 +28,11 @@ export function SearchPanel({
   pageSearchQuery,
   onScopeChange,
   onQueryChange,
+  isSidebarOpen,
+  onToggleSidebar,
 }: SearchPanelProps) {
   const { toast } = useToast()
+  const showSidebarToggle = onToggleSidebar !== undefined
 
   return (
     <div className="mb-6">
@@ -64,6 +73,38 @@ export function SearchPanel({
                 : 'Chèche nan tout kòd la'}
             </span>
           </label>
+
+          {/* Voir / Masquer le sommaire — right-aligned on the same
+              row as the search-scope radios so the toggle sits at
+              the level it controls (search-in-sommaire). Desktop
+              only; mobile keeps the accordion toggle inside
+              TocSidebar. */}
+          {showSidebarToggle && (
+            <button
+              type="button"
+              onClick={onToggleSidebar}
+              aria-pressed={!!isSidebarOpen}
+              className={cn(
+                'ml-auto hidden lg:inline-flex items-center gap-2 rounded-full',
+                'border border-slate-200 bg-white px-3.5 py-1.5',
+                'text-xs font-semibold text-slate-600',
+                'hover:border-primary hover:text-primary transition-colors',
+              )}
+            >
+              {isSidebarOpen ? (
+                <PanelLeftClose className="w-3.5 h-3.5" />
+              ) : (
+                <PanelLeft className="w-3.5 h-3.5" />
+              )}
+              {currentLang === 'fr'
+                ? isSidebarOpen
+                  ? 'Masquer le sommaire'
+                  : 'Voir le sommaire'
+                : isSidebarOpen
+                  ? 'Kache somè a'
+                  : 'Wè somè a'}
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-3">
