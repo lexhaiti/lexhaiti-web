@@ -109,37 +109,45 @@ export function SearchPanel({
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1">
-            <input
-              type="text"
-              value={pageSearchQuery}
-              onChange={(e) => onQueryChange(e.target.value)}
-              placeholder={
-                currentLang === 'fr' ? 'Rechercher' : 'Chèche'
-              }
-              className="w-full h-11 pl-4 pr-12 rounded-lg border border-gray-300 bg-gray-50 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:bg-white transition-colors"
-            />
-            <button
-              type="button"
-              aria-label={
-                currentLang === 'fr' ? 'Rechercher' : 'Chèche'
-              }
-              className="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 inline-flex items-center justify-center rounded-md bg-primary text-white hover:bg-primary/90"
-            >
-              <Search className="w-4 h-4" />
-            </button>
-          </div>
+        <div className="relative">
+          <input
+            type="text"
+            value={pageSearchQuery}
+            onChange={(e) => onQueryChange(e.target.value)}
+            placeholder={currentLang === 'fr' ? 'Rechercher' : 'Chèche'}
+            className={cn(
+              'w-full h-11 pl-4 rounded-lg border border-gray-300 bg-gray-50 text-sm text-slate-800',
+              'placeholder:text-slate-400 focus:outline-none focus:border-primary focus:bg-white transition-colors',
+              // Right padding grows when the Réinitialiser pill is
+              // visible so the pill never overlaps user text.
+              pageSearchQuery ? 'pr-[10.5rem]' : 'pr-12',
+            )}
+          />
           {pageSearchQuery && (
             <button
               type="button"
               onClick={() => onQueryChange('')}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+              className={cn(
+                'absolute right-12 top-1/2 -translate-y-1/2',
+                'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1',
+                'text-xs font-medium text-primary hover:bg-primary/10',
+                'transition-colors',
+              )}
+              aria-label={
+                currentLang === 'fr' ? 'Réinitialiser' : 'Reinisyalize'
+              }
             >
               <RotateCcw className="w-3 h-3" />
               {currentLang === 'fr' ? 'Réinitialiser' : 'Reinisyalize'}
             </button>
           )}
+          <button
+            type="button"
+            aria-label={currentLang === 'fr' ? 'Rechercher' : 'Chèche'}
+            className="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 inline-flex items-center justify-center rounded-md bg-primary text-white hover:bg-primary/90"
+          >
+            <Search className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </div>
