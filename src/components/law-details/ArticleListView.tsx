@@ -152,22 +152,13 @@ export function ArticleListView({
   )
 
   // ─── Collapse state ──────────────────────────────────────────────
-  // Set<headingId> the user has clicked closed. We also precompute
-  // the *descendant* set so per-article rendering is fast.
-  const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
-  const toggleCollapsed = (id: number) =>
-    setCollapsed((s) => {
-      const next = new Set(s)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-
-  // For each currently-collapsed heading, fan out to its descendant
-  // heading ids. Then per-article "hidden?" is a simple Set.has on
-  // any ancestor — O(path-length), no walks at render time.
-  const hiddenByCollapse = useMemo(() => {
-    if (collapsed.size === 0) return new Set<number>()
+  // Precompute the descendants of each heading once per (headings)
+  // change. Powers two interactions:
+  //   - Collapsing a parent → cascade all descendants into the
+  //     collapsed Set, so the entire subtree is hidden in one click.
+  //   - Hiding an article → just check whether any ancestor is in
+  //     the collapsed Set, no walks at render time.
+  const descendantsByHeadingId = useMemo(() => {
     const childrenByParent = new Map<number | null, HeadingRead[]>()
     for (const h of headings) {
       const key = h.parent_id ?? null
@@ -175,16 +166,53 @@ export function ArticleListView({
       if (list) list.push(h)
       else childrenByParent.set(key, [h])
     }
-    const out = new Set<number>()
-    const stack: number[] = Array.from(collapsed)
-    while (stack.length) {
-      const id = stack.pop()!
-      out.add(id)
-      const kids = childrenByParent.get(id)
-      if (kids) for (const k of kids) stack.push(k.id)
+    const m = new Map<number, number[]>()
+    for (const h of headings) {
+      const out: number[] = []
+      const stack = [h.id]
+      while (stack.length) {
+        const id = stack.pop()!
+        out.push(id)
+        const kids = childrenByParent.get(id)
+        if (kids) for (const k of kids) stack.push(k.id)
+      }
+      m.set(h.id, out)
     }
-    return out
-  }, [collapsed, headings])
+    return m
+  }, [headings])
+
+  // Set<headingId> the user has clicked closed. Toggle is *tree
+  // aware*:
+  //   - Collapsing a heading also collapses every descendant so the
+  //     entire subtree disappears in one click.
+  //   - Expanding any heading uncollapses every ancestor so the
+  //     chevrons up the chain reflect that something inside is open.
+  const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
+  const toggleCollapsed = (id: number) => {
+    setCollapsed((s) => {
+      const next = new Set(s)
+      if (next.has(id)) {
+        // Expand this heading + every ancestor — if the user opens
+        // a deeply-nested chapter the parent Livre/Titre rows should
+        // visually reflect that something below them is open.
+        next.delete(id)
+        const path = pathByHeadingId.get(id) ?? []
+        for (const h of path) next.delete(h.id)
+      } else {
+        // Collapse this heading + every descendant so the subtree
+        // really disappears, not just the heading row.
+        next.add(id)
+        const descendants = descendantsByHeadingId.get(id) ?? [id]
+        for (const d of descendants) next.add(d)
+      }
+      return next
+    })
+  }
+
+  // ``collapsed`` already includes every descendant of a collapsed
+  // root thanks to the cascading toggle above, so the per-article
+  // hidden-check just needs to ask "any ancestor in collapsed?".
+  const hiddenByCollapse = collapsed
 
   // ─── Search filter ───────────────────────────────────────────────
   // Defer the query — the input stays interactive while the
@@ -273,8 +301,17 @@ export function ArticleListView({
         return (
           <div key={a.id ?? `${a.number}`}>
             {showBreak &&
-              newSegments.map((h, idx) => {
-                const isTopRow = idx === 0
+              newSegments.map((h) => {
+                // Banner-vs-chip is decided by *structural depth*,
+                // not by the position in the diverge list. A
+                // heading with ``parent_id === null`` is a root row
+                // (Livre, Titre, LOI N°, Part, …) and always gets
+                // the banner card; everything else gets the
+                // centered chip. So in Code Civil every LOI row is
+                // a banner; every Chapitre/Section under it is a
+                // chip — even when the diverge list contains both
+                // at once.
+                const isRoot = h.parent_id == null
                 const collapsedNow = hiddenByCollapse.has(h.id)
                 const lvl =
                   getLevelLabel(
@@ -287,7 +324,7 @@ export function ArticleListView({
                   (lang === 'ht' && (h as any).title_ht
                     ? (h as any).title_ht
                     : (h as any).title_fr) ?? null
-                return isTopRow ? (
+                return isRoot ? (
                   <HeadingBanner
                     key={h.id}
                     headingId={h.id}
@@ -300,7 +337,6 @@ export function ArticleListView({
                   <HeadingChip
                     key={h.id}
                     headingId={h.id}
-                    depth={idx}
                     numberLabel={numberLabel}
                     title={headingTitle}
                     collapsed={collapsedNow}
@@ -350,7 +386,7 @@ const HeadingBanner = memo(function HeadingBanner({
       aria-expanded={!collapsed}
       className={cn(
         'group/heading w-full text-left flex items-center gap-3 transition-colors',
-        'mt-8 first:mt-0',
+        'mt-10 mb-4 first:mt-0',
         'rounded-xl border border-primary/20 bg-gradient-to-r from-primary/[0.05] to-transparent',
         'px-4 py-3 hover:border-primary/40',
       )}
@@ -375,7 +411,9 @@ const HeadingBanner = memo(function HeadingBanner({
 })
 
 // ─── Heading chip (Chapitre / Section / …) ────────────────────────
-// Centered text with a chevron next to it, no card chrome.
+// Centered text with a chevron next to it, no card chrome. Generous
+// bottom margin so the article card that follows isn't crammed
+// against the heading.
 const HeadingChip = memo(function HeadingChip({
   headingId,
   numberLabel,
@@ -384,17 +422,13 @@ const HeadingChip = memo(function HeadingChip({
   onToggle,
 }: {
   headingId: number
-  /** Depth in the new-segments list (0 = top, 1 = first nested, …).
-   *  Reserved — currently visually flat, but kept for future
-   *  indentation tuning. */
-  depth: number
   numberLabel: string
   title: string | null
   collapsed: boolean
   onToggle: (id: number) => void
 }) {
   return (
-    <div className="mt-5 mb-1 flex items-center justify-center">
+    <div className="mt-6 mb-3 flex items-center justify-center">
       <button
         type="button"
         onClick={() => onToggle(headingId)}
