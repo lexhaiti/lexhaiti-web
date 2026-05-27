@@ -150,7 +150,20 @@ export function VersionsPanel({
           const isLast = idx === versions.length - 1
           const isCurrent = idx === 0
           const fromDisplay = fmt(v.effective_from)
-          const toDisplay = v.effective_to ? fmt(v.effective_to) : null
+          // ``versions`` is newest-first. A historical version's
+          // effective_to is rarely set on the row itself — Legifrance
+          // doesn't store it either, it just infers the end-of-period
+          // from the NEXT (newer) version's effective_from. We do the
+          // same here so V1 of an article that was later amended
+          // renders "Du <pub_date> au <V2.effective_from>" instead of
+          // an open-ended "Depuis le <pub_date>" that misleadingly
+          // looks like the current version.
+          const newerVersion = idx > 0 ? versions[idx - 1] : null
+          const inferredEffectiveTo =
+            v.effective_to ?? newerVersion?.effective_from ?? null
+          const toDisplay = inferredEffectiveTo
+            ? fmt(inferredEffectiveTo)
+            : null
 
           // Build a Légifrance-style status pill:
           //   - current in-force version → green "Version en vigueur
@@ -171,6 +184,12 @@ export function VersionsPanel({
               ? `Version en vigueur du ${fromDisplay} au ${toDisplay}`
               : `Vèsyon an vigè ${fromDisplay} – ${toDisplay}`
             pillCls = 'bg-red-50 text-red-700 border-red-200'
+          } else if (v.status === 'in_force') {
+            // Historical but no inferred end (only version, missing
+            // newer one's date). Fall back to plain "En vigueur" so
+            // we don't render a misleading green "depuis le" pill.
+            pillLabel = isFr ? 'En vigueur' : 'An vigè'
+            pillCls = 'bg-slate-100 text-slate-700 border-slate-200'
           } else {
             pillLabel = isFr ? meta.label.fr : meta.label.ht
             pillCls = meta.pill

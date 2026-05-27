@@ -22,6 +22,8 @@
  */
 
 import {
+  CalendarClock,
+  CalendarDays,
   Copy,
   Eye,
   EyeOff,
@@ -32,12 +34,21 @@ import {
 import { useToast } from '@/components/ui/toast-simple'
 import { cn } from '@/lib/utils'
 
+export type ViewAsOfDate = 'today' | 'initial'
+
 interface DocumentToolbarProps {
   lang: 'fr' | 'ht'
-  /** When set, renders the "Accéder à la version initiale" link.
-   *  The parent decides what "initial version" means in context —
-   *  usually the law's first article — and provides the click handler. */
-  onJumpToInitial?: () => void
+  /** Active "view-as-of-date" mode: 'today' renders the in-force
+   *  state of every article (default on first load), 'initial'
+   *  renders each amended article in its V1 form. The buttons share
+   *  the same controlled state so the active button paints navy. */
+  viewAsOfDate?: ViewAsOfDate
+  onChangeViewAsOfDate?: (next: ViewAsOfDate) => void
+  /** Opens the "Voir les versions dans le temps" accordion panel
+   *  below the toolbar. The parent owns the open/closed state so
+   *  the button can show the active highlight. */
+  chronoOpen?: boolean
+  onToggleChrono?: () => void
   /** Controlled toggle. When both this + onToggleHideAbrogated are
    *  set the toolbar renders an "Afficher / Masquer les articles et
    *  sections abrogés" pair (label flips based on the current state). */
@@ -53,7 +64,10 @@ interface DocumentToolbarProps {
 
 export function DocumentToolbar({
   lang,
-  onJumpToInitial,
+  viewAsOfDate,
+  onChangeViewAsOfDate,
+  chronoOpen,
+  onToggleChrono,
   hideAbrogated,
   onToggleHideAbrogated,
   onCollapseAll,
@@ -62,10 +76,18 @@ export function DocumentToolbar({
   const { toast } = useToast()
   const isFr = lang === 'fr'
 
-  const showInitial = !!onJumpToInitial
+  const showViewAsOf = !!onChangeViewAsOfDate
+  const showChrono = !!onToggleChrono
   const showAbrogatedToggle = onToggleHideAbrogated !== undefined
   const showCollapseAll = !!onCollapseAll && !!onExpandAll
-  if (!showInitial && !showAbrogatedToggle && !showCollapseAll) return null
+  if (
+    !showViewAsOf &&
+    !showChrono &&
+    !showAbrogatedToggle &&
+    !showCollapseAll
+  ) {
+    return null
+  }
 
   const copyLink = async () => {
     if (typeof window === 'undefined') return
@@ -100,16 +122,50 @@ export function DocumentToolbar({
 
   return (
     <div className="flex items-center flex-wrap gap-2 mb-4 text-[12px]">
-      {showInitial && (
+      {showViewAsOf && (
+        <>
+          <button
+            type="button"
+            onClick={() => onChangeViewAsOfDate('today')}
+            aria-pressed={viewAsOfDate === 'today'}
+            className={cn(
+              baseChip,
+              viewAsOfDate === 'today' ? activeChip : idleChip,
+            )}
+          >
+            <CalendarDays className="w-3.5 h-3.5" aria-hidden />
+            {isFr
+              ? "Version à la date d'aujourd'hui"
+              : "Vèsyon nan dat jodi a"}
+          </button>
+          <button
+            type="button"
+            onClick={() => onChangeViewAsOfDate('initial')}
+            aria-pressed={viewAsOfDate === 'initial'}
+            className={cn(
+              baseChip,
+              viewAsOfDate === 'initial' ? activeChip : idleChip,
+            )}
+          >
+            <LinkIcon className="w-3.5 h-3.5" aria-hidden />
+            {isFr
+              ? 'Accéder à la version initiale'
+              : 'Ale nan vèsyon orijinal la'}
+          </button>
+        </>
+      )}
+
+      {showChrono && (
         <button
           type="button"
-          onClick={onJumpToInitial}
-          className={cn(baseChip, idleChip)}
+          onClick={onToggleChrono}
+          aria-expanded={!!chronoOpen}
+          className={cn(baseChip, chronoOpen ? activeChip : idleChip)}
         >
-          <LinkIcon className="w-3.5 h-3.5" aria-hidden />
+          <CalendarClock className="w-3.5 h-3.5" aria-hidden />
           {isFr
-            ? 'Accéder à la version initiale'
-            : 'Ale nan vèsyon orijinal la'}
+            ? 'Voir les versions dans le temps'
+            : 'Wè vèsyon yo nan tan'}
         </button>
       )}
 

@@ -29,6 +29,7 @@ import {
 
 // Sub-components extracted from this file
 import { DocumentToolbar } from './DocumentToolbar'
+import { ChronoTimelinePanel } from './_panels/ChronoTimelinePanel'
 import { EditorPreviewBanner } from './EditorPreviewBanner'
 import { LawHero } from './LawHero'
 import { TocSidebar } from './TocSidebar'
@@ -68,6 +69,17 @@ export default function LawDetail() {
   // Hide articles whose status === 'abrogated'. Controlled by the
   // DocumentToolbar above the article list.
   const [hideAbrogated, setHideAbrogated] = useState(false)
+  // Légifrance-style view-as-of-date toggle. 'today' is the current
+  // in-force state of every article (default); 'initial' will
+  // eventually render each article's V1 — visual state only for now,
+  // backend support pending. The shared toggle paints the active
+  // button navy so the user sees which mode they're in.
+  const [viewAsOfDate, setViewAsOfDate] = useState<
+    'today' | 'initial'
+  >('today')
+  // "Voir les versions dans le temps" panel — opens an accordion
+  // below the toolbar with the law-level change history.
+  const [chronoOpen, setChronoOpen] = useState(false)
   const [addHeadingAnchor, setAddHeadingAnchor] = useState<
     HeadingAnchor | null
   >(null)
@@ -566,39 +578,56 @@ export default function LawDetail() {
             {shape !== 'richtext' &&
               hasArticles &&
               !(shape === 'switchable' && viewMode === 'article') && (
-                <DocumentToolbar
-                  lang={currentLang}
-                  hideAbrogated={hideAbrogated}
-                  onToggleHideAbrogated={() =>
-                    setHideAbrogated((v) => !v)
-                  }
-                  onJumpToInitial={
-                    law.articles && law.articles.length > 0
-                      ? () => {
-                          const first = law.articles[0]
-                          const el = document.getElementById(
-                            `article-${String(first.number)}`,
-                          )
-                          if (el) {
-                            el.scrollIntoView({
-                              behavior: 'smooth',
-                              block: 'center',
-                            })
-                          }
-                        }
-                      : undefined
-                  }
-                  onCollapseAll={
-                    (law.headings?.length ?? 0) > 0
-                      ? headingCollapse.collapseAll
-                      : undefined
-                  }
-                  onExpandAll={
-                    (law.headings?.length ?? 0) > 0
-                      ? headingCollapse.expandAll
-                      : undefined
-                  }
-                />
+                <>
+                  <DocumentToolbar
+                    lang={currentLang}
+                    viewAsOfDate={viewAsOfDate}
+                    onChangeViewAsOfDate={(next) => {
+                      setViewAsOfDate(next)
+                      if (next === 'initial' && law.articles?.[0]) {
+                        // Scroll to the first article so the user
+                        // sees where the "initial" reading starts.
+                        // Actual V1 text-swap is queued for a
+                        // backend follow-up.
+                        const el = document.getElementById(
+                          `article-${String(law.articles[0].number)}`,
+                        )
+                        el?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'start',
+                        })
+                      }
+                    }}
+                    chronoOpen={chronoOpen}
+                    onToggleChrono={() => setChronoOpen((v) => !v)}
+                    hideAbrogated={hideAbrogated}
+                    onToggleHideAbrogated={() =>
+                      setHideAbrogated((v) => !v)
+                    }
+                    onCollapseAll={
+                      (law.headings?.length ?? 0) > 0
+                        ? headingCollapse.collapseAll
+                        : undefined
+                    }
+                    onExpandAll={
+                      (law.headings?.length ?? 0) > 0
+                        ? headingCollapse.expandAll
+                        : undefined
+                    }
+                  />
+                  <ChronoTimelinePanel
+                    lawSlug={law.slug}
+                    lang={currentLang}
+                    lawPublicationDate={
+                      law.publication_date ??
+                      law.moniteur_issue_publication_date ??
+                      law.issuing_date ??
+                      null
+                    }
+                    open={chronoOpen}
+                    onClose={() => setChronoOpen(false)}
+                  />
+                </>
               )}
 
             <div ref={articleViewerRef} className="mb-8 scroll-mt-24">
