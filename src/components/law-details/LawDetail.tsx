@@ -64,12 +64,6 @@ export default function LawDetail() {
   const [selectedArticle, setSelectedArticle] =
     useState<SelectedArticle | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  // Tracks whether the user has manually toggled the sommaire this
-  // session. When they have, viewMode changes stop auto-flipping it.
-  // When they haven't, the default re-applies on mode change so the
-  // sommaire feels right in each view (open in Un article, closed
-  // in Tous / Par chapitre).
-  const userToggledSidebarRef = useRef(false)
   const [addHeadingAnchor, setAddHeadingAnchor] = useState<
     HeadingAnchor | null
   >(null)
@@ -292,17 +286,16 @@ export default function LawDetail() {
     }
   }, [law?.articles, selectedArticle])
 
-  // Default sidebar state — depends on viewMode + screen width. The
-  // sommaire's primary job is "pick one article to read", which is
-  // what Un article mode is for. In Tous / Par chapitre views the
-  // content already shows inline, so the sommaire is collapsed by
-  // default to give the article cards the full width. Mobile always
-  // starts collapsed (the sidebar is an in-page accordion there
-  // anyway). Once the user has toggled the sommaire manually, mode
-  // changes stop overriding their choice.
+  // Default sidebar state — recomputed on EVERY view-mode change.
+  // Tous / Par chapitre always start with the sommaire hidden so
+  // the article cards get the full width; Un article opens it on
+  // desktop so the reader can navigate from the TOC. Mobile always
+  // starts collapsed (the sidebar is an in-page accordion there).
+  // The user can still manually open / close the sommaire within
+  // a mode — the auto-default only kicks in when the mode itself
+  // changes.
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (userToggledSidebarRef.current) return
     const isMobile = window.innerWidth < 1024
     if (isMobile) {
       setIsSidebarOpen(false)
@@ -311,10 +304,7 @@ export default function LawDetail() {
     setIsSidebarOpen(viewMode === 'article')
   }, [viewMode])
 
-  // User-driven toggle — wraps setIsSidebarOpen so subsequent
-  // viewMode changes don't unilaterally override the choice.
   const handleSidebarToggle = (open: boolean) => {
-    userToggledSidebarRef.current = true
     setIsSidebarOpen(open)
   }
 

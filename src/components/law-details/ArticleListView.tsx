@@ -33,7 +33,13 @@
 
 import { memo, useDeferredValue, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowUpRight, ChevronDown, ChevronRight } from 'lucide-react'
+import {
+  ArrowUpRight,
+  ChevronDown,
+  ChevronRight,
+  Maximize2,
+  Minimize2,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getLevelLabel } from '@/lib/legal/headingLabels'
 import { CiteArticleButton } from './CiteArticleButton'
@@ -267,6 +273,36 @@ export function ArticleListView({
 
   return (
     <div className="space-y-4">
+      {/* Tout fermer / Tout ouvrir — bulk-collapse + bulk-expand
+          for the whole law. Only renders when the law has actual
+          hierarchy to collapse; flat decrees skip the toolbar. The
+          two buttons sit at the right edge so they don't compete
+          with the first heading banner below. */}
+      {headings.length > 0 && (
+        <div className="flex items-center justify-end gap-1 -mt-2">
+          <button
+            type="button"
+            onClick={() =>
+              setCollapsed(new Set(headings.map((h) => h.id)))
+            }
+            className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12px] font-medium text-slate-500 hover:bg-slate-100 hover:text-primary transition-colors"
+            title={isFr ? 'Tout fermer' : 'Fèmen tout'}
+          >
+            <Minimize2 className="w-3.5 h-3.5" aria-hidden />
+            {isFr ? 'Tout fermer' : 'Fèmen tout'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setCollapsed(new Set())}
+            className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12px] font-medium text-slate-500 hover:bg-slate-100 hover:text-primary transition-colors"
+            title={isFr ? 'Tout ouvrir' : 'Louvri tout'}
+          >
+            <Maximize2 className="w-3.5 h-3.5" aria-hidden />
+            {isFr ? 'Tout ouvrir' : 'Louvri tout'}
+          </button>
+        </div>
+      )}
+
       {filteredArticles.map((a) => {
         const headingId = a.heading_id ?? null
         const showBreak = headingId !== lastHeadingId
@@ -526,7 +562,9 @@ const ArticleCard = memo(function ArticleCard({
   // Compact breadcrumb of the heading chain ending in the article
   // number — keeps the reader oriented when the heading rows above
   // have scrolled out of view, and survives a focused share where
-  // only one card is in the screenshot.
+  // only one card is in the screenshot. Always includes the article
+  // number as the last crumb so the header row reads "Art. premier"
+  // even on flat decrees with no heading parents.
   const breadcrumbCrumbs = useMemo(() => {
     const crumbs: Array<{ key: string; label: string }> = []
     for (const h of headingPath) {
@@ -550,47 +588,61 @@ const ArticleCard = memo(function ArticleCard({
         isAbrogated && 'opacity-70',
       )}
     >
-      {breadcrumbCrumbs.length > 1 && (
-        <nav
-          aria-label={isFr ? 'Position dans le texte' : 'Pozisyon nan tèks la'}
-          className="mb-3 flex items-center gap-1.5 flex-wrap text-[12px] text-slate-500"
-        >
-          {breadcrumbCrumbs.map((c, idx) => {
-            const isLast = idx === breadcrumbCrumbs.length - 1
-            return (
-              <span key={c.key} className="inline-flex items-center gap-1.5">
-                <span
-                  className={cn(
-                    isLast ? 'font-semibold text-slate-700' : 'font-medium',
-                  )}
-                >
-                  {c.label}
-                </span>
-                {!isLast && (
-                  <ChevronRight
-                    aria-hidden
-                    className="w-3 h-3 text-slate-300"
-                  />
-                )}
-              </span>
-            )
-          })}
-        </nav>
-      )}
+      {/* Single header row — heading-path breadcrumb on the left
+          (always visible, doubles as the article-number label since
+          its last crumb is "Art. premier"), action buttons on the
+          right (hover-visible). The previous version repeated the
+          article number as a bold "ART. PREMIER" row right under
+          the breadcrumb — pure duplication, gone. */}
       <header className="mb-3 flex items-start justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2.5 flex-wrap min-w-0">
-          <span className="text-[12px] font-bold uppercase tracking-widest text-primary tabular-nums">
-            {numLabel}
-          </span>
-          {isAbrogated && (
-            <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-700 border border-red-200">
-              {isFr ? 'Abrogé' : 'Abwoje'}
-            </span>
+        <div className="min-w-0 flex-1">
+          {breadcrumbCrumbs.length > 0 && (
+            <nav
+              aria-label={
+                isFr ? 'Position dans le texte' : 'Pozisyon nan tèks la'
+              }
+              className="flex items-center gap-1.5 flex-wrap text-[12px] text-slate-500"
+            >
+              {breadcrumbCrumbs.map((c, idx) => {
+                const isLast = idx === breadcrumbCrumbs.length - 1
+                return (
+                  <span
+                    key={c.key}
+                    className="inline-flex items-center gap-1.5"
+                  >
+                    <span
+                      className={cn(
+                        isLast
+                          ? 'font-bold uppercase tracking-widest text-primary text-[12px] tabular-nums'
+                          : 'font-medium',
+                      )}
+                    >
+                      {c.label}
+                    </span>
+                    {!isLast && (
+                      <ChevronRight
+                        aria-hidden
+                        className="w-3 h-3 text-slate-300"
+                      />
+                    )}
+                  </span>
+                )
+              })}
+            </nav>
           )}
-          {title && (
-            <h3 className="text-sm font-semibold text-slate-700 truncate">
-              — {title}
-            </h3>
+          {(isAbrogated || title) && (
+            <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+              {isAbrogated && (
+                <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-700 border border-red-200">
+                  {isFr ? 'Abrogé' : 'Abwoje'}
+                </span>
+              )}
+              {title && (
+                <h3 className="text-sm font-semibold text-slate-700 truncate">
+                  {title}
+                </h3>
+              )}
+            </div>
           )}
         </div>
         <div className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
