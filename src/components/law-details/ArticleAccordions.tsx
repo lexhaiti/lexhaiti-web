@@ -792,13 +792,18 @@ function ModifiedByLine({
     : null
 
   return (
-    <div className="ml-auto text-right max-w-md min-w-0">
+    <div className="ml-auto text-right max-w-md min-w-0 flex flex-col items-end gap-1">
       {formattedDate && (
-        <p className="text-[11px] font-medium text-slate-600">
+        // Status pill — mirrors the VersionsPanel green "Version en
+        // vigueur depuis le X" chip so the in-force date reads as a
+        // status, not a footnote. Sized down a touch to sit cleanly
+        // next to the version actions on the same row.
+        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-emerald-800 border border-emerald-200">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden />
           {isFr
-            ? `Version en vigueur depuis le ${formattedDate}`
-            : `Vèsyon an vigè depi ${formattedDate}`}
-        </p>
+            ? `En vigueur depuis le ${formattedDate}`
+            : `An vigè depi ${formattedDate}`}
+        </span>
       )}
       <p className="text-[11px] text-slate-500 truncate">
         {isFr ? 'Modifié par' : 'Modifye pa'}{' '}

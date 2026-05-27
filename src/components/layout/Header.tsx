@@ -12,6 +12,7 @@ import { useT } from '@/i18n/useT'
 import { cn } from '@/lib/utils'
 import { MENU_DATA } from '@/components/layout/menu'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
+import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import {
   AddTextButton,
   MobileUserSection,
@@ -285,6 +286,12 @@ export default function Header() {
               <AddTextButton />
               <UserMenu />
             </div>
+
+            {/* Theme toggle — editorial-only. ``ThemeToggle`` checks
+                ``useEditorMode`` itself and renders nothing for
+                public visitors, so the chip never lands in a
+                visitor's navbar even though the import is shared. */}
+            <ThemeToggle />
 
             {/* Language switcher — always visible. Flag only on mobile,
                 flag + full name on sm+. */}

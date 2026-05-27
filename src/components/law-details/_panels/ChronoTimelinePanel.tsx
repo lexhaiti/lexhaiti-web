@@ -21,7 +21,6 @@ import {
   CalendarClock,
   ChevronRight,
   Loader2,
-  Plus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -195,6 +194,32 @@ export function ChronoTimelinePanel({
     return out
   }, [rows, lang, lawPublicationDate])
 
+  // Initial-publication year — pinned as "Version initiale" in the
+  // timeline. Falls back to the year of the earliest creation event
+  // when the parent law doesn't carry a publication_date itself.
+  const initialYear = useMemo<string | null>(() => {
+    if (lawPublicationDate) return yearKey(lawPublicationDate)
+    let earliest: string | null = null
+    for (const e of events) {
+      if (!e.isCreation || !e.effectiveDate) continue
+      if (!earliest || e.effectiveDate < earliest) earliest = e.effectiveDate
+    }
+    return earliest ? yearKey(earliest) : null
+  }, [lawPublicationDate, events])
+
+  // Amendement count for a given year = distinct amending laws that
+  // landed in that year. "Distinct" by slug, falling back to title +
+  // article number when slug is missing.
+  const amendmentCountForYear = (yg: YearGroup): number => {
+    const seen = new Set<string>()
+    for (const e of yg.events) {
+      if (e.isCreation) continue
+      const key = `${e.amendingLawSlug ?? 'none'}::${e.amendingLawTitle ?? ''}::${e.amendingArticleNumber ?? ''}`
+      seen.add(key)
+    }
+    return seen.size
+  }
+
   // Group: year → date → amending-law → [affected articles]
   const yearGroups = useMemo<YearGroup[]>(() => {
     const byYear = new Map<string, ChangeEvent[]>()
@@ -307,41 +332,66 @@ export function ChronoTimelinePanel({
         <ol className="relative pl-6">
           <div className="absolute left-1.5 top-2 bottom-2 w-px bg-slate-200" />
           {yearGroups.map((yg) => {
-            const yearOpen = expandedYears.has(yg.year)
+            // Initial year = the law's own publication year. Render
+            // it as a flat "Version initiale" pin — no child detail
+            // (it's not a modification, it's the founding text), so
+            // no chevron / no expandable block.
+            const isInitialYear = !!initialYear && yg.year === initialYear
+            const yearOpen = !isInitialYear && expandedYears.has(yg.year)
             const dateGroups = yearOpen ? dateGroupsForYear(yg) : []
+            // Amendement count = number of distinct amending laws that
+            // landed in this year. The previous "55 versions" mixed
+            // up "articles touched" with "version events" and read as
+            // misleading inflation — a single law that touches 55
+            // articles is one amendement, not 55.
+            const amendmentCount = amendmentCountForYear(yg)
             return (
               <li key={yg.year} className="pb-3">
                 <span
                   aria-hidden
-                  className="absolute -left-[0.4rem] w-3 h-3 rounded-full bg-white border-[3px] border-primary mt-1.5"
+                  className={cn(
+                    'absolute -left-[0.4rem] w-3 h-3 rounded-full bg-white border-[3px] mt-1.5',
+                    isInitialYear ? 'border-emerald-500' : 'border-primary',
+                  )}
                 />
-                <button
-                  type="button"
-                  onClick={() => toggleYear(yg.year)}
-                  aria-expanded={yearOpen}
-                  className="w-full flex items-center justify-between gap-3 rounded-md px-3 py-2 -mx-1 text-left hover:bg-white transition-colors"
-                >
-                  <span className="text-sm font-bold text-primary">
-                    {yg.year} ·{' '}
-                    <span className="font-medium text-slate-600">
-                      {yg.events.length}{' '}
-                      {yg.events.length > 1
-                        ? isFr
-                          ? 'versions'
-                          : 'vèsyon'
-                        : isFr
-                          ? 'version'
-                          : 'vèsyon'}
+                {isInitialYear ? (
+                  <div className="flex items-center gap-3 px-3 py-2 -mx-1">
+                    <span className="text-sm font-bold text-primary">
+                      {yg.year}
                     </span>
-                  </span>
-                  <ChevronRight
-                    aria-hidden
-                    className={cn(
-                      'w-4 h-4 text-slate-400 transition-transform',
-                      yearOpen && 'rotate-90',
-                    )}
-                  />
-                </button>
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-emerald-700">
+                      {isFr ? 'Version initiale' : 'Vèsyon inisyal'}
+                    </span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => toggleYear(yg.year)}
+                    aria-expanded={yearOpen}
+                    className="w-full flex items-center justify-between gap-3 rounded-md px-3 py-2 -mx-1 text-left hover:bg-white transition-colors"
+                  >
+                    <span className="text-sm font-bold text-primary">
+                      {yg.year}{' '}
+                      <span className="font-medium text-slate-500">
+                        — {amendmentCount}{' '}
+                        {amendmentCount > 1
+                          ? isFr
+                            ? 'amendements'
+                            : 'amandman'
+                          : isFr
+                            ? 'amendement'
+                            : 'amandman'}
+                      </span>
+                    </span>
+                    <ChevronRight
+                      aria-hidden
+                      className={cn(
+                        'w-4 h-4 text-slate-400 transition-transform',
+                        yearOpen && 'rotate-90',
+                      )}
+                    />
+                  </button>
+                )}
                 {yearOpen && (
                   <ul className="mt-2 ml-4 space-y-3">
                     {dateGroups.map((dg) => {
@@ -369,71 +419,74 @@ export function ChronoTimelinePanel({
                             </span>
                           </button>
                           {dateOpen && (
-                            <ul className="mt-1 ml-6 space-y-2 text-[13px] text-slate-700">
-                              {amendGroups.map((g, idx) => (
-                                <li
-                                  key={idx}
-                                  className="border-l-2 border-slate-200 pl-3"
-                                >
-                                  <p>
-                                    {g.amendingLawSlug ? (
-                                      <Link
-                                        href={
-                                          g.amendingArticleNumber
-                                            ? `/loi/${g.amendingLawSlug}?view=article&article=${encodeURIComponent(g.amendingArticleNumber)}`
-                                            : `/loi/${g.amendingLawSlug}`
-                                        }
-                                        className="text-primary font-medium hover:underline underline-offset-2"
-                                      >
-                                        {g.amendingLawTitle ??
-                                          g.amendingLawSlug}
-                                        {g.amendingArticleNumber
-                                          ? ` — art. ${g.amendingArticleNumber}`
-                                          : ''}
-                                      </Link>
-                                    ) : (
-                                      <span className="italic text-slate-500">
-                                        {isFr
-                                          ? 'Texte d’une portée générale'
-                                          : 'Yon tèks ki gen efè jeneral'}
-                                      </span>
-                                    )}{' '}
-                                    <span className="text-slate-500">
-                                      {g.isCreation
-                                        ? isFr
-                                          ? 'a créé'
-                                          : 'kreye'
-                                        : isFr
-                                          ? 'a modifié'
-                                          : 'modifye'}
-                                    </span>{' '}
-                                    {g.isCreation && (
-                                      <Plus className="inline w-3 h-3 text-emerald-600 -mt-0.5" />
-                                    )}
-                                  </p>
-                                  <p className="mt-1 text-slate-600">
-                                    {isFr ? 'Article' : 'Atik'}{' '}
-                                    {g.affectedArticleNumbers.map(
-                                      (num, i) => (
-                                        <span key={num}>
-                                          <Link
-                                            href={`#article-${num}`}
-                                            className="text-primary hover:underline underline-offset-2"
-                                          >
-                                            {num}
-                                          </Link>
-                                          {i <
-                                          g.affectedArticleNumbers
-                                            .length -
-                                            1
-                                            ? ', '
+                            <ul className="mt-1 ml-6 space-y-3 text-[13px] text-slate-700">
+                              {amendGroups
+                                .filter((g) => !g.isCreation)
+                                .map((g, idx) => (
+                                  <li
+                                    key={idx}
+                                    className="border-l-2 border-primary/30 pl-3"
+                                  >
+                                    {/* Amending law title — clickable
+                                        link to the modifying text,
+                                        followed by "— art. N" when we
+                                        know which article in that law
+                                        carried the change. */}
+                                    <p className="leading-snug">
+                                      {g.amendingLawSlug ? (
+                                        <Link
+                                          href={
+                                            g.amendingArticleNumber
+                                              ? `/loi/${g.amendingLawSlug}?view=article&article=${encodeURIComponent(g.amendingArticleNumber)}`
+                                              : `/loi/${g.amendingLawSlug}`
+                                          }
+                                          className="text-primary font-medium hover:underline underline-offset-2"
+                                        >
+                                          {g.amendingLawTitle ??
+                                            g.amendingLawSlug}
+                                          {g.amendingArticleNumber
+                                            ? ` — art. ${g.amendingArticleNumber}`
                                             : ''}
+                                        </Link>
+                                      ) : (
+                                        <span className="italic text-slate-500">
+                                          {isFr
+                                            ? 'Texte modificateur inconnu'
+                                            : 'Tèks modifikatè enkoni'}
                                         </span>
-                                      ),
-                                    )}
-                                  </p>
-                                </li>
-                              ))}
+                                      )}{' '}
+                                      <span className="font-semibold text-slate-700">
+                                        {isFr ? 'a modifié :' : 'modifye :'}
+                                      </span>
+                                    </p>
+                                    {/* Affected articles — space-
+                                        separated numbers, each its
+                                        own deep-link into the current
+                                        law. Mirrors Légifrance's
+                                        "Articles 88-7 88-4 88-2 88-1"
+                                        layout for compactness. */}
+                                    <p className="mt-1 pl-3">
+                                      <span className="text-slate-500 mr-1">
+                                        {g.affectedArticleNumbers.length > 1
+                                          ? isFr
+                                            ? 'Articles'
+                                            : 'Atik yo'
+                                          : isFr
+                                            ? 'Article'
+                                            : 'Atik'}
+                                      </span>
+                                      {g.affectedArticleNumbers.map((num) => (
+                                        <Link
+                                          key={num}
+                                          href={`#article-${num}`}
+                                          className="inline-block mr-1.5 text-primary hover:underline underline-offset-2"
+                                        >
+                                          {num}
+                                        </Link>
+                                      ))}
+                                    </p>
+                                  </li>
+                                ))}
                             </ul>
                           )}
                         </li>
