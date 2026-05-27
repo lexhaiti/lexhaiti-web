@@ -31,6 +31,7 @@ import { getLevelLabel } from '@/lib/legal/headingLabels'
 import { CiteArticleButton } from './CiteArticleButton'
 import { PlainExplainerBox } from './PlainExplainerBox'
 import { InlineVersionsDisclosure } from './InlineVersionsDisclosure'
+import { InlineCompareDisclosure } from './InlineCompareDisclosure'
 import { CrossReferencesPanel } from './CrossReferencesPanel'
 import type { components } from '@/lib/api-types'
 
@@ -216,29 +217,34 @@ export function ArticleListView({
                 lang={lang}
               />
 
-              {/* Versions disclosure — only renders when the article
-                  actually has history (version_number > 1). On expand
-                  it lazy-fetches the timeline; nothing happens for v1
-                  articles. */}
+              {/* Versions + compare disclosures — both only render
+                  when the article actually has history
+                  (version_number > 1). Each lazy-loads its own data
+                  on first expand. */}
               {a.id != null && (a.version_number ?? 1) > 1 && (
-                <InlineVersionsDisclosure
-                  articleId={a.id}
-                  versionCount={a.version_number ?? 1}
-                  defaultFromDate={null}
-                  lang={lang}
-                />
+                <>
+                  <InlineVersionsDisclosure
+                    articleId={a.id}
+                    versionCount={a.version_number ?? 1}
+                    defaultFromDate={null}
+                    lang={lang}
+                  />
+                  <InlineCompareDisclosure
+                    articleId={a.id}
+                    versionCount={a.version_number ?? 1}
+                    lang={lang}
+                  />
+                </>
               )}
 
-              {/* Cross-references — reads optional cited_by / cites
-                  arrays attached to the article by the backend. If
-                  neither is present (today) the panel renders nothing.
-                  When the backend ships the reverse-index endpoint,
-                  this lights up automatically. */}
-              <CrossReferencesPanel
-                citedBy={(a as any).cited_by ?? null}
-                cites={(a as any).cites ?? null}
-                lang={lang}
-              />
+              {/* Cross-references — lazy-fetches from
+                  /articles/{id}/references on first expand so the
+                  list view doesn't fan out N+1 fetches at page load.
+                  Renders a disclosure button; nothing visible until
+                  the user clicks. */}
+              {a.id != null && (
+                <CrossReferencesPanel articleId={a.id} lang={lang} />
+              )}
             </article>
           </div>
         )

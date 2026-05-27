@@ -67,6 +67,8 @@ import {
 import dynamic from 'next/dynamic'
 import { VersionsPanel, type VersionEntry } from './_panels/VersionsPanel'
 import { ComparePanel } from './_panels/ComparePanel'
+import { PlainExplainerBox } from './PlainExplainerBox'
+import { CrossReferencesPanel } from './CrossReferencesPanel'
 import { CitationColumn } from './_panels/CitationColumn'
 // Heavy editor + dialog bundles are pulled in only when an editor
 // actually opens them — so public readers (the 99% case) never pay
@@ -587,16 +589,24 @@ export default function ArticleViewer({
       .sort((a, b) => a.version_number - b.version_number)
       .map<VersionEntry>((v) => {
         // "Modifié par X" line — the version row carries the slug
-        // and title of the law that introduced this version. We
-        // surface them on the timeline + link out to that law.
-        // (No source_amendment_article_number yet, so the link goes
-        //  to the law landing page; once backend exposes it we can
-        //  append ?view=article&article=N here.)
+        // and title of the law that introduced this version. When
+        // the per-version source_amendment_article_number is set
+        // (backend migration 0042+), we deep-link straight to that
+        // article inside the amending law via ?view=article&article=N
+        // so the reader can jump from the timeline directly to the
+        // modifying paragraph.
         const amendingSlug = v.source_amendment_slug ?? null
+        const amendingArticleNumber =
+          (v as any).source_amendment_article_number ?? null
         const amendingTitle =
           (currentLang === 'ht' && (v as any).source_amendment_title_ht
             ? (v as any).source_amendment_title_ht
             : v.source_amendment_title_fr) ?? null
+        const href = amendingSlug
+          ? amendingArticleNumber
+            ? `/loi/${amendingSlug}?view=article&article=${encodeURIComponent(amendingArticleNumber)}`
+            : `/loi/${amendingSlug}`
+          : null
         return {
           id: v.id,
           version: v.version_number,
@@ -604,7 +614,7 @@ export default function ArticleViewer({
           effective_from: v.effective_from ?? '',
           effective_to: v.effective_to ?? null,
           amended_by: amendingTitle,
-          href: amendingSlug ? `/loi/${amendingSlug}` : null,
+          href,
         }
       })
       .reverse() // newest first, matches timeline reading order
@@ -1305,6 +1315,24 @@ export default function ArticleViewer({
                   ? "Affiché en français — version créole pas encore disponible."
                   : "Afiche an franse — vèsyon kreyòl la poko disponib."}
               </p>
+            )}
+            {/* Plain-language explainer — appears under the formal text
+                in the focused viewer too, not just in the list view.
+                Reads (article as any).explainer_* so it's empty until
+                an editor fills it in. */}
+            <PlainExplainerBox
+              explainerFr={(article as any).explainer_fr ?? null}
+              explainerHt={(article as any).explainer_ht ?? null}
+              lang={displayLang}
+            />
+            {/* Cross-references panel — lazy-fetches incoming &
+                outgoing citations on first expand. Same component used
+                by the list view, here gated by article.id. */}
+            {article.id != null && (
+              <CrossReferencesPanel
+                articleId={article.id}
+                lang={displayLang}
+              />
             )}
             {/* Per-article override pill — when the user toggled this
                 article into a different language than the page-level

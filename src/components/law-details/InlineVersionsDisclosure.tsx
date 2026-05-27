@@ -59,10 +59,17 @@ export function InlineVersionsDisclosure({
         .sort((a, b) => a.version_number - b.version_number)
         .map<VersionEntry>((v) => {
           const amendingSlug = v.source_amendment_slug ?? null
+          const amendingArticleNumber =
+            (v as any).source_amendment_article_number ?? null
           const amendingTitle =
             (lang === 'ht' && (v as any).source_amendment_title_ht
               ? (v as any).source_amendment_title_ht
               : v.source_amendment_title_fr) ?? null
+          const href = amendingSlug
+            ? amendingArticleNumber
+              ? `/loi/${amendingSlug}?view=article&article=${encodeURIComponent(amendingArticleNumber)}`
+              : `/loi/${amendingSlug}`
+            : null
           return {
             id: v.id,
             version: v.version_number,
@@ -70,7 +77,7 @@ export function InlineVersionsDisclosure({
             effective_from: v.effective_from ?? '',
             effective_to: v.effective_to ?? null,
             amended_by: amendingTitle,
-            href: amendingSlug ? `/loi/${amendingSlug}` : null,
+            href,
           }
         })
         .reverse() // newest first
