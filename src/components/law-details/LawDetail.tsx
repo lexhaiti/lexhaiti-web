@@ -43,6 +43,7 @@ import { RelatedLaws } from './RelatedLaws'
 // View-mode plumbing — shape detection + persisted mode state.
 import { detectShape, availableViewModes } from '@/lib/legal/shape'
 import { useViewMode } from '@/lib/hooks/useViewMode'
+import { useHeadingCollapse } from '@/lib/hooks/useHeadingCollapse'
 import { lawShortCite } from '@/lib/legal/cite'
 
 
@@ -130,6 +131,11 @@ export default function LawDetail() {
     available: availableModes,
     hasDeepLink: hasArticleDeepLink,
   })
+
+  // Shared heading-collapse state — DocumentToolbar's Tout fermer
+  // / Tout ouvrir buttons and ArticleListView's per-row chevrons
+  // both read + write the same Set through this hook.
+  const headingCollapse = useHeadingCollapse(law?.headings ?? [])
 
   const articleCounts = useMemo(() => {
     if (!law?.articles || law.articles.length === 0) {
@@ -582,6 +588,16 @@ export default function LawDetail() {
                         }
                       : undefined
                   }
+                  onCollapseAll={
+                    (law.headings?.length ?? 0) > 0
+                      ? headingCollapse.collapseAll
+                      : undefined
+                  }
+                  onExpandAll={
+                    (law.headings?.length ?? 0) > 0
+                      ? headingCollapse.expandAll
+                      : undefined
+                  }
                 />
               )}
 
@@ -676,6 +692,9 @@ export default function LawDetail() {
                       onArticleChanged={refetch}
                       searchQuery={pageSearchQuery}
                       searchScope={pageSearchScope}
+                      hideAbrogated={hideAbrogated}
+                      collapsed={headingCollapse.collapsed}
+                      onToggleCollapsed={headingCollapse.toggle}
                     />
                   )
                 }
@@ -727,6 +746,8 @@ export default function LawDetail() {
                     searchQuery={pageSearchQuery}
                     searchScope={pageSearchScope}
                     hideAbrogated={hideAbrogated}
+                    collapsed={headingCollapse.collapsed}
+                    onToggleCollapsed={headingCollapse.toggle}
                     emptyLabel={
                       viewMode === 'chapitre'
                         ? currentLang === 'fr'

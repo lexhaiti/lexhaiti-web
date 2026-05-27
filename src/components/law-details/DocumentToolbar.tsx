@@ -21,7 +21,14 @@
  * so it gracefully disappears on simple flat decrees.
  */
 
-import { Copy, EyeOff, LinkIcon } from 'lucide-react'
+import {
+  Copy,
+  Eye,
+  EyeOff,
+  LinkIcon,
+  Maximize2,
+  Minimize2,
+} from 'lucide-react'
 import { useToast } from '@/components/ui/toast-simple'
 import { cn } from '@/lib/utils'
 
@@ -32,10 +39,16 @@ interface DocumentToolbarProps {
    *  usually the law's first article — and provides the click handler. */
   onJumpToInitial?: () => void
   /** Controlled toggle. When both this + onToggleHideAbrogated are
-   *  set the toolbar renders the "Masquer les articles et sections
-   *  abrogés" toggle. */
+   *  set the toolbar renders an "Afficher / Masquer les articles et
+   *  sections abrogés" pair (label flips based on the current state). */
   hideAbrogated?: boolean
   onToggleHideAbrogated?: () => void
+  /** Bulk collapse / expand of the law's heading tree — wired by
+   *  the parent into the shared ``useHeadingCollapse`` hook so the
+   *  buttons and the per-row chevrons share one source of truth.
+   *  Both callbacks must be provided to render the pair. */
+  onCollapseAll?: () => void
+  onExpandAll?: () => void
 }
 
 export function DocumentToolbar({
@@ -43,13 +56,16 @@ export function DocumentToolbar({
   onJumpToInitial,
   hideAbrogated,
   onToggleHideAbrogated,
+  onCollapseAll,
+  onExpandAll,
 }: DocumentToolbarProps) {
   const { toast } = useToast()
   const isFr = lang === 'fr'
 
   const showInitial = !!onJumpToInitial
   const showAbrogatedToggle = onToggleHideAbrogated !== undefined
-  if (!showInitial && !showAbrogatedToggle) return null
+  const showCollapseAll = !!onCollapseAll && !!onExpandAll
+  if (!showInitial && !showAbrogatedToggle && !showCollapseAll) return null
 
   const copyLink = async () => {
     if (typeof window === 'undefined') return
@@ -74,13 +90,21 @@ export function DocumentToolbar({
     }
   }
 
+  // Plain text + outline button — uniform across the row.
+  const baseChip =
+    'inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-medium transition-colors'
+  const idleChip =
+    'border-slate-200 bg-white text-slate-700 hover:border-primary hover:text-primary'
+  const activeChip =
+    'bg-primary text-white border-primary hover:bg-primary/90'
+
   return (
     <div className="flex items-center flex-wrap gap-2 mb-4 text-[12px]">
       {showInitial && (
         <button
           type="button"
           onClick={onJumpToInitial}
-          className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-700 hover:border-primary hover:text-primary transition-colors"
+          className={cn(baseChip, idleChip)}
         >
           <LinkIcon className="w-3.5 h-3.5" aria-hidden />
           {isFr
@@ -94,24 +118,48 @@ export function DocumentToolbar({
           type="button"
           onClick={onToggleHideAbrogated}
           aria-pressed={!!hideAbrogated}
-          className={cn(
-            'inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-medium transition-colors',
-            hideAbrogated
-              ? 'bg-primary text-white border-primary hover:bg-primary/90'
-              : 'bg-white text-slate-700 border-slate-200 hover:border-primary hover:text-primary',
-          )}
+          className={cn(baseChip, hideAbrogated ? activeChip : idleChip)}
         >
-          <EyeOff className="w-3.5 h-3.5" aria-hidden />
+          {hideAbrogated ? (
+            <Eye className="w-3.5 h-3.5" aria-hidden />
+          ) : (
+            <EyeOff className="w-3.5 h-3.5" aria-hidden />
+          )}
           {isFr
-            ? 'Masquer les articles et sections abrogés'
-            : 'Kache atik ak seksyon abwoje yo'}
+            ? hideAbrogated
+              ? 'Afficher les articles abrogés'
+              : 'Masquer les articles et sections abrogés'
+            : hideAbrogated
+              ? 'Afiche atik abwoje yo'
+              : 'Kache atik ak seksyon abwoje yo'}
         </button>
+      )}
+
+      {showCollapseAll && (
+        <>
+          <button
+            type="button"
+            onClick={onCollapseAll}
+            className={cn(baseChip, idleChip)}
+          >
+            <Minimize2 className="w-3.5 h-3.5" aria-hidden />
+            {isFr ? 'Tout fermer' : 'Fèmen tout'}
+          </button>
+          <button
+            type="button"
+            onClick={onExpandAll}
+            className={cn(baseChip, idleChip)}
+          >
+            <Maximize2 className="w-3.5 h-3.5" aria-hidden />
+            {isFr ? 'Tout ouvrir' : 'Louvri tout'}
+          </button>
+        </>
       )}
 
       <button
         type="button"
         onClick={copyLink}
-        className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-700 hover:border-primary hover:text-primary transition-colors ml-auto"
+        className={cn(baseChip, idleChip, 'ml-auto')}
       >
         <Copy className="w-3.5 h-3.5" aria-hidden />
         {isFr ? 'Copier le lien' : 'Kopye lyen'}

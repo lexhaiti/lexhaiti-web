@@ -31,15 +31,9 @@
  *     memoized so its identity stays stable across re-renders.
  */
 
-import { memo, useDeferredValue, useMemo, useState } from 'react'
+import { memo, useDeferredValue, useMemo } from 'react'
 import Link from 'next/link'
-import {
-  ArrowUpRight,
-  ChevronDown,
-  ChevronRight,
-  Maximize2,
-  Minimize2,
-} from 'lucide-react'
+import { ArrowUpRight, ChevronDown, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getLevelLabel } from '@/lib/legal/headingLabels'
 import { CiteArticleButton } from './CiteArticleButton'
@@ -89,6 +83,11 @@ interface Props {
    *  (and heading rows whose subtree has nothing else visible
    *  collapse too). Controlled by the DocumentToolbar above. */
   hideAbrogated?: boolean
+  /** Controlled heading-collapse state. The parent owns the Set
+   *  so the DocumentToolbar's Tout fermer / Tout ouvrir buttons
+   *  and the per-row chevrons share one source of truth. */
+  collapsed: Set<number>
+  onToggleCollapsed: (id: number) => void
 }
 
 // Lowercase + strip diacritics for substring matching.
@@ -122,6 +121,8 @@ export function ArticleListView({
   searchQuery,
   searchScope = 'sommaire',
   hideAbrogated = false,
+  collapsed,
+  onToggleCollapsed,
 }: Props) {
   const lang = currentLang
   const isFr = lang === 'fr'
@@ -167,58 +168,10 @@ export function ArticleListView({
     [articles],
   )
 
-  // ─── Collapse state ──────────────────────────────────────────────
-  // Precompute the descendants of each heading once per (headings)
-  // change. Powers two interactions:
-  //   - Collapsing a parent → cascade all descendants into the
-  //     collapsed Set, so the entire subtree is hidden in one click.
-  //   - Hiding an article → just check whether any ancestor is in
-  //     the collapsed Set, no walks at render time.
-  const descendantsByHeadingId = useMemo(() => {
-    const childrenByParent = new Map<number | null, HeadingRead[]>()
-    for (const h of headings) {
-      const key = h.parent_id ?? null
-      const list = childrenByParent.get(key)
-      if (list) list.push(h)
-      else childrenByParent.set(key, [h])
-    }
-    const m = new Map<number, number[]>()
-    for (const h of headings) {
-      const out: number[] = []
-      const stack = [h.id]
-      while (stack.length) {
-        const id = stack.pop()!
-        out.push(id)
-        const kids = childrenByParent.get(id)
-        if (kids) for (const k of kids) stack.push(k.id)
-      }
-      m.set(h.id, out)
-    }
-    return m
-  }, [headings])
-
-  // Set<headingId> the user has clicked closed. First load starts
-  // empty (everything open). Toggle is asymmetric:
-  //   - Collapse → cascade descendants into the set. The whole
-  //     subtree disappears in one click.
-  //   - Expand → remove only the clicked heading. Descendants keep
-  //     whatever state they had — so re-opening LOI N° 2 after a
-  //     collapse reveals its chapter chips, but each chapter is
-  //     still collapsed (chevron right, articles hidden). The user
-  //     drills in level by level, table-of-contents style.
-  const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
-  const toggleCollapsed = (id: number) => {
-    setCollapsed((s) => {
-      const next = new Set(s)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        const descendants = descendantsByHeadingId.get(id) ?? [id]
-        for (const d of descendants) next.add(d)
-      }
-      return next
-    })
-  }
+  // Collapse state — fully controlled. The parent (LawDetail) owns
+  // the Set + the toggle so the DocumentToolbar's Tout fermer / Tout
+  // ouvrir buttons and the per-row chevrons share one source of
+  // truth. See ``useHeadingCollapse`` for the tree-aware semantics.
 
   // ─── Search filter ───────────────────────────────────────────────
   // Defer the query — the input stays interactive while the
@@ -287,36 +240,6 @@ export function ArticleListView({
 
   return (
     <div className="space-y-4">
-      {/* Tout fermer / Tout ouvrir — bulk-collapse + bulk-expand
-          for the whole law. Only renders when the law has actual
-          hierarchy to collapse; flat decrees skip the toolbar. The
-          two buttons sit at the right edge so they don't compete
-          with the first heading banner below. */}
-      {headings.length > 0 && (
-        <div className="flex items-center justify-end gap-1 -mt-2">
-          <button
-            type="button"
-            onClick={() =>
-              setCollapsed(new Set(headings.map((h) => h.id)))
-            }
-            className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12px] font-medium text-slate-500 hover:bg-slate-100 hover:text-primary transition-colors"
-            title={isFr ? 'Tout fermer' : 'Fèmen tout'}
-          >
-            <Minimize2 className="w-3.5 h-3.5" aria-hidden />
-            {isFr ? 'Tout fermer' : 'Fèmen tout'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setCollapsed(new Set())}
-            className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12px] font-medium text-slate-500 hover:bg-slate-100 hover:text-primary transition-colors"
-            title={isFr ? 'Tout ouvrir' : 'Louvri tout'}
-          >
-            <Maximize2 className="w-3.5 h-3.5" aria-hidden />
-            {isFr ? 'Tout ouvrir' : 'Louvri tout'}
-          </button>
-        </div>
-      )}
-
       {filteredArticles.map((a) => {
         const headingId = a.heading_id ?? null
         const showBreak = headingId !== lastHeadingId
@@ -387,7 +310,7 @@ export function ArticleListView({
                     numberLabel={numberLabel}
                     title={headingTitle}
                     collapsed={collapsedNow}
-                    onToggle={toggleCollapsed}
+                    onToggle={onToggleCollapsed}
                   />
                 ) : (
                   <HeadingChip
@@ -397,7 +320,7 @@ export function ArticleListView({
                     numberLabel={numberLabel}
                     title={headingTitle}
                     collapsed={collapsedNow}
-                    onToggle={toggleCollapsed}
+                    onToggle={onToggleCollapsed}
                   />
                 )
               })}
