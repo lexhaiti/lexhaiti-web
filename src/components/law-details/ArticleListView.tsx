@@ -33,7 +33,7 @@
 
 import { memo, useDeferredValue, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowUpRight, ChevronDown } from 'lucide-react'
+import { ArrowUpRight, ChevronDown, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getLevelLabel } from '@/lib/legal/headingLabels'
 import { CiteArticleButton } from './CiteArticleButton'
@@ -181,25 +181,23 @@ export function ArticleListView({
     return m
   }, [headings])
 
-  // Set<headingId> the user has clicked closed. Toggle is *tree
-  // aware* so the structure behaves like a real accordion:
-  //   - Collapsing a heading also collapses every descendant so
-  //     the entire subtree disappears (chips + article cards) in
-  //     one click.
-  //   - Expanding a heading uncollapses every descendant AND every
-  //     ancestor: the user gets the whole open subtree back in one
-  //     click, and ancestor chevrons reflect that something inside
-  //     is open.
+  // Set<headingId> the user has clicked closed. First load starts
+  // empty (everything open). Toggle is asymmetric:
+  //   - Collapse → cascade descendants into the set. The whole
+  //     subtree disappears in one click.
+  //   - Expand → remove only the clicked heading. Descendants keep
+  //     whatever state they had — so re-opening LOI N° 2 after a
+  //     collapse reveals its chapter chips, but each chapter is
+  //     still collapsed (chevron right, articles hidden). The user
+  //     drills in level by level, table-of-contents style.
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
   const toggleCollapsed = (id: number) => {
     setCollapsed((s) => {
       const next = new Set(s)
-      const descendants = descendantsByHeadingId.get(id) ?? [id]
       if (next.has(id)) {
-        for (const d of descendants) next.delete(d)
-        const path = pathByHeadingId.get(id) ?? []
-        for (const h of path) next.delete(h.id)
+        next.delete(id)
       } else {
+        const descendants = descendantsByHeadingId.get(id) ?? [id]
         for (const d of descendants) next.add(d)
       }
       return next
@@ -357,6 +355,8 @@ export function ArticleListView({
             {hiddenByAncestor ? null : (
               <ArticleCard
                 article={a}
+                headingPath={path}
+                codeSubcategory={codeSubcategory ?? null}
                 lawSlug={lawSlug}
                 lawShortTitle={lawShortTitle}
                 isFr={isFr}
@@ -477,6 +477,13 @@ const HeadingChip = memo(function HeadingChip({
 // ─── Article card ─────────────────────────────────────────────────
 interface ArticleCardProps {
   article: ArticleEmbed
+  /** Ancestor heading chain — rendered as the article's breadcrumb
+   *  ("Loi N° 2 › Chapitre II › Art. 23") so the reader keeps
+   *  their bearings even when scrolling past heading rows. */
+  headingPath: HeadingRead[]
+  /** Drives the level-label dictionary (loi / livre / titre →
+   *  rendered text), passed through to the breadcrumb. */
+  codeSubcategory: string | null
   lawSlug: string
   lawShortTitle?: string
   isFr: boolean
@@ -489,6 +496,8 @@ interface ArticleCardProps {
 
 const ArticleCard = memo(function ArticleCard({
   article,
+  headingPath,
+  codeSubcategory,
   lawSlug,
   lawShortTitle,
   isFr,
@@ -514,6 +523,24 @@ const ArticleCard = memo(function ArticleCard({
       ? `${window.location.origin}/loi/${lawSlug}?view=article&article=${encodeURIComponent(numStr)}`
       : `https://lexhaiti.org/loi/${lawSlug}?view=article&article=${encodeURIComponent(numStr)}`
 
+  // Compact breadcrumb of the heading chain ending in the article
+  // number — keeps the reader oriented when the heading rows above
+  // have scrolled out of view, and survives a focused share where
+  // only one card is in the screenshot.
+  const breadcrumbCrumbs = useMemo(() => {
+    const crumbs: Array<{ key: string; label: string }> = []
+    for (const h of headingPath) {
+      const lvl =
+        getLevelLabel(h.level, lang, codeSubcategory) ?? h.level
+      crumbs.push({
+        key: `h-${h.id}`,
+        label: h.number ? `${lvl} ${h.number}` : lvl,
+      })
+    }
+    crumbs.push({ key: 'art', label: numLabel })
+    return crumbs
+  }, [headingPath, lang, codeSubcategory, numLabel])
+
   return (
     <article
       id={`article-${numStr}`}
@@ -523,6 +550,33 @@ const ArticleCard = memo(function ArticleCard({
         isAbrogated && 'opacity-70',
       )}
     >
+      {breadcrumbCrumbs.length > 1 && (
+        <nav
+          aria-label={isFr ? 'Position dans le texte' : 'Pozisyon nan tèks la'}
+          className="mb-3 flex items-center gap-1.5 flex-wrap text-[12px] text-slate-500"
+        >
+          {breadcrumbCrumbs.map((c, idx) => {
+            const isLast = idx === breadcrumbCrumbs.length - 1
+            return (
+              <span key={c.key} className="inline-flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    isLast ? 'font-semibold text-slate-700' : 'font-medium',
+                  )}
+                >
+                  {c.label}
+                </span>
+                {!isLast && (
+                  <ChevronRight
+                    aria-hidden
+                    className="w-3 h-3 text-slate-300"
+                  />
+                )}
+              </span>
+            )
+          })}
+        </nav>
+      )}
       <header className="mb-3 flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2.5 flex-wrap min-w-0">
           <span className="text-[12px] font-bold uppercase tracking-widest text-primary tabular-nums">
