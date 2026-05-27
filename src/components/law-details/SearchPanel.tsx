@@ -3,7 +3,6 @@
 import React from 'react'
 import { PanelLeft, PanelLeftClose, RotateCcw, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useToast } from '@/components/ui/toast-simple'
 
 interface SearchPanelProps {
   currentLang: 'fr' | 'ht'
@@ -36,7 +35,6 @@ export function SearchPanel({
   onToggleSidebar,
   rightControls,
 }: SearchPanelProps) {
-  const { toast } = useToast()
   const showSidebarToggle = onToggleSidebar !== undefined
 
   return (
@@ -62,14 +60,7 @@ export function SearchPanel({
               type="radio"
               name="searchScope"
               checked={pageSearchScope === 'code'}
-              onChange={() => {
-                onScopeChange('code')
-                toast(
-                  currentLang === 'fr'
-                    ? 'Recherche plein-texte bientôt disponible'
-                    : 'Rechèch plen tèks talè konsa',
-                )
-              }}
+              onChange={() => onScopeChange('code')}
               className="accent-primary"
             />
             <span>

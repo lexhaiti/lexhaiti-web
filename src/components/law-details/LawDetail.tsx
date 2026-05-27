@@ -617,6 +617,8 @@ export default function LawDetail() {
                       isEditor={isEditor}
                       lawId={law.id}
                       onArticleChanged={refetch}
+                      searchQuery={pageSearchQuery}
+                      searchScope={pageSearchScope}
                     />
                   )
                 }
@@ -660,6 +662,8 @@ export default function LawDetail() {
                     isEditor={isEditor}
                     lawId={law.id}
                     onArticleChanged={refetch}
+                    searchQuery={pageSearchQuery}
+                    searchScope={pageSearchScope}
                     emptyLabel={
                       viewMode === 'chapitre'
                         ? currentLang === 'fr'
