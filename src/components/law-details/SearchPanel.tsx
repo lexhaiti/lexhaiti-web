@@ -16,6 +16,10 @@ interface SearchPanelProps {
    *  search-scope radio row. Desktop only. */
   isSidebarOpen?: boolean
   onToggleSidebar?: () => void
+  /** Extra content (e.g. the view-mode switcher) rendered inline on
+   *  the right end of the radio row, immediately before the sommaire
+   *  toggle. Desktop only. */
+  rightControls?: React.ReactNode
 }
 
 /**
@@ -30,6 +34,7 @@ export function SearchPanel({
   onQueryChange,
   isSidebarOpen,
   onToggleSidebar,
+  rightControls,
 }: SearchPanelProps) {
   const { toast } = useToast()
   const showSidebarToggle = onToggleSidebar !== undefined
@@ -74,36 +79,42 @@ export function SearchPanel({
             </span>
           </label>
 
-          {/* Voir / Masquer le sommaire — right-aligned on the same
-              row as the search-scope radios so the toggle sits at
-              the level it controls (search-in-sommaire). Desktop
+          {/* Right-side controls — view-mode switcher and sommaire
+              toggle share the row's right edge so the page-level
+              chrome (which slice to read, sommaire on/off) lives
+              alongside the scope radios it complements. Desktop
               only; mobile keeps the accordion toggle inside
               TocSidebar. */}
-          {showSidebarToggle && (
-            <button
-              type="button"
-              onClick={onToggleSidebar}
-              aria-pressed={!!isSidebarOpen}
-              className={cn(
-                'ml-auto hidden lg:inline-flex items-center gap-2 rounded-full',
-                'border border-slate-200 bg-white px-3.5 py-1.5',
-                'text-xs font-semibold text-slate-600',
-                'hover:border-primary hover:text-primary transition-colors',
+          {(rightControls || showSidebarToggle) && (
+            <div className="ml-auto hidden lg:flex items-center gap-3">
+              {rightControls}
+              {showSidebarToggle && (
+                <button
+                  type="button"
+                  onClick={onToggleSidebar}
+                  aria-pressed={!!isSidebarOpen}
+                  className={cn(
+                    'inline-flex items-center gap-2 rounded-full',
+                    'border border-slate-200 bg-white px-3.5 py-1.5',
+                    'text-xs font-semibold text-slate-600',
+                    'hover:border-primary hover:text-primary transition-colors',
+                  )}
+                >
+                  {isSidebarOpen ? (
+                    <PanelLeftClose className="w-3.5 h-3.5" />
+                  ) : (
+                    <PanelLeft className="w-3.5 h-3.5" />
+                  )}
+                  {currentLang === 'fr'
+                    ? isSidebarOpen
+                      ? 'Masquer le sommaire'
+                      : 'Voir le sommaire'
+                    : isSidebarOpen
+                      ? 'Kache somè a'
+                      : 'Wè somè a'}
+                </button>
               )}
-            >
-              {isSidebarOpen ? (
-                <PanelLeftClose className="w-3.5 h-3.5" />
-              ) : (
-                <PanelLeft className="w-3.5 h-3.5" />
-              )}
-              {currentLang === 'fr'
-                ? isSidebarOpen
-                  ? 'Masquer le sommaire'
-                  : 'Voir le sommaire'
-                : isSidebarOpen
-                  ? 'Kache somè a'
-                  : 'Wè somè a'}
-            </button>
+            </div>
           )}
         </div>
 

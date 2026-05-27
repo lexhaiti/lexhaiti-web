@@ -498,34 +498,6 @@ export default function LawDetail() {
 
           {/* Main Content Area */}
           <div className="flex-1 min-w-0 pb-12 sm:pb-16 lg:py-8">
-            {/* View-mode switcher — top-right of the content area
-                where the user expects "page-level controls". The
-                Voir/Masquer sommaire chip lives inside SearchPanel
-                below, on the same row as the search-scope radios. */}
-            {shape === 'switchable' &&
-              hasArticles &&
-              availableModes.length > 1 && (
-                <div className="mb-4 flex items-center justify-end">
-                  <ViewModeSwitcher
-                    mode={viewMode}
-                    available={availableModes}
-                    onChange={setViewMode}
-                    visibleCount={(() => {
-                      if (viewMode === 'article')
-                        return selectedArticle ? 1 : 0
-                      if (viewMode === 'chapitre' && selectedArticle) {
-                        return (law.articles ?? []).filter(
-                          (a: any) =>
-                            a.heading_id === selectedArticle.heading_id,
-                        ).length
-                      }
-                      return law.articles?.length ?? 0
-                    })()}
-                    lang={currentLang}
-                  />
-                </div>
-              )}
-
             {showStructuralUi && (
               <SearchPanel
                 currentLang={currentLang}
@@ -535,6 +507,29 @@ export default function LawDetail() {
                 onQueryChange={setPageSearchQuery}
                 isSidebarOpen={isSidebarOpen}
                 onToggleSidebar={() => handleSidebarToggle(!isSidebarOpen)}
+                rightControls={
+                  shape === 'switchable' &&
+                  hasArticles &&
+                  availableModes.length > 1 ? (
+                    <ViewModeSwitcher
+                      mode={viewMode}
+                      available={availableModes}
+                      onChange={setViewMode}
+                      visibleCount={(() => {
+                        if (viewMode === 'article')
+                          return selectedArticle ? 1 : 0
+                        if (viewMode === 'chapitre' && selectedArticle) {
+                          return (law.articles ?? []).filter(
+                            (a: any) =>
+                              a.heading_id === selectedArticle.heading_id,
+                          ).length
+                        }
+                        return law.articles?.length ?? 0
+                      })()}
+                      lang={currentLang}
+                    />
+                  ) : null
+                }
               />
             )}
 
