@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import {
   TooltipProvider,
 } from '@/components/ui/tooltip'
-import { useParams, useSearchParams } from 'next/navigation'
+import { usePathname, useParams, useRouter, useSearchParams } from 'next/navigation'
 import { EditorBar } from './EditorBar'
 import { SignataireBlock } from '@/components/law-details/SignataireBlock'
 import { ChangesMadePanel } from '@/components/law-details/_panels/ChangesMadePanel'
@@ -28,15 +28,24 @@ import {
 } from './_helpers/lawDetailTypes'
 
 // Sub-components extracted from this file
+import { DocumentToolbar } from './DocumentToolbar'
+import { ChronoTimelinePanel } from './_panels/ChronoTimelinePanel'
 import { EditorPreviewBanner } from './EditorPreviewBanner'
 import { LawHero } from './LawHero'
 import { TocSidebar } from './TocSidebar'
 import { SearchPanel } from './SearchPanel'
-import { IdentityMasthead } from './IdentityMasthead'
 import { FormalBlocksSection } from './FormalBlocksSection'
 import { ArticleSection } from './ArticleSection'
+import { ArticleListView } from './ArticleListView'
+import { ViewModeSwitcher } from './ViewModeSwitcher'
 import { ClosingAddendum } from './ClosingAddendum'
 import { RelatedLaws } from './RelatedLaws'
+
+// View-mode plumbing — shape detection + persisted mode state.
+import { detectShape, availableViewModes } from '@/lib/legal/shape'
+import { useViewMode } from '@/lib/hooks/useViewMode'
+import { useHeadingCollapse } from '@/lib/hooks/useHeadingCollapse'
+import { lawShortCite } from '@/lib/legal/cite'
 
 
 export default function LawDetail() {
@@ -57,6 +66,20 @@ export default function LawDetail() {
   const [selectedArticle, setSelectedArticle] =
     useState<SelectedArticle | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  // Hide articles whose status === 'abrogated'. Controlled by the
+  // DocumentToolbar above the article list.
+  const [hideAbrogated, setHideAbrogated] = useState(false)
+  // Légifrance-style view-as-of-date toggle. 'today' is the current
+  // in-force state of every article (default); 'initial' will
+  // eventually render each article's V1 — visual state only for now,
+  // backend support pending. The shared toggle paints the active
+  // button navy so the user sees which mode they're in.
+  const [viewAsOfDate, setViewAsOfDate] = useState<
+    'today' | 'initial'
+  >('today')
+  // "Voir les versions dans le temps" panel — opens an accordion
+  // below the toolbar with the law-level change history.
+  const [chronoOpen, setChronoOpen] = useState(false)
   const [addHeadingAnchor, setAddHeadingAnchor] = useState<
     HeadingAnchor | null
   >(null)
@@ -69,6 +92,8 @@ export default function LawDetail() {
   const params = useParams()
   const slug = params?.slug as string
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
 
   const { isEditor: actuallyIsEditor, user: editorUser } = useEditorMode()
   const isPublicPreview = searchParams?.get('view') === 'public'
@@ -90,6 +115,39 @@ export default function LawDetail() {
   const showStructuralUi = (hasArticles || isEditor) && !isDocumentMode
   const [emptyAddArticleOpen, setEmptyAddArticleOpen] = useState(false)
   const [deviseEditorOpen, setDeviseEditorOpen] = useState(false)
+
+  // ────────────────────────────────────────────────────────────────
+  // View-mode plumbing
+  //
+  // Shape detection runs every time the law data changes; from the
+  // shape we know which view-mode buttons make sense (tous /
+  // chapitre / article). The hook resolves the active mode from URL
+  // > localStorage > smart default.
+  // ────────────────────────────────────────────────────────────────
+  const shape = useMemo(
+    () =>
+      detectShape({
+        displayMode: law?.display_mode,
+        articleCount: law?.articles?.length ?? 0,
+        headingCount: law?.headings?.length ?? 0,
+      }),
+    [law?.display_mode, law?.articles?.length, law?.headings?.length],
+  )
+  const hasChapters = (law?.headings?.length ?? 0) > 0
+  const availableModes = useMemo(
+    () => availableViewModes(shape, hasChapters),
+    [shape, hasChapters],
+  )
+  const hasArticleDeepLink = !!searchParams?.get('article')
+  const [viewMode, setViewMode] = useViewMode({
+    available: availableModes,
+    hasDeepLink: hasArticleDeepLink,
+  })
+
+  // Shared heading-collapse state — DocumentToolbar's Tout fermer
+  // / Tout ouvrir buttons and ArticleListView's per-row chevrons
+  // both read + write the same Set through this hook.
+  const headingCollapse = useHeadingCollapse(law?.headings ?? [])
 
   const articleCounts = useMemo(() => {
     if (!law?.articles || law.articles.length === 0) {
@@ -189,21 +247,53 @@ export default function LawDetail() {
     }
   }, [law?.articles, law?.headings, law?.code_subcategory, currentArticleIndex, selectedArticle?.heading_id, currentLang, headingsById])
 
-  // Auto-select an article on mount.
+  // Auto-select an article whenever the ``?article=N`` URL param
+  // changes (initial load, deep-link from search, or in-page Link
+  // navigation like the list-view "Vue article unique" row). The
+  // earlier version short-circuited once any article was selected
+  // — that left clicks from inside the same page stuck on the
+  // previous article. Now: URL drives selection; absence of the
+  // param falls back to the first article only on the very first
+  // mount.
+  const requestedArticleParam = searchParams?.get('article') ?? null
   useEffect(() => {
-    if (!law?.articles || law.articles.length === 0 || selectedArticle) return
-    const requested = searchParams?.get('article') ?? null
-    if (requested) {
+    if (!law?.articles || law.articles.length === 0) return
+    if (requestedArticleParam) {
       const target = law.articles.find(
-        (a) => String(a.number) === requested,
+        (a) => String(a.number) === requestedArticleParam,
       )
-      if (target) {
+      if (target && target.id !== selectedArticle?.id) {
         setSelectedArticle(target)
-        return
       }
+      return
     }
-    setSelectedArticle(law.articles[0])
-  }, [law, selectedArticle, searchParams])
+    // No ?article= in the URL — keep the existing selection if we
+    // already have one (toggling between Tous / Par chapitre modes
+    // strips the param but shouldn't reset the article).
+    if (!selectedArticle) {
+      setSelectedArticle(law.articles[0])
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [law?.articles, requestedArticleParam])
+
+  // When the URL drives a navigation TO focused-article mode, scroll
+  // the article into the middle of the viewport so the reader doesn't
+  // have to hunt for it. Only fires when ``view=article`` is the
+  // active mode (otherwise the list-view shows everything inline
+  // and a scroll-jump would feel jarring).
+  useEffect(() => {
+    if (!requestedArticleParam) return
+    if (searchParams?.get('view') !== 'article') return
+    // Defer to next paint so the focused viewer has a chance to
+    // render before we measure + scroll.
+    const id = window.setTimeout(() => {
+      articleViewerRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      })
+    }, 50)
+    return () => window.clearTimeout(id)
+  }, [requestedArticleParam, searchParams])
 
   // Re-bind selectedArticle to the freshest copy whenever law.articles changes.
   useEffect(() => {
@@ -217,11 +307,27 @@ export default function LawDetail() {
     }
   }, [law?.articles, selectedArticle])
 
-  // Set default sidebar state based on screen size
+  // Default sidebar state — recomputed on EVERY view-mode change.
+  // Tous / Par chapitre always start with the sommaire hidden so
+  // the article cards get the full width; Un article opens it on
+  // desktop so the reader can navigate from the TOC. Mobile always
+  // starts collapsed (the sidebar is an in-page accordion there).
+  // The user can still manually open / close the sommaire within
+  // a mode — the auto-default only kicks in when the mode itself
+  // changes.
   useEffect(() => {
+    if (typeof window === 'undefined') return
     const isMobile = window.innerWidth < 1024
-    setIsSidebarOpen(!isMobile)
-  }, [])
+    if (isMobile) {
+      setIsSidebarOpen(false)
+      return
+    }
+    setIsSidebarOpen(viewMode === 'article')
+  }, [viewMode])
+
+  const handleSidebarToggle = (open: boolean) => {
+    setIsSidebarOpen(open)
+  }
 
   // Handle fullscreen change
   useEffect(() => {
@@ -285,11 +391,30 @@ export default function LawDetail() {
 
   const handleArticleSelect = (article: any) => {
     setSelectedArticle(article)
+    // Update ``?article=N`` so the state is shareable + a refresh
+    // lands the reader on the same article.
+    const params = new URLSearchParams(searchParams?.toString() ?? '')
+    params.set('article', String(article.number))
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+    // Pick the scroll target based on which renderer is active:
+    //   - Un article mode → focused viewer (the bespoke chrome
+    //     rendered by ArticleSection).
+    //   - Tous / Par chapitre → the inline article card with
+    //     id="article-${number}" rendered by ArticleListView.
+    //   - Document shape (flat short decree) → inline card too.
     setTimeout(() => {
-      articleViewerRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      })
+      const inlineCard =
+        shape !== 'switchable' || viewMode !== 'article'
+          ? document.getElementById(`article-${article.number}`)
+          : null
+      if (inlineCard) {
+        inlineCard.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      } else {
+        articleViewerRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        })
+      }
     }, 100)
   }
 
@@ -365,7 +490,7 @@ export default function LawDetail() {
               currentLang={currentLang}
               isEditor={isEditor}
               isSidebarOpen={isSidebarOpen}
-              setIsSidebarOpen={setIsSidebarOpen}
+              setIsSidebarOpen={handleSidebarToggle}
               selectedArticle={selectedArticle}
               pageSearchScope={pageSearchScope}
               pageSearchQuery={pageSearchQuery}
@@ -391,18 +516,41 @@ export default function LawDetail() {
                 pageSearchQuery={pageSearchQuery}
                 onScopeChange={setPageSearchScope}
                 onQueryChange={setPageSearchQuery}
+                isSidebarOpen={isSidebarOpen}
+                onToggleSidebar={() => handleSidebarToggle(!isSidebarOpen)}
+                rightControls={
+                  // Switcher renders for any shape that gives the
+                  // user a real choice — switchable (chaptered) and
+                  // also document (flat short decree, where it
+                  // collapses to Tous + Un article so "Vue article
+                  // unique" can actually swap layouts).
+                  shape !== 'richtext' &&
+                  hasArticles &&
+                  availableModes.length > 1 ? (
+                    <ViewModeSwitcher
+                      mode={viewMode}
+                      available={availableModes}
+                      onChange={setViewMode}
+                      visibleCount={(() => {
+                        if (viewMode === 'article')
+                          return selectedArticle ? 1 : 0
+                        if (viewMode === 'chapitre' && selectedArticle) {
+                          return (law.articles ?? []).filter(
+                            (a: any) =>
+                              a.heading_id === selectedArticle.heading_id,
+                          ).length
+                        }
+                        return law.articles?.length ?? 0
+                      })()}
+                      lang={currentLang}
+                    />
+                  ) : null
+                }
               />
             )}
 
-            <IdentityMasthead
-              law={law}
-              currentLang={currentLang}
-              isEditor={isEditor}
-              category={category}
-              officialTitleStored={officialTitleStored}
-              refetch={refetch}
-              onDeviseEditorOpen={() => setDeviseEditorOpen(true)}
-            />
+            {/* IdentityMasthead removed — it re-printed the devise
+                + "CONSTITUTION" header that the hero already shows. */}
 
             <FormalBlocksSection
               law={law}
@@ -419,25 +567,226 @@ export default function LawDetail() {
               refetch={refetch}
             />
 
+            {/* Document toolbar — sits between the SearchPanel and
+                the article content. Renders the "Accéder à la
+                version initiale" link, the "Masquer les articles
+                abrogés" toggle, and "Copier le lien". The Imprimer
+                button is gone (the hero already has a PDF download
+                tile). The toolbar self-hides on shapes / view modes
+                that don't need it (focused single-article view,
+                richtext blob). */}
+            {shape !== 'richtext' &&
+              hasArticles &&
+              !(shape === 'switchable' && viewMode === 'article') && (
+                <>
+                  <DocumentToolbar
+                    lang={currentLang}
+                    viewAsOfDate={viewAsOfDate}
+                    onChangeViewAsOfDate={(next) => {
+                      setViewAsOfDate(next)
+                      if (next === 'initial' && law.articles?.[0]) {
+                        // Scroll to the first article so the user
+                        // sees where the "initial" reading starts.
+                        // Actual V1 text-swap is queued for a
+                        // backend follow-up.
+                        const el = document.getElementById(
+                          `article-${String(law.articles[0].number)}`,
+                        )
+                        el?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'start',
+                        })
+                      }
+                    }}
+                    chronoOpen={chronoOpen}
+                    onToggleChrono={() => setChronoOpen((v) => !v)}
+                    hideAbrogated={hideAbrogated}
+                    onToggleHideAbrogated={() =>
+                      setHideAbrogated((v) => !v)
+                    }
+                    onCollapseAll={
+                      (law.headings?.length ?? 0) > 0
+                        ? headingCollapse.collapseAll
+                        : undefined
+                    }
+                    onExpandAll={
+                      (law.headings?.length ?? 0) > 0
+                        ? headingCollapse.expandAll
+                        : undefined
+                    }
+                  />
+                  <ChronoTimelinePanel
+                    lawSlug={law.slug}
+                    lang={currentLang}
+                    lawPublicationDate={
+                      law.publication_date ??
+                      law.moniteur_issue_publication_date ??
+                      law.issuing_date ??
+                      null
+                    }
+                    open={chronoOpen}
+                    onClose={() => setChronoOpen(false)}
+                  />
+                </>
+              )}
+
             <div ref={articleViewerRef} className="mb-8 scroll-mt-24">
-              <ArticleSection
-                law={law}
-                currentLang={currentLang}
-                isEditor={isEditor}
-                isDocumentMode={isDocumentMode}
-                hasArticles={hasArticles}
-                selectedArticle={selectedArticle}
-                currentArticleIndex={currentArticleIndex}
-                title={title}
-                articleBreadcrumb={articleBreadcrumb}
-                blocHints={blocHints}
-                onPrevious={handlePrevious}
-                onNext={handleNext}
-                onShare={handleShare}
-                onCopyLink={handleCopyLink}
-                onEmptyAddArticle={() => setEmptyAddArticleOpen(true)}
-                refetch={refetch}
-              />
+              {/* ── Article rendering branches by view mode ───────────
+                  - 'article' (current default) → ArticleSection: one
+                    focused article with prev/next + full chrome.
+                  - 'tous' → ArticleListView: every article inline,
+                    heading break-rows between sections.
+                  - 'chapitre' → ArticleListView filtered to articles
+                    sharing the selected article's direct heading. V1
+                    uses ``heading_id`` equality (same direct parent);
+                    walking up to a chapter-level ancestor is a future
+                    refinement. */}
+              {(() => {
+                // Decision table for which renderer takes over:
+                //
+                //   richtext  → ArticleSection (handles document_mode
+                //               internally and reads document_body_*).
+                //   document  → ArticleListView with all articles —
+                //               flat short text feels like a printed
+                //               document when articles flow inline.
+                //   switchable + article → ArticleSection (focused
+                //               viewer, current default).
+                //   switchable + tous → ArticleListView all.
+                //   switchable + chapitre → ArticleListView filtered
+                //               to selectedArticle's direct parent
+                //               heading.
+                if (shape === 'richtext') {
+                  return (
+                    <ArticleSection
+                      law={law}
+                      currentLang={currentLang}
+                      isEditor={isEditor}
+                      isDocumentMode={isDocumentMode}
+                      hasArticles={hasArticles}
+                      selectedArticle={selectedArticle}
+                      currentArticleIndex={currentArticleIndex}
+                      title={title}
+                      articleBreadcrumb={articleBreadcrumb}
+                      blocHints={blocHints}
+                      onPrevious={handlePrevious}
+                      onNext={handleNext}
+                      onShare={handleShare}
+                      onCopyLink={handleCopyLink}
+                      onEmptyAddArticle={() => setEmptyAddArticleOpen(true)}
+                      refetch={refetch}
+                    />
+                  )
+                }
+                if (shape === 'document') {
+                  // Flat short decree: switcher offers Tous + Un
+                  // article (no chapter). When viewMode is 'article'
+                  // we route to the focused viewer so "Vue article
+                  // unique" actually swaps the layout (used to fall
+                  // back to the list view, which made the link a
+                  // no-op).
+                  if (viewMode === 'article') {
+                    return (
+                      <ArticleSection
+                        law={law}
+                        currentLang={currentLang}
+                        isEditor={isEditor}
+                        isDocumentMode={isDocumentMode}
+                        hasArticles={hasArticles}
+                        selectedArticle={selectedArticle}
+                        currentArticleIndex={currentArticleIndex}
+                        title={title}
+                        articleBreadcrumb={articleBreadcrumb}
+                        blocHints={blocHints}
+                        onPrevious={handlePrevious}
+                        onNext={handleNext}
+                        onShare={handleShare}
+                        onCopyLink={handleCopyLink}
+                        onEmptyAddArticle={() =>
+                          setEmptyAddArticleOpen(true)
+                        }
+                        refetch={refetch}
+                      />
+                    )
+                  }
+                  return (
+                    <ArticleListView
+                      articles={law.articles ?? []}
+                      headings={law.headings ?? []}
+                      lawSlug={law.slug}
+                      lawShortTitle={lawShortCite(law.title_fr)}
+                      codeSubcategory={law.code_subcategory ?? null}
+                      currentLang={currentLang}
+                      isEditor={isEditor}
+                      lawId={law.id}
+                      onArticleChanged={refetch}
+                      searchQuery={pageSearchQuery}
+                      searchScope={pageSearchScope}
+                      hideAbrogated={hideAbrogated}
+                      collapsed={headingCollapse.collapsed}
+                      onToggleCollapsed={headingCollapse.toggle}
+                    />
+                  )
+                }
+                if (viewMode === 'article') {
+                  return (
+                    <ArticleSection
+                      law={law}
+                      currentLang={currentLang}
+                      isEditor={isEditor}
+                      isDocumentMode={isDocumentMode}
+                      hasArticles={hasArticles}
+                      selectedArticle={selectedArticle}
+                      currentArticleIndex={currentArticleIndex}
+                      title={title}
+                      articleBreadcrumb={articleBreadcrumb}
+                      blocHints={blocHints}
+                      onPrevious={handlePrevious}
+                      onNext={handleNext}
+                      onShare={handleShare}
+                      onCopyLink={handleCopyLink}
+                      onEmptyAddArticle={() => setEmptyAddArticleOpen(true)}
+                      refetch={refetch}
+                    />
+                  )
+                }
+                return (
+                  <ArticleListView
+                    articles={
+                      viewMode === 'chapitre' && selectedArticle
+                        ? (law.articles ?? []).filter(
+                            (a: any) =>
+                              a.heading_id === selectedArticle.heading_id,
+                          )
+                        : (law.articles ?? [])
+                    }
+                    headings={law.headings ?? []}
+                    lawSlug={law.slug}
+                    lawShortTitle={lawShortCite(law.title_fr)}
+                    codeSubcategory={law.code_subcategory ?? null}
+                    currentLang={currentLang}
+                    isEditor={isEditor}
+                    lawId={law.id}
+                    lawPublicationDate={
+                      law.publication_date ??
+                      law.moniteur_issue_publication_date ??
+                      null
+                    }
+                    onArticleChanged={refetch}
+                    searchQuery={pageSearchQuery}
+                    searchScope={pageSearchScope}
+                    hideAbrogated={hideAbrogated}
+                    collapsed={headingCollapse.collapsed}
+                    onToggleCollapsed={headingCollapse.toggle}
+                    emptyLabel={
+                      viewMode === 'chapitre'
+                        ? currentLang === 'fr'
+                          ? 'Aucun article dans cette section.'
+                          : 'Pa gen atik nan seksyon sa a.'
+                        : undefined
+                    }
+                  />
+                )
+              })()}
             </div>
 
             {/* Signataires block */}

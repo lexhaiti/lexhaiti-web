@@ -208,6 +208,33 @@ export async function listArticleVersions(articleId: number) {
   return apiGet<ArticleVersionRead[]>(`/articles/${articleId}/versions`)
 }
 
+/** Friendly cross-references shape served by the backend's
+ *  ``/articles/{id}/references`` endpoint — link cards with kind +
+ *  title + href, resolved server-side from the polymorphic
+ *  ``citations`` table so the public UI doesn't have to fan out N
+ *  follow-up fetches. */
+export type ArticleRefKind = 'decision' | 'law' | 'article'
+
+export interface ArticleRefItem {
+  kind: ArticleRefKind
+  title: string
+  href: string
+  note?: string | null
+  decision_date?: string | null
+}
+
+export interface ArticleReferences {
+  cited_by: ArticleRefItem[]
+  cites: ArticleRefItem[]
+}
+
+/** Two-column "Cité par / Cite" payload for an article. Returns
+ *  both lists empty when no edges exist — the panel renders nothing
+ *  in that case. */
+export async function getArticleReferences(articleId: number) {
+  return apiGet<ArticleReferences>(`/articles/${articleId}/references`)
+}
+
 /** Editor input for the "add a new version" flow on an article.
  *  ``source_legal_text_id`` is mandatory — every new version anchors
  *  to the law that caused the change so the bidirectional history
