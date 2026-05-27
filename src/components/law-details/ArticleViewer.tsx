@@ -585,17 +585,30 @@ export default function ArticleViewer({
         : null
     return [...versions]
       .sort((a, b) => a.version_number - b.version_number)
-      .map<VersionEntry>((v) => ({
-        id: v.id,
-        version: v.version_number,
-        status: parentOverride ?? v.status,
-        effective_from: v.effective_from ?? '',
-        effective_to: v.effective_to ?? null,
-        amended_by: null,
-        href: null,
-      }))
+      .map<VersionEntry>((v) => {
+        // "Modifié par X" line — the version row carries the slug
+        // and title of the law that introduced this version. We
+        // surface them on the timeline + link out to that law.
+        // (No source_amendment_article_number yet, so the link goes
+        //  to the law landing page; once backend exposes it we can
+        //  append ?view=article&article=N here.)
+        const amendingSlug = v.source_amendment_slug ?? null
+        const amendingTitle =
+          (currentLang === 'ht' && (v as any).source_amendment_title_ht
+            ? (v as any).source_amendment_title_ht
+            : v.source_amendment_title_fr) ?? null
+        return {
+          id: v.id,
+          version: v.version_number,
+          status: parentOverride ?? v.status,
+          effective_from: v.effective_from ?? '',
+          effective_to: v.effective_to ?? null,
+          amended_by: amendingTitle,
+          href: amendingSlug ? `/loi/${amendingSlug}` : null,
+        }
+      })
       .reverse() // newest first, matches timeline reading order
-  }, [versions, defaultStatus])
+  }, [versions, defaultStatus, currentLang])
 
   if (!article) {
     return (

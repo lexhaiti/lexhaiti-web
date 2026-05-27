@@ -30,6 +30,8 @@ import { cn } from '@/lib/utils'
 import { getLevelLabel } from '@/lib/legal/headingLabels'
 import { CiteArticleButton } from './CiteArticleButton'
 import { PlainExplainerBox } from './PlainExplainerBox'
+import { InlineVersionsDisclosure } from './InlineVersionsDisclosure'
+import { CrossReferencesPanel } from './CrossReferencesPanel'
 import type { components } from '@/lib/api-types'
 
 type ArticleEmbed = components['schemas']['ArticleEmbed']
@@ -211,6 +213,30 @@ export function ArticleListView({
               <PlainExplainerBox
                 explainerFr={(a as any).explainer_fr ?? null}
                 explainerHt={(a as any).explainer_ht ?? null}
+                lang={lang}
+              />
+
+              {/* Versions disclosure — only renders when the article
+                  actually has history (version_number > 1). On expand
+                  it lazy-fetches the timeline; nothing happens for v1
+                  articles. */}
+              {a.id != null && (a.version_number ?? 1) > 1 && (
+                <InlineVersionsDisclosure
+                  articleId={a.id}
+                  versionCount={a.version_number ?? 1}
+                  defaultFromDate={null}
+                  lang={lang}
+                />
+              )}
+
+              {/* Cross-references — reads optional cited_by / cites
+                  arrays attached to the article by the backend. If
+                  neither is present (today) the panel renders nothing.
+                  When the backend ships the reverse-index endpoint,
+                  this lights up automatically. */}
+              <CrossReferencesPanel
+                citedBy={(a as any).cited_by ?? null}
+                cites={(a as any).cites ?? null}
                 lang={lang}
               />
             </article>
