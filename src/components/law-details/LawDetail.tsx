@@ -28,6 +28,7 @@ import {
 } from './_helpers/lawDetailTypes'
 
 // Sub-components extracted from this file
+import { DocumentToolbar } from './DocumentToolbar'
 import { EditorPreviewBanner } from './EditorPreviewBanner'
 import { LawHero } from './LawHero'
 import { TocSidebar } from './TocSidebar'
@@ -63,6 +64,9 @@ export default function LawDetail() {
   const [selectedArticle, setSelectedArticle] =
     useState<SelectedArticle | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  // Hide articles whose status === 'abrogated'. Controlled by the
+  // DocumentToolbar above the article list.
+  const [hideAbrogated, setHideAbrogated] = useState(false)
   const [addHeadingAnchor, setAddHeadingAnchor] = useState<
     HeadingAnchor | null
   >(null)
@@ -545,6 +549,42 @@ export default function LawDetail() {
               refetch={refetch}
             />
 
+            {/* Document toolbar — sits between the SearchPanel and
+                the article content. Renders the "Accéder à la
+                version initiale" link, the "Masquer les articles
+                abrogés" toggle, and "Copier le lien". The Imprimer
+                button is gone (the hero already has a PDF download
+                tile). The toolbar self-hides on shapes / view modes
+                that don't need it (focused single-article view,
+                richtext blob). */}
+            {shape !== 'richtext' &&
+              hasArticles &&
+              !(shape === 'switchable' && viewMode === 'article') && (
+                <DocumentToolbar
+                  lang={currentLang}
+                  hideAbrogated={hideAbrogated}
+                  onToggleHideAbrogated={() =>
+                    setHideAbrogated((v) => !v)
+                  }
+                  onJumpToInitial={
+                    law.articles && law.articles.length > 0
+                      ? () => {
+                          const first = law.articles[0]
+                          const el = document.getElementById(
+                            `article-${String(first.number)}`,
+                          )
+                          if (el) {
+                            el.scrollIntoView({
+                              behavior: 'smooth',
+                              block: 'center',
+                            })
+                          }
+                        }
+                      : undefined
+                  }
+                />
+              )}
+
             <div ref={articleViewerRef} className="mb-8 scroll-mt-24">
               {/* ── Article rendering branches by view mode ───────────
                   - 'article' (current default) → ArticleSection: one
@@ -686,6 +726,7 @@ export default function LawDetail() {
                     onArticleChanged={refetch}
                     searchQuery={pageSearchQuery}
                     searchScope={pageSearchScope}
+                    hideAbrogated={hideAbrogated}
                     emptyLabel={
                       viewMode === 'chapitre'
                         ? currentLang === 'fr'

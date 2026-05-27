@@ -85,6 +85,10 @@ interface Props {
    *  titles. ``code`` adds the article body to the haystack. */
   searchQuery?: string
   searchScope?: 'sommaire' | 'code'
+  /** When true, articles with status === 'abrogated' are hidden
+   *  (and heading rows whose subtree has nothing else visible
+   *  collapse too). Controlled by the DocumentToolbar above. */
+  hideAbrogated?: boolean
 }
 
 // Lowercase + strip diacritics for substring matching.
@@ -117,6 +121,7 @@ export function ArticleListView({
   onArticleChanged,
   searchQuery,
   searchScope = 'sommaire',
+  hideAbrogated = false,
 }: Props) {
   const lang = currentLang
   const isFr = lang === 'fr'
@@ -223,8 +228,12 @@ export function ArticleListView({
   const q = normalize(deferredQuery.trim())
 
   const filteredArticles = useMemo(() => {
-    if (!q) return articles
-    return articles.filter((a) => {
+    let base = articles
+    if (hideAbrogated) {
+      base = base.filter((a) => a.status !== 'abrogated')
+    }
+    if (!q) return base
+    return base.filter((a) => {
       const num = normalize(String(a.number ?? ''))
       if (num.includes(q)) return true
       const aTitle =
@@ -252,7 +261,7 @@ export function ArticleListView({
       return false
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [articles, q, searchScope, lang, pathByHeadingId])
+  }, [articles, q, searchScope, lang, pathByHeadingId, hideAbrogated])
 
   // ─── Empty state ─────────────────────────────────────────────────
   if (filteredArticles.length === 0) {
