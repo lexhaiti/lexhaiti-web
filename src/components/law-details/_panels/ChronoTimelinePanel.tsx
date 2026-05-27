@@ -27,6 +27,11 @@ import {
   getAmendmentsForText,
   type ArticleWithHistoryRead,
 } from '@/lib/api/endpoints'
+import { getLevelLabel } from '@/lib/legal/headingLabels'
+import type { components } from '@/lib/api-types'
+
+type LegalHeading = components['schemas']['LegalHeadingRead']
+type ArticleEmbed = components['schemas']['ArticleEmbed']
 
 interface Props {
   lawSlug: string
@@ -36,6 +41,17 @@ interface Props {
    *  the date on the parent law. Without it those rows group under
    *  "inconnu" instead of the law's publication year. */
   lawPublicationDate?: string | null
+  /** Parent law's articles + headings — used to attach a chapter /
+   *  titre breadcrumb to each affected-article group inside the
+   *  date-detail row ("Articles 88-7 88-4 — Titre XV : De l'Union
+   *  européenne"). Both optional; the panel still renders without
+   *  them, just without the heading context. */
+  articles?: ArticleEmbed[]
+  headings?: LegalHeading[]
+  /** Subcategory of the parent law (e.g. ``constitution``,
+   *  ``code_civil``). Lets the heading-level label use the
+   *  right vocabulary ("Titre" vs "Livre" etc.). */
+  codeSubcategory?: string | null
   /** Controlled open state. The toolbar above owns whether the
    *  panel is shown; this component handles its own data fetching
    *  + group expansion. */
@@ -104,6 +120,9 @@ export function ChronoTimelinePanel({
   lawSlug,
   lang,
   lawPublicationDate,
+  articles,
+  headings,
+  codeSubcategory,
   open,
 }: Props) {
   const isFr = lang === 'fr'
@@ -193,6 +212,40 @@ export function ChronoTimelinePanel({
     })
     return out
   }, [rows, lang, lawPublicationDate])
+
+  // Lookup helpers driven by ``articles`` + ``headings``. The chrono
+  // panel groups affected articles by their *top-level* heading
+  // (TITRE / LIVRE / PARTIE) so the reader sees the textual context
+  // each amendment touched ("Articles 88-7 88-4 — Titre XV : De
+  // l'Union européenne") instead of a flat row of numbers.
+  const articleByNumber = useMemo(() => {
+    const m = new Map<string, ArticleEmbed>()
+    for (const a of articles ?? []) m.set(String(a.number ?? ''), a)
+    return m
+  }, [articles])
+
+  const headingById = useMemo(() => {
+    const m = new Map<number, LegalHeading>()
+    for (const h of headings ?? []) m.set(h.id, h)
+    return m
+  }, [headings])
+
+  // Walk an article's heading chain to its top-level ancestor
+  // (parent_id === null). Returns null when we can't resolve a
+  // heading (article has no heading_id, or headings prop missing).
+  const topLevelHeadingForArticle = (
+    articleNumber: string,
+  ): LegalHeading | null => {
+    const a = articleByNumber.get(articleNumber)
+    if (!a || a.heading_id == null) return null
+    let cur = headingById.get(a.heading_id) ?? null
+    while (cur && cur.parent_id != null) {
+      const parent = headingById.get(cur.parent_id)
+      if (!parent) break
+      cur = parent
+    }
+    return cur
+  }
 
   // Initial-publication year — pinned as "Version initiale" in the
   // timeline. Falls back to the year of the earliest creation event
@@ -329,8 +382,17 @@ export function ChronoTimelinePanel({
       )}
 
       {loaded && !loading && events.length > 0 && (
-        <ol className="relative pl-6">
-          <div className="absolute left-1.5 top-2 bottom-2 w-px bg-slate-200" />
+        <ol className="relative pl-7">
+          {/* Continuous timeline line — anchored at x=12px so its
+              center aligns with the bullet centers (each bullet is
+              positioned at the same x with -translate-x-1/2). The
+              line runs from a touch below the first bullet's top to
+              a touch above the last bullet's bottom so it doesn't
+              poke out the open ends of the column. */}
+          <div
+            aria-hidden
+            className="absolute left-3 top-4 bottom-4 w-px bg-slate-200"
+          />
           {yearGroups.map((yg) => {
             // Initial year = the law's own publication year. Render
             // it as a flat "Version initiale" pin — no child detail
@@ -346,20 +408,33 @@ export function ChronoTimelinePanel({
             // articles is one amendement, not 55.
             const amendmentCount = amendmentCountForYear(yg)
             return (
-              <li key={yg.year} className="pb-3">
+              // ``li`` deliberately NOT ``relative`` — the bullet
+              // is positioned against the OL so it sits on the
+              // shared timeline line (which is also positioned
+              // against the OL). Going relative on the LI would
+              // push the bullet by the LI's own left edge and slide
+              // it on top of the year label.
+              <li key={yg.year} className="pb-4">
+                {/* Bullet — centered on the timeline line at x=12px
+                    via ``left-3 -translate-x-1/2``. Solid white fill
+                    so the line behind it doesn't bleed through the
+                    ring. ``z-10`` keeps it above the line so the
+                    line visually terminates AT the bullet rather
+                    than running through its center stroke. */}
                 <span
                   aria-hidden
                   className={cn(
-                    'absolute -left-[0.4rem] w-3 h-3 rounded-full bg-white border-[3px] mt-1.5',
+                    'absolute left-3 -translate-x-1/2 mt-3 w-3 h-3 rounded-full bg-white border-[3px] z-10',
                     isInitialYear ? 'border-emerald-500' : 'border-primary',
                   )}
                 />
                 {isInitialYear ? (
-                  <div className="flex items-center gap-3 px-3 py-2 -mx-1">
+                  <div className="flex items-center gap-3 px-2 py-1.5">
                     <span className="text-sm font-bold text-primary">
                       {yg.year}
                     </span>
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-emerald-700">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-800 border border-emerald-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden />
                       {isFr ? 'Version initiale' : 'Vèsyon inisyal'}
                     </span>
                   </div>
@@ -368,7 +443,7 @@ export function ChronoTimelinePanel({
                     type="button"
                     onClick={() => toggleYear(yg.year)}
                     aria-expanded={yearOpen}
-                    className="w-full flex items-center justify-between gap-3 rounded-md px-3 py-2 -mx-1 text-left hover:bg-white transition-colors"
+                    className="w-full flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left hover:bg-white transition-colors"
                   >
                     <span className="text-sm font-bold text-primary">
                       {yg.year}{' '}
@@ -393,7 +468,7 @@ export function ChronoTimelinePanel({
                   </button>
                 )}
                 {yearOpen && (
-                  <ul className="mt-2 ml-4 space-y-3">
+                  <ul className="mt-2 ml-3 space-y-3">
                     {dateGroups.map((dg) => {
                       const dateOpen = expandedDates.has(dg.date)
                       const amendGroups = Array.from(
@@ -405,7 +480,7 @@ export function ChronoTimelinePanel({
                             type="button"
                             onClick={() => toggleDate(dg.date)}
                             aria-expanded={dateOpen}
-                            className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 -mx-1 text-left hover:bg-white transition-colors"
+                            className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-white transition-colors"
                           >
                             <ChevronRight
                               aria-hidden
@@ -422,71 +497,128 @@ export function ChronoTimelinePanel({
                             <ul className="mt-1 ml-6 space-y-3 text-[13px] text-slate-700">
                               {amendGroups
                                 .filter((g) => !g.isCreation)
-                                .map((g, idx) => (
-                                  <li
-                                    key={idx}
-                                    className="border-l-2 border-primary/30 pl-3"
-                                  >
-                                    {/* Amending law title — clickable
-                                        link to the modifying text,
-                                        followed by "— art. N" when we
-                                        know which article in that law
-                                        carried the change. */}
-                                    <p className="leading-snug">
-                                      {g.amendingLawSlug ? (
-                                        <Link
-                                          href={
-                                            g.amendingArticleNumber
-                                              ? `/loi/${g.amendingLawSlug}?view=article&article=${encodeURIComponent(g.amendingArticleNumber)}`
-                                              : `/loi/${g.amendingLawSlug}`
-                                          }
-                                          className="text-primary font-medium hover:underline underline-offset-2"
-                                        >
-                                          {g.amendingLawTitle ??
-                                            g.amendingLawSlug}
-                                          {g.amendingArticleNumber
-                                            ? ` — art. ${g.amendingArticleNumber}`
-                                            : ''}
-                                        </Link>
-                                      ) : (
-                                        <span className="italic text-slate-500">
-                                          {isFr
-                                            ? 'Texte modificateur inconnu'
-                                            : 'Tèks modifikatè enkoni'}
+                                .map((g, idx) => {
+                                  // Bucket the amending group's
+                                  // affected articles by their
+                                  // top-level heading so the row
+                                  // reads as "Articles X Y Z — Titre
+                                  // N : <title>" per parent.
+                                  // ``__no_heading__`` is the bucket
+                                  // for articles that have no
+                                  // heading at all (flat decrees) —
+                                  // it renders without the trailing
+                                  // titre breadcrumb.
+                                  const buckets = new Map<
+                                    string,
+                                    {
+                                      heading: LegalHeading | null
+                                      numbers: string[]
+                                    }
+                                  >()
+                                  for (const num of g.affectedArticleNumbers) {
+                                    const h = topLevelHeadingForArticle(num)
+                                    const key = h ? `h-${h.id}` : '__no_heading__'
+                                    let b = buckets.get(key)
+                                    if (!b) {
+                                      b = { heading: h, numbers: [] }
+                                      buckets.set(key, b)
+                                    }
+                                    b.numbers.push(num)
+                                  }
+                                  const bucketList = Array.from(buckets.values())
+                                  return (
+                                    <li
+                                      key={idx}
+                                      className="border-l-2 border-primary/30 pl-3"
+                                    >
+                                      <p className="leading-snug">
+                                        {g.amendingLawSlug ? (
+                                          <Link
+                                            href={
+                                              g.amendingArticleNumber
+                                                ? `/loi/${g.amendingLawSlug}?view=article&article=${encodeURIComponent(g.amendingArticleNumber)}`
+                                                : `/loi/${g.amendingLawSlug}`
+                                            }
+                                            className="text-primary font-medium hover:underline underline-offset-2"
+                                          >
+                                            {g.amendingLawTitle ??
+                                              g.amendingLawSlug}
+                                            {g.amendingArticleNumber
+                                              ? ` — art. ${g.amendingArticleNumber}`
+                                              : ''}
+                                          </Link>
+                                        ) : (
+                                          <span className="italic text-slate-500">
+                                            {isFr
+                                              ? 'Texte modificateur inconnu'
+                                              : 'Tèks modifikatè enkoni'}
+                                          </span>
+                                        )}{' '}
+                                        <span className="font-semibold text-slate-700">
+                                          {isFr ? 'a modifié :' : 'modifye :'}
                                         </span>
-                                      )}{' '}
-                                      <span className="font-semibold text-slate-700">
-                                        {isFr ? 'a modifié :' : 'modifye :'}
-                                      </span>
-                                    </p>
-                                    {/* Affected articles — space-
-                                        separated numbers, each its
-                                        own deep-link into the current
-                                        law. Mirrors Légifrance's
-                                        "Articles 88-7 88-4 88-2 88-1"
-                                        layout for compactness. */}
-                                    <p className="mt-1 pl-3">
-                                      <span className="text-slate-500 mr-1">
-                                        {g.affectedArticleNumbers.length > 1
-                                          ? isFr
-                                            ? 'Articles'
-                                            : 'Atik yo'
-                                          : isFr
-                                            ? 'Article'
-                                            : 'Atik'}
-                                      </span>
-                                      {g.affectedArticleNumbers.map((num) => (
-                                        <Link
-                                          key={num}
-                                          href={`#article-${num}`}
-                                          className="inline-block mr-1.5 text-primary hover:underline underline-offset-2"
-                                        >
-                                          {num}
-                                        </Link>
-                                      ))}
-                                    </p>
-                                  </li>
-                                ))}
+                                      </p>
+                                      {/* Affected articles, split by
+                                          top-level heading. Each
+                                          bucket gets its own row so
+                                          the reader sees which titre
+                                          the changes landed in. */}
+                                      <ul className="mt-1 pl-3 space-y-1">
+                                        {bucketList.map((b, bIdx) => {
+                                          const headingLabel = b.heading
+                                            ? (() => {
+                                                const lvl =
+                                                  getLevelLabel(
+                                                    b.heading.level,
+                                                    lang,
+                                                    codeSubcategory ?? null,
+                                                  ) ?? b.heading.level
+                                                const num = b.heading.number
+                                                  ? ` ${b.heading.number}`
+                                                  : ''
+                                                const title =
+                                                  (lang === 'ht' &&
+                                                    b.heading.title_ht) ||
+                                                  b.heading.title_fr ||
+                                                  null
+                                                return `${lvl}${num}${title ? ' : ' + title : ''}`
+                                              })()
+                                            : null
+                                          return (
+                                            <li
+                                              key={bIdx}
+                                              className="leading-snug"
+                                            >
+                                              <span className="text-slate-500 mr-1">
+                                                {b.numbers.length > 1
+                                                  ? isFr
+                                                    ? 'Articles'
+                                                    : 'Atik yo'
+                                                  : isFr
+                                                    ? 'Article'
+                                                    : 'Atik'}
+                                              </span>
+                                              {b.numbers.map((num) => (
+                                                <Link
+                                                  key={num}
+                                                  href={`#article-${num}`}
+                                                  className="inline-block mr-1.5 text-primary hover:underline underline-offset-2"
+                                                >
+                                                  {num}
+                                                </Link>
+                                              ))}
+                                              {headingLabel && (
+                                                <span className="text-slate-500">
+                                                  — {headingLabel}
+                                                </span>
+                                              )}
+                                            </li>
+                                          )
+                                        })}
+                                      </ul>
+                                    </li>
+                                  )
+                                })}
                             </ul>
                           )}
                         </li>

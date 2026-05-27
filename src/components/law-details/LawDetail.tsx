@@ -611,6 +611,9 @@ export default function LawDetail() {
                     law.issuing_date ??
                     null
                   }
+                  articles={law.articles ?? []}
+                  headings={law.headings ?? []}
+                  codeSubcategory={law.code_subcategory ?? null}
                   open={chronoOpen}
                   onClose={() => setChronoOpen(false)}
                 />
