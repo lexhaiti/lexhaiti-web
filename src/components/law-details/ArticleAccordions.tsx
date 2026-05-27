@@ -97,6 +97,21 @@ interface Props {
    *  AddVersionDialog can exclude the law from its source-picker
    *  (no self-amendments). */
   lawId?: number | null
+  /** Parent legal text's publication date — used as a fallback
+   *  ``effective_from`` when an article version row carries none
+   *  (typical for v1 of historically-imported texts where the date
+   *  lives on the parent, not on the per-version row). */
+  lawPublicationDate?: string | null
+  /** Current-version metadata for the inline "Modifié par X" line
+   *  shown alongside the pill row. All optional — when none of
+   *  them are set the line doesn't render. Sourced from the
+   *  article embed at the call site so we don't have to refetch
+   *  the version timeline just to label the action row. */
+  currentEffectiveFrom?: string | null
+  sourceAmendmentSlug?: string | null
+  sourceAmendmentTitleFr?: string | null
+  sourceAmendmentTitleHt?: string | null
+  sourceAmendmentArticleNumber?: string | null
   /** The current article's slug + number — passed through to the
    *  citation column so the resolver builds correct same-text deep
    *  links. ``lawSlug`` is needed for the version-row "Modifié par
@@ -121,6 +136,12 @@ export function ArticleAccordions({
   currentTextHt,
   currentTitleFr,
   lawId,
+  lawPublicationDate,
+  currentEffectiveFrom,
+  sourceAmendmentSlug,
+  sourceAmendmentTitleFr,
+  sourceAmendmentTitleHt,
+  sourceAmendmentArticleNumber,
   lawSlug,
   siblingArticles,
   isEditor = false,
@@ -467,6 +488,28 @@ export function ArticleAccordions({
             </span>
           </button>
         )}
+
+        {/* Inline "Modifié par X — version en vigueur depuis le Y"
+            line on the right of the pill row. Surfaces the current
+            version's amending-law context next to the Versions /
+            Comparer buttons — same pattern as Légifrance's per-
+            article action strip. Renders only when the article
+            embed carries source_amendment_title_fr; gracefully
+            absent on v1 articles with no amendment history. */}
+        {(sourceAmendmentTitleFr || sourceAmendmentTitleHt) && (
+          <ModifiedByLine
+            sourceAmendmentSlug={sourceAmendmentSlug ?? null}
+            sourceAmendmentTitleFr={sourceAmendmentTitleFr ?? null}
+            sourceAmendmentTitleHt={sourceAmendmentTitleHt ?? null}
+            sourceAmendmentArticleNumber={
+              sourceAmendmentArticleNumber ?? null
+            }
+            effectiveFrom={
+              currentEffectiveFrom ?? lawPublicationDate ?? null
+            }
+            lang={currentLang}
+          />
+        )}
       </div>
 
       <AnimatePresence initial={false}>
@@ -525,6 +568,7 @@ export function ArticleAccordions({
                 <VersionsPanel
                   versions={versionEntries}
                   currentLang={currentLang}
+                  defaultFromDate={lawPublicationDate ?? null}
                 />
               )}
             </div>
@@ -687,6 +731,93 @@ function PanelSpinner({ lang }: { lang: 'fr' | 'ht' }) {
     <div className="flex items-center gap-2 text-xs text-slate-500 py-3">
       <Loader2 className="w-3.5 h-3.5 animate-spin" />
       {lang === 'fr' ? 'Chargement…' : 'Chajman…'}
+    </div>
+  )
+}
+
+/** "Modifié par <law> art. N — version en vigueur depuis le <date>"
+ *  line rendered on the right of the per-article action row. Pure
+ *  presentation — the parent decides whether to render it based on
+ *  whether the article actually has source-amendment metadata. */
+function ModifiedByLine({
+  sourceAmendmentSlug,
+  sourceAmendmentTitleFr,
+  sourceAmendmentTitleHt,
+  sourceAmendmentArticleNumber,
+  effectiveFrom,
+  lang,
+}: {
+  sourceAmendmentSlug: string | null
+  sourceAmendmentTitleFr: string | null
+  sourceAmendmentTitleHt: string | null
+  sourceAmendmentArticleNumber: string | null
+  effectiveFrom: string | null
+  lang: 'fr' | 'ht'
+}) {
+  const isFr = lang === 'fr'
+  const title =
+    (isFr
+      ? sourceAmendmentTitleFr
+      : sourceAmendmentTitleHt || sourceAmendmentTitleFr) ?? null
+  if (!title) return null
+
+  // Format yyyy-mm-dd → "19 juin 2012". Date-fns-free for the
+  // smaller bundle: just Intl + a fallback to the raw string when
+  // parsing fails (the editor occasionally enters non-ISO dates).
+  let formattedDate: string | null = null
+  if (effectiveFrom) {
+    try {
+      const d = new Date(effectiveFrom)
+      if (!Number.isNaN(d.getTime())) {
+        formattedDate = new Intl.DateTimeFormat(
+          isFr ? 'fr-FR' : 'fr-FR',
+          {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          },
+        ).format(d)
+      } else {
+        formattedDate = effectiveFrom
+      }
+    } catch {
+      formattedDate = effectiveFrom
+    }
+  }
+
+  const href = sourceAmendmentSlug
+    ? sourceAmendmentArticleNumber
+      ? `/loi/${sourceAmendmentSlug}?view=article&article=${encodeURIComponent(sourceAmendmentArticleNumber)}`
+      : `/loi/${sourceAmendmentSlug}`
+    : null
+
+  return (
+    <div className="ml-auto text-right max-w-md min-w-0">
+      {formattedDate && (
+        <p className="text-[11px] font-medium text-slate-600">
+          {isFr
+            ? `Version en vigueur depuis le ${formattedDate}`
+            : `Vèsyon an vigè depi ${formattedDate}`}
+        </p>
+      )}
+      <p className="text-[11px] text-slate-500 truncate">
+        {isFr ? 'Modifié par' : 'Modifye pa'}{' '}
+        {href ? (
+          <a
+            href={href}
+            className="text-primary hover:underline font-medium"
+          >
+            {title}
+            {sourceAmendmentArticleNumber
+              ? isFr
+                ? ` — art. ${sourceAmendmentArticleNumber}`
+                : ` — atik ${sourceAmendmentArticleNumber}`
+              : ''}
+          </a>
+        ) : (
+          <span className="font-medium text-slate-700">{title}</span>
+        )}
+      </p>
     </div>
   )
 }

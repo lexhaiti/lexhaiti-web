@@ -678,6 +678,11 @@ export default function LawDetail() {
                     currentLang={currentLang}
                     isEditor={isEditor}
                     lawId={law.id}
+                    lawPublicationDate={
+                      law.publication_date ??
+                      law.moniteur_issue_publication_date ??
+                      null
+                    }
                     onArticleChanged={refetch}
                     searchQuery={pageSearchQuery}
                     searchScope={pageSearchScope}

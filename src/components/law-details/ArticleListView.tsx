@@ -71,6 +71,10 @@ interface Props {
    *  picker exclusion, after-anchor insertion). Required when
    *  isEditor is true; ignored for public viewers. */
   lawId?: number | null
+  /** Parent legal text's publication date — used as the
+   *  ``effective_from`` fallback for v1 article versions whose
+   *  per-version row carries no date (historical imports). */
+  lawPublicationDate?: string | null
   /** Called when an editor action (add version / add article /
    *  delete) succeeds, so the parent can refetch the law and the
    *  list re-renders. */
@@ -109,6 +113,7 @@ export function ArticleListView({
   emptyLabel,
   isEditor = false,
   lawId,
+  lawPublicationDate,
   onArticleChanged,
   searchQuery,
   searchScope = 'sommaire',
@@ -395,6 +400,7 @@ export function ArticleListView({
                 codeSubcategory={codeSubcategory ?? null}
                 lawSlug={lawSlug}
                 lawShortTitle={lawShortTitle}
+                lawPublicationDate={lawPublicationDate ?? null}
                 isFr={isFr}
                 lang={lang}
                 isEditor={isEditor}
@@ -522,6 +528,9 @@ interface ArticleCardProps {
   codeSubcategory: string | null
   lawSlug: string
   lawShortTitle?: string
+  /** Effective-from fallback for v1 article versions in the
+   *  expandable VersionsPanel. */
+  lawPublicationDate: string | null
   isFr: boolean
   lang: 'fr' | 'ht'
   isEditor: boolean
@@ -536,6 +545,7 @@ const ArticleCard = memo(function ArticleCard({
   codeSubcategory,
   lawSlug,
   lawShortTitle,
+  lawPublicationDate,
   isFr,
   lang,
   isEditor,
@@ -700,7 +710,21 @@ const ArticleCard = memo(function ArticleCard({
           currentTextFr={a.content_fr ?? null}
           currentTextHt={a.content_ht ?? null}
           currentTitleFr={(a as any).title_fr ?? null}
+          currentEffectiveFrom={versionDate}
+          sourceAmendmentSlug={
+            (a as any).source_amendment_slug ?? null
+          }
+          sourceAmendmentTitleFr={
+            (a as any).source_amendment_title_fr ?? null
+          }
+          sourceAmendmentTitleHt={
+            (a as any).source_amendment_title_ht ?? null
+          }
+          sourceAmendmentArticleNumber={
+            (a as any).source_amendment_article_number ?? null
+          }
           lawId={lawId}
+          lawPublicationDate={lawPublicationDate}
           lawSlug={lawSlug}
           siblingArticles={siblingArticles}
           isEditor={isEditor}

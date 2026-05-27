@@ -148,8 +148,34 @@ export function VersionsPanel({
         {versions.map((v, idx) => {
           const meta = STATUS_META[v.status]
           const isLast = idx === versions.length - 1
+          const isCurrent = idx === 0
           const fromDisplay = fmt(v.effective_from)
           const toDisplay = v.effective_to ? fmt(v.effective_to) : null
+
+          // Build a Légifrance-style status pill:
+          //   - current in-force version → green "Version en vigueur
+          //     depuis le <date>" (no end date).
+          //   - historical in-force version → red "Version en vigueur
+          //     du <from> au <to>" (was in force during the period).
+          //   - everything else (abrogé / suspendu / …) → existing
+          //     status pill from STATUS_META.
+          let pillLabel: string
+          let pillCls: string
+          if (v.status === 'in_force' && isCurrent) {
+            pillLabel = isFr
+              ? `Version en vigueur depuis le ${fromDisplay}`
+              : `Vèsyon an vigè depi ${fromDisplay}`
+            pillCls = 'bg-emerald-100 text-emerald-800 border-emerald-200'
+          } else if (v.status === 'in_force' && toDisplay) {
+            pillLabel = isFr
+              ? `Version en vigueur du ${fromDisplay} au ${toDisplay}`
+              : `Vèsyon an vigè ${fromDisplay} – ${toDisplay}`
+            pillCls = 'bg-red-50 text-red-700 border-red-200'
+          } else {
+            pillLabel = isFr ? meta.label.fr : meta.label.ht
+            pillCls = meta.pill
+          }
+
           return (
             <li
               key={v.version}
@@ -170,19 +196,10 @@ export function VersionsPanel({
                 >
                   v{v.version}
                 </span>
-                <span className="text-sm font-semibold text-slate-800">
-                  {toDisplay
-                    ? isFr
-                      ? `Du ${fromDisplay} au ${toDisplay}`
-                      : `${fromDisplay} – ${toDisplay}`
-                    : isFr
-                      ? `Depuis le ${fromDisplay}`
-                      : `Depi ${fromDisplay}`}
-                </span>
                 <span
-                  className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${meta.pill}`}
+                  className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${pillCls}`}
                 >
-                  {isFr ? meta.label.fr : meta.label.ht}
+                  {pillLabel}
                 </span>
                 {/* Delete-version affordance — visible only in editor
                     mode, fades in on hover so the timeline reads
