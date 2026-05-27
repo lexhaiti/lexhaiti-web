@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { Loader2, PanelLeft, PanelLeftClose } from 'lucide-react'
 import {
   TooltipProvider,
 } from '@/components/ui/tooltip'
-import { useParams, useSearchParams } from 'next/navigation'
+import { usePathname, useParams, useRouter, useSearchParams } from 'next/navigation'
 import { EditorBar } from './EditorBar'
 import { SignataireBlock } from '@/components/law-details/SignataireBlock'
 import { ChangesMadePanel } from '@/components/law-details/_panels/ChangesMadePanel'
@@ -64,6 +64,12 @@ export default function LawDetail() {
   const [selectedArticle, setSelectedArticle] =
     useState<SelectedArticle | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  // Tracks whether the user has manually toggled the sommaire this
+  // session. When they have, viewMode changes stop auto-flipping it.
+  // When they haven't, the default re-applies on mode change so the
+  // sommaire feels right in each view (open in Un article, closed
+  // in Tous / Par chapitre).
+  const userToggledSidebarRef = useRef(false)
   const [addHeadingAnchor, setAddHeadingAnchor] = useState<
     HeadingAnchor | null
   >(null)
@@ -76,6 +82,8 @@ export default function LawDetail() {
   const params = useParams()
   const slug = params?.slug as string
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
 
   const { isEditor: actuallyIsEditor, user: editorUser } = useEditorMode()
   const isPublicPreview = searchParams?.get('view') === 'public'
@@ -284,11 +292,31 @@ export default function LawDetail() {
     }
   }, [law?.articles, selectedArticle])
 
-  // Set default sidebar state based on screen size
+  // Default sidebar state — depends on viewMode + screen width. The
+  // sommaire's primary job is "pick one article to read", which is
+  // what Un article mode is for. In Tous / Par chapitre views the
+  // content already shows inline, so the sommaire is collapsed by
+  // default to give the article cards the full width. Mobile always
+  // starts collapsed (the sidebar is an in-page accordion there
+  // anyway). Once the user has toggled the sommaire manually, mode
+  // changes stop overriding their choice.
   useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (userToggledSidebarRef.current) return
     const isMobile = window.innerWidth < 1024
-    setIsSidebarOpen(!isMobile)
-  }, [])
+    if (isMobile) {
+      setIsSidebarOpen(false)
+      return
+    }
+    setIsSidebarOpen(viewMode === 'article')
+  }, [viewMode])
+
+  // User-driven toggle — wraps setIsSidebarOpen so subsequent
+  // viewMode changes don't unilaterally override the choice.
+  const handleSidebarToggle = (open: boolean) => {
+    userToggledSidebarRef.current = true
+    setIsSidebarOpen(open)
+  }
 
   // Handle fullscreen change
   useEffect(() => {
@@ -352,11 +380,30 @@ export default function LawDetail() {
 
   const handleArticleSelect = (article: any) => {
     setSelectedArticle(article)
+    // Update ``?article=N`` so the state is shareable + a refresh
+    // lands the reader on the same article.
+    const params = new URLSearchParams(searchParams?.toString() ?? '')
+    params.set('article', String(article.number))
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+    // Pick the scroll target based on which renderer is active:
+    //   - Un article mode → focused viewer (the bespoke chrome
+    //     rendered by ArticleSection).
+    //   - Tous / Par chapitre → the inline article card with
+    //     id="article-${number}" rendered by ArticleListView.
+    //   - Document shape (flat short decree) → inline card too.
     setTimeout(() => {
-      articleViewerRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      })
+      const inlineCard =
+        shape !== 'switchable' || viewMode !== 'article'
+          ? document.getElementById(`article-${article.number}`)
+          : null
+      if (inlineCard) {
+        inlineCard.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      } else {
+        articleViewerRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        })
+      }
     }, 100)
   }
 
@@ -432,7 +479,7 @@ export default function LawDetail() {
               currentLang={currentLang}
               isEditor={isEditor}
               isSidebarOpen={isSidebarOpen}
-              setIsSidebarOpen={setIsSidebarOpen}
+              setIsSidebarOpen={handleSidebarToggle}
               selectedArticle={selectedArticle}
               pageSearchScope={pageSearchScope}
               pageSearchQuery={pageSearchQuery}
@@ -451,6 +498,35 @@ export default function LawDetail() {
 
           {/* Main Content Area */}
           <div className="flex-1 min-w-0 pb-12 sm:pb-16 lg:py-8">
+            {/* Voir / Masquer sommaire — desktop-only chip above the
+                search panel. The mobile accordion + the bottom-right
+                floating button (rendered by TocSidebar) cover the
+                other surfaces; this one is the explicit affordance
+                for the new "sommaire hidden by default in Tous/Par
+                chapitre" behavior. */}
+            {showStructuralUi && (
+              <div className="hidden lg:flex items-center justify-end mb-3">
+                <button
+                  type="button"
+                  onClick={() => handleSidebarToggle(!isSidebarOpen)}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:border-primary hover:text-primary transition-colors"
+                  aria-pressed={isSidebarOpen}
+                >
+                  {isSidebarOpen ? (
+                    <PanelLeftClose className="w-3.5 h-3.5" />
+                  ) : (
+                    <PanelLeft className="w-3.5 h-3.5" />
+                  )}
+                  {currentLang === 'fr'
+                    ? isSidebarOpen
+                      ? 'Masquer le sommaire'
+                      : 'Voir le sommaire'
+                    : isSidebarOpen
+                      ? 'Kache somè a'
+                      : 'Wè somè a'}
+                </button>
+              </div>
+            )}
             {showStructuralUi && (
               <SearchPanel
                 currentLang={currentLang}
