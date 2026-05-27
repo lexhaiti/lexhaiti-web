@@ -1,6 +1,7 @@
 'use client'
 
 import { SessionProvider } from 'next-auth/react'
+import { ThemeProvider } from 'next-themes'
 import { LanguageProvider } from '@/i18n/LanguageContext'
 import { ToastProvider } from '@/components/ui/toast-simple'
 import type { Language, MessagesDict } from '@/i18n'
@@ -28,12 +29,19 @@ export default function Providers({
 }) {
   return (
     <SessionProvider>
-      <LanguageProvider
-        initialLanguage={initialLanguage}
-        initialMessages={initialMessages}
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
       >
-        <ToastProvider>{children}</ToastProvider>
-      </LanguageProvider>
+        <LanguageProvider
+          initialLanguage={initialLanguage}
+          initialMessages={initialMessages}
+        >
+          <ToastProvider>{children}</ToastProvider>
+        </LanguageProvider>
+      </ThemeProvider>
     </SessionProvider>
   )
 }

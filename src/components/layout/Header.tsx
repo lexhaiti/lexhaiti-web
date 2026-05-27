@@ -12,6 +12,7 @@ import { useT } from '@/i18n/useT'
 import { cn } from '@/lib/utils'
 import { MENU_DATA } from '@/components/layout/menu'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
+import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import {
   AddTextButton,
   MobileUserSection,
@@ -123,7 +124,9 @@ export default function Header() {
           // Solid white avoids that boundary problem at the cost of a
           // touch less polish — worth the trade since the dark headers
           // are the most common landing surfaces.
-          scrolled ? 'bg-white shadow-sm' : 'bg-white',
+          scrolled
+            ? 'bg-white shadow-sm dark:bg-slate-950 dark:shadow-black/40'
+            : 'bg-white dark:bg-slate-950',
         )}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -137,7 +140,7 @@ export default function Header() {
           {/* 1. LOGO (Always Visible) */}
           <div className="flex-shrink-0 z-20 relative">
             <BrandLogo
-              titleClassName="text-slate-900 font-extrabold text-2xl tracking-tighter"
+              titleClassName="text-slate-900 dark:text-slate-100 font-extrabold text-2xl tracking-tighter"
               taglineClassName=" text-[10px] font-bold uppercase tracking-widest mt-0.5"
               // Uses the BrandLogo default size (48px mobile / 56px
               // from sm+) — no override needed. Slightly bigger than
@@ -285,6 +288,11 @@ export default function Header() {
               <AddTextButton />
               <UserMenu />
             </div>
+
+            {/* Theme toggle — Sun ↔ Moon. Always visible so users
+                on dark devices can flip the site without digging
+                through menus. */}
+            <ThemeToggle />
 
             {/* Language switcher — always visible. Flag only on mobile,
                 flag + full name on sm+. */}

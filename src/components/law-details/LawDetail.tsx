@@ -543,6 +543,8 @@ export default function LawDetail() {
                   'pt-3 pb-2 mb-4',
                   'bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85',
                   'border-b border-slate-200 shadow-[0_2px_8px_-4px_rgba(15,23,42,0.08)]',
+                  'dark:bg-slate-950/95 dark:supports-[backdrop-filter]:bg-slate-950/80',
+                  'dark:border-slate-800 dark:shadow-[0_2px_12px_-4px_rgba(0,0,0,0.6)]',
                 )}
               >
                 {showStructuralUi && (
