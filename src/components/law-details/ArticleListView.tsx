@@ -197,11 +197,16 @@ export function ArticleListView({
                     className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-primary px-2 py-1 hover:bg-slate-100 rounded-md transition-colors"
                     aria-label={
                       isFr
-                        ? `Détails de l'article ${numStr}`
-                        : `Detay atik ${numStr}`
+                        ? `Vue article unique — ${numStr}`
+                        : `Vi sèl atik — ${numStr}`
+                    }
+                    title={
+                      isFr
+                        ? "Ouvrir cet article en mode focus (URL partageable)"
+                        : 'Louvri atik sa a an mòd fokis (URL pou pataje)'
                     }
                   >
-                    {isFr ? 'Détails' : 'Detay'}
+                    {isFr ? 'Vue article unique' : 'Vi sèl atik'}
                     <ArrowUpRight className="w-3 h-3" />
                   </Link>
                 </div>
