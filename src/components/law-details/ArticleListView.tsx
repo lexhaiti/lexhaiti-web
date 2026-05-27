@@ -182,37 +182,29 @@ export function ArticleListView({
   }, [headings])
 
   // Set<headingId> the user has clicked closed. Toggle is *tree
-  // aware*:
-  //   - Collapsing a heading also collapses every descendant so the
-  //     entire subtree disappears in one click.
-  //   - Expanding any heading uncollapses every ancestor so the
-  //     chevrons up the chain reflect that something inside is open.
+  // aware* so the structure behaves like a real accordion:
+  //   - Collapsing a heading also collapses every descendant so
+  //     the entire subtree disappears (chips + article cards) in
+  //     one click.
+  //   - Expanding a heading uncollapses every descendant AND every
+  //     ancestor: the user gets the whole open subtree back in one
+  //     click, and ancestor chevrons reflect that something inside
+  //     is open.
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
   const toggleCollapsed = (id: number) => {
     setCollapsed((s) => {
       const next = new Set(s)
+      const descendants = descendantsByHeadingId.get(id) ?? [id]
       if (next.has(id)) {
-        // Expand this heading + every ancestor — if the user opens
-        // a deeply-nested chapter the parent Livre/Titre rows should
-        // visually reflect that something below them is open.
-        next.delete(id)
+        for (const d of descendants) next.delete(d)
         const path = pathByHeadingId.get(id) ?? []
         for (const h of path) next.delete(h.id)
       } else {
-        // Collapse this heading + every descendant so the subtree
-        // really disappears, not just the heading row.
-        next.add(id)
-        const descendants = descendantsByHeadingId.get(id) ?? [id]
         for (const d of descendants) next.add(d)
       }
       return next
     })
   }
-
-  // ``collapsed`` already includes every descendant of a collapsed
-  // root thanks to the cascading toggle above, so the per-article
-  // hidden-check just needs to ask "any ancestor in collapsed?".
-  const hiddenByCollapse = collapsed
 
   // ─── Search filter ───────────────────────────────────────────────
   // Defer the query — the input stays interactive while the
@@ -296,12 +288,23 @@ export function ArticleListView({
 
         // Hidden by collapse? (Search active suspends collapse.)
         const hiddenByAncestor =
-          !q && path.some((h) => hiddenByCollapse.has(h.id))
+          !q && path.some((h) => collapsed.has(h.id))
 
         return (
           <div key={a.id ?? `${a.number}`}>
             {showBreak &&
               newSegments.map((h) => {
+                // Accordion rule: a heading row hides entirely when
+                // any *strict* ancestor is collapsed. Combined with
+                // the cascading toggle, closing LOI N° 2 hides its
+                // chapter chips + their article cards in one click;
+                // re-opening LOI N° 2 brings the subtree back.
+                const headingPath = pathByHeadingId.get(h.id) ?? [h]
+                const strictAncestors = headingPath.slice(0, -1)
+                const hiddenByCollapsedAncestor =
+                  !q && strictAncestors.some((a) => collapsed.has(a.id))
+                if (hiddenByCollapsedAncestor) return null
+
                 // Banner-vs-chip is decided by *structural depth*,
                 // not by the position in the diverge list. A
                 // heading with ``parent_id === null`` is a root row
@@ -312,7 +315,7 @@ export function ArticleListView({
                 // chip — even when the diverge list contains both
                 // at once.
                 const isRoot = h.parent_id == null
-                const collapsedNow = hiddenByCollapse.has(h.id)
+                const collapsedNow = collapsed.has(h.id)
                 const lvl =
                   getLevelLabel(
                     h.level,
@@ -324,6 +327,11 @@ export function ArticleListView({
                   (lang === 'ht' && (h as any).title_ht
                     ? (h as any).title_ht
                     : (h as any).title_fr) ?? null
+                // Indent chips by their tree depth — direct child of
+                // root sits at 2rem, grandchild at 4rem, etc. Root
+                // banners stay at the content-area left edge so
+                // article cards line up with them.
+                const depth = headingPath.length - 1
                 return isRoot ? (
                   <HeadingBanner
                     key={h.id}
@@ -337,6 +345,7 @@ export function ArticleListView({
                   <HeadingChip
                     key={h.id}
                     headingId={h.id}
+                    depth={depth}
                     numberLabel={numberLabel}
                     title={headingTitle}
                     collapsed={collapsedNow}
@@ -411,24 +420,31 @@ const HeadingBanner = memo(function HeadingBanner({
 })
 
 // ─── Heading chip (Chapitre / Section / …) ────────────────────────
-// Centered text with a chevron next to it, no card chrome. Generous
-// bottom margin so the article card that follows isn't crammed
-// against the heading.
+// Left-aligned text + chevron, indented by tree depth so children
+// visually sit under their parents. Article cards stay at the
+// content-area left edge so they line up with the banner above.
 const HeadingChip = memo(function HeadingChip({
   headingId,
+  depth,
   numberLabel,
   title,
   collapsed,
   onToggle,
 }: {
   headingId: number
+  /** Depth in the heading tree — 1 for a direct child of a root
+   *  heading, 2 for a grandchild, etc. Drives the left indent. */
+  depth: number
   numberLabel: string
   title: string | null
   collapsed: boolean
   onToggle: (id: number) => void
 }) {
   return (
-    <div className="mt-6 mb-3 flex items-center justify-center">
+    <div
+      className="mt-6 mb-3 flex items-center"
+      style={{ paddingLeft: `${depth * 2}rem` }}
+    >
       <button
         type="button"
         onClick={() => onToggle(headingId)}
