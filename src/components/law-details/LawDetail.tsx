@@ -224,21 +224,53 @@ export default function LawDetail() {
     }
   }, [law?.articles, law?.headings, law?.code_subcategory, currentArticleIndex, selectedArticle?.heading_id, currentLang, headingsById])
 
-  // Auto-select an article on mount.
+  // Auto-select an article whenever the ``?article=N`` URL param
+  // changes (initial load, deep-link from search, or in-page Link
+  // navigation like the list-view "Vue article unique" row). The
+  // earlier version short-circuited once any article was selected
+  // — that left clicks from inside the same page stuck on the
+  // previous article. Now: URL drives selection; absence of the
+  // param falls back to the first article only on the very first
+  // mount.
+  const requestedArticleParam = searchParams?.get('article') ?? null
   useEffect(() => {
-    if (!law?.articles || law.articles.length === 0 || selectedArticle) return
-    const requested = searchParams?.get('article') ?? null
-    if (requested) {
+    if (!law?.articles || law.articles.length === 0) return
+    if (requestedArticleParam) {
       const target = law.articles.find(
-        (a) => String(a.number) === requested,
+        (a) => String(a.number) === requestedArticleParam,
       )
-      if (target) {
+      if (target && target.id !== selectedArticle?.id) {
         setSelectedArticle(target)
-        return
       }
+      return
     }
-    setSelectedArticle(law.articles[0])
-  }, [law, selectedArticle, searchParams])
+    // No ?article= in the URL — keep the existing selection if we
+    // already have one (toggling between Tous / Par chapitre modes
+    // strips the param but shouldn't reset the article).
+    if (!selectedArticle) {
+      setSelectedArticle(law.articles[0])
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [law?.articles, requestedArticleParam])
+
+  // When the URL drives a navigation TO focused-article mode, scroll
+  // the article into the middle of the viewport so the reader doesn't
+  // have to hunt for it. Only fires when ``view=article`` is the
+  // active mode (otherwise the list-view shows everything inline
+  // and a scroll-jump would feel jarring).
+  useEffect(() => {
+    if (!requestedArticleParam) return
+    if (searchParams?.get('view') !== 'article') return
+    // Defer to next paint so the focused viewer has a chance to
+    // render before we measure + scroll.
+    const id = window.setTimeout(() => {
+      articleViewerRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      })
+    }, 50)
+    return () => window.clearTimeout(id)
+  }, [requestedArticleParam, searchParams])
 
   // Re-bind selectedArticle to the freshest copy whenever law.articles changes.
   useEffect(() => {
