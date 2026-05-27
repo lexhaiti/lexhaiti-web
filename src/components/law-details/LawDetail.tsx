@@ -35,8 +35,15 @@ import { SearchPanel } from './SearchPanel'
 import { IdentityMasthead } from './IdentityMasthead'
 import { FormalBlocksSection } from './FormalBlocksSection'
 import { ArticleSection } from './ArticleSection'
+import { ArticleListView } from './ArticleListView'
+import { ViewModeSwitcher } from './ViewModeSwitcher'
 import { ClosingAddendum } from './ClosingAddendum'
 import { RelatedLaws } from './RelatedLaws'
+
+// View-mode plumbing — shape detection + persisted mode state.
+import { detectShape, availableViewModes } from '@/lib/legal/shape'
+import { useViewMode } from '@/lib/hooks/useViewMode'
+import { lawShortCite } from '@/lib/legal/cite'
 
 
 export default function LawDetail() {
@@ -90,6 +97,34 @@ export default function LawDetail() {
   const showStructuralUi = (hasArticles || isEditor) && !isDocumentMode
   const [emptyAddArticleOpen, setEmptyAddArticleOpen] = useState(false)
   const [deviseEditorOpen, setDeviseEditorOpen] = useState(false)
+
+  // ────────────────────────────────────────────────────────────────
+  // View-mode plumbing
+  //
+  // Shape detection runs every time the law data changes; from the
+  // shape we know which view-mode buttons make sense (tous /
+  // chapitre / article). The hook resolves the active mode from URL
+  // > localStorage > smart default.
+  // ────────────────────────────────────────────────────────────────
+  const shape = useMemo(
+    () =>
+      detectShape({
+        displayMode: law?.display_mode,
+        articleCount: law?.articles?.length ?? 0,
+        headingCount: law?.headings?.length ?? 0,
+      }),
+    [law?.display_mode, law?.articles?.length, law?.headings?.length],
+  )
+  const hasChapters = (law?.headings?.length ?? 0) > 0
+  const availableModes = useMemo(
+    () => availableViewModes(shape, hasChapters),
+    [shape, hasChapters],
+  )
+  const hasArticleDeepLink = !!searchParams?.get('article')
+  const [viewMode, setViewMode] = useViewMode({
+    available: availableModes,
+    hasDeepLink: hasArticleDeepLink,
+  })
 
   const articleCounts = useMemo(() => {
     if (!law?.articles || law.articles.length === 0) {
@@ -419,25 +454,140 @@ export default function LawDetail() {
               refetch={refetch}
             />
 
+            {/* ──────────────────────────────────────────────────────
+                View-mode switcher — visible only on switchable shapes
+                (hidden for richtext blobs and flat-document layouts).
+                Sits right above the article content so the user sees
+                "you can read this differently" before they commit.
+                ────────────────────────────────────────────────────── */}
+            {shape === 'switchable' && hasArticles && availableModes.length > 1 && (
+              <div className="mb-5 flex items-center justify-between gap-3 flex-wrap">
+                <ViewModeSwitcher
+                  mode={viewMode}
+                  available={availableModes}
+                  onChange={setViewMode}
+                  visibleCount={(() => {
+                    if (viewMode === 'article')
+                      return selectedArticle ? 1 : 0
+                    if (viewMode === 'chapitre' && selectedArticle) {
+                      return (law.articles ?? []).filter(
+                        (a: any) =>
+                          a.heading_id === selectedArticle.heading_id,
+                      ).length
+                    }
+                    return law.articles?.length ?? 0
+                  })()}
+                  lang={currentLang}
+                />
+              </div>
+            )}
+
             <div ref={articleViewerRef} className="mb-8 scroll-mt-24">
-              <ArticleSection
-                law={law}
-                currentLang={currentLang}
-                isEditor={isEditor}
-                isDocumentMode={isDocumentMode}
-                hasArticles={hasArticles}
-                selectedArticle={selectedArticle}
-                currentArticleIndex={currentArticleIndex}
-                title={title}
-                articleBreadcrumb={articleBreadcrumb}
-                blocHints={blocHints}
-                onPrevious={handlePrevious}
-                onNext={handleNext}
-                onShare={handleShare}
-                onCopyLink={handleCopyLink}
-                onEmptyAddArticle={() => setEmptyAddArticleOpen(true)}
-                refetch={refetch}
-              />
+              {/* ── Article rendering branches by view mode ───────────
+                  - 'article' (current default) → ArticleSection: one
+                    focused article with prev/next + full chrome.
+                  - 'tous' → ArticleListView: every article inline,
+                    heading break-rows between sections.
+                  - 'chapitre' → ArticleListView filtered to articles
+                    sharing the selected article's direct heading. V1
+                    uses ``heading_id`` equality (same direct parent);
+                    walking up to a chapter-level ancestor is a future
+                    refinement. */}
+              {(() => {
+                // Decision table for which renderer takes over:
+                //
+                //   richtext  → ArticleSection (handles document_mode
+                //               internally and reads document_body_*).
+                //   document  → ArticleListView with all articles —
+                //               flat short text feels like a printed
+                //               document when articles flow inline.
+                //   switchable + article → ArticleSection (focused
+                //               viewer, current default).
+                //   switchable + tous → ArticleListView all.
+                //   switchable + chapitre → ArticleListView filtered
+                //               to selectedArticle's direct parent
+                //               heading.
+                if (shape === 'richtext') {
+                  return (
+                    <ArticleSection
+                      law={law}
+                      currentLang={currentLang}
+                      isEditor={isEditor}
+                      isDocumentMode={isDocumentMode}
+                      hasArticles={hasArticles}
+                      selectedArticle={selectedArticle}
+                      currentArticleIndex={currentArticleIndex}
+                      title={title}
+                      articleBreadcrumb={articleBreadcrumb}
+                      blocHints={blocHints}
+                      onPrevious={handlePrevious}
+                      onNext={handleNext}
+                      onShare={handleShare}
+                      onCopyLink={handleCopyLink}
+                      onEmptyAddArticle={() => setEmptyAddArticleOpen(true)}
+                      refetch={refetch}
+                    />
+                  )
+                }
+                if (shape === 'document') {
+                  return (
+                    <ArticleListView
+                      articles={law.articles ?? []}
+                      headings={law.headings ?? []}
+                      lawSlug={law.slug}
+                      lawShortTitle={lawShortCite(law.title_fr)}
+                      codeSubcategory={law.code_subcategory ?? null}
+                      currentLang={currentLang}
+                    />
+                  )
+                }
+                if (viewMode === 'article') {
+                  return (
+                    <ArticleSection
+                      law={law}
+                      currentLang={currentLang}
+                      isEditor={isEditor}
+                      isDocumentMode={isDocumentMode}
+                      hasArticles={hasArticles}
+                      selectedArticle={selectedArticle}
+                      currentArticleIndex={currentArticleIndex}
+                      title={title}
+                      articleBreadcrumb={articleBreadcrumb}
+                      blocHints={blocHints}
+                      onPrevious={handlePrevious}
+                      onNext={handleNext}
+                      onShare={handleShare}
+                      onCopyLink={handleCopyLink}
+                      onEmptyAddArticle={() => setEmptyAddArticleOpen(true)}
+                      refetch={refetch}
+                    />
+                  )
+                }
+                return (
+                  <ArticleListView
+                    articles={
+                      viewMode === 'chapitre' && selectedArticle
+                        ? (law.articles ?? []).filter(
+                            (a: any) =>
+                              a.heading_id === selectedArticle.heading_id,
+                          )
+                        : (law.articles ?? [])
+                    }
+                    headings={law.headings ?? []}
+                    lawSlug={law.slug}
+                    lawShortTitle={lawShortCite(law.title_fr)}
+                    codeSubcategory={law.code_subcategory ?? null}
+                    currentLang={currentLang}
+                    emptyLabel={
+                      viewMode === 'chapitre'
+                        ? currentLang === 'fr'
+                          ? 'Aucun article dans cette section.'
+                          : 'Pa gen atik nan seksyon sa a.'
+                        : undefined
+                    }
+                  />
+                )
+              })()}
             </div>
 
             {/* Signataires block */}
