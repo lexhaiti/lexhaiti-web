@@ -88,6 +88,22 @@ interface Props {
    *  and the per-row chevrons share one source of truth. */
   collapsed: Set<number>
   onToggleCollapsed: (id: number) => void
+  /** When true, render each amended article in its V1 form (text
+   *  body + title), reading from ``initialV1ById``. Articles with
+   *  only one version are unaffected (their current text IS V1). */
+  showInitialVersion?: boolean
+  /** Map: article id → V1 body for amended articles. Populated by
+   *  the parent's ``useInitialVersions`` hook. */
+  initialV1ById?: Map<
+    number,
+    {
+      text_fr: string | null
+      text_ht: string | null
+      title_fr: string | null
+      title_ht: string | null
+      effective_from: string | null
+    }
+  >
 }
 
 // Lowercase + strip diacritics for substring matching.
@@ -123,6 +139,8 @@ export function ArticleListView({
   hideAbrogated = false,
   collapsed,
   onToggleCollapsed,
+  showInitialVersion = false,
+  initialV1ById,
 }: Props) {
   const lang = currentLang
   const isFr = lang === 'fr'
@@ -339,6 +357,12 @@ export function ArticleListView({
                 lawId={lawId ?? null}
                 siblingArticles={siblingArticles}
                 onArticleChanged={onArticleChanged}
+                showInitialVersion={showInitialVersion}
+                initialV1={
+                  showInitialVersion && a.id != null
+                    ? (initialV1ById?.get(a.id) ?? null)
+                    : null
+                }
               />
             )}
           </div>
@@ -381,7 +405,7 @@ const HeadingBanner = memo(function HeadingBanner({
         )}
         aria-hidden
       />
-      <span className="font-bold uppercase tracking-[0.18em] text-sm text-primary">
+      <span className="font-bold uppercase tracking-[0.18em] text-sm text-primary whitespace-nowrap">
         {numberLabel}
       </span>
       {title && (
@@ -435,7 +459,7 @@ const HeadingChip = memo(function HeadingChip({
           )}
           aria-hidden
         />
-        <span className="font-semibold uppercase tracking-[0.16em] text-[12px] text-primary/80">
+        <span className="font-semibold uppercase tracking-[0.16em] text-[12px] text-primary/80 whitespace-nowrap">
           {numberLabel}
         </span>
         {title && (
@@ -469,6 +493,17 @@ interface ArticleCardProps {
   lawId: number | null
   siblingArticles: Array<{ id: number; number: string; slug: string }>
   onArticleChanged?: () => void
+  /** When true, the card swaps content + title to the V1 body. */
+  showInitialVersion?: boolean
+  /** V1 body for an amended article — null on V1-only articles
+   *  (their current text is V1) or when initial mode is off. */
+  initialV1?: {
+    text_fr: string | null
+    text_ht: string | null
+    title_fr: string | null
+    title_ht: string | null
+    effective_from: string | null
+  } | null
 }
 
 const ArticleCard = memo(function ArticleCard({
@@ -484,15 +519,28 @@ const ArticleCard = memo(function ArticleCard({
   lawId,
   siblingArticles,
   onArticleChanged,
+  showInitialVersion = false,
+  initialV1,
 }: ArticleCardProps) {
   const a = article
   const numStr = String(a.number ?? '')
   const numLabel = articleNumberLabel(numStr, lang)
   const isAbrogated = a.status === 'abrogated'
-  const body =
-    (lang === 'ht' ? a.content_ht : null) ?? a.content_fr ?? ''
-  const title =
-    (lang === 'ht' ? (a as any).title_ht : null) ??
+  // When the user picked "Accéder à la version initiale" and this
+  // article has a V1 body fetched, render that body instead of the
+  // current ``content_fr / content_ht``. V1-only articles fall
+  // through and keep their current text (which is their V1 anyway).
+  const useInitial = showInitialVersion && !!initialV1
+  const body = useInitial
+    ? (((lang === 'ht' ? initialV1!.text_ht : null) ??
+        initialV1!.text_fr) ??
+      '')
+    : ((lang === 'ht' ? a.content_ht : null) ?? a.content_fr ?? '')
+  const title = useInitial
+    ? ((lang === 'ht' ? initialV1!.title_ht : null) ??
+      initialV1!.title_fr ??
+      null)
+    : (lang === 'ht' ? (a as any).title_ht : null) ??
     (a as any).title_fr ??
     null
   const versionDate = (a as any).effective_from ?? null
@@ -555,7 +603,7 @@ const ArticleCard = memo(function ArticleCard({
                     <span
                       className={cn(
                         isLast
-                          ? 'font-bold uppercase tracking-widest text-primary text-[12px] tabular-nums'
+                          ? 'font-bold uppercase tracking-widest text-primary text-[12px] tabular-nums whitespace-nowrap'
                           : 'font-medium',
                       )}
                     >

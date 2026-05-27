@@ -45,6 +45,7 @@ import { RelatedLaws } from './RelatedLaws'
 import { detectShape, availableViewModes } from '@/lib/legal/shape'
 import { useViewMode } from '@/lib/hooks/useViewMode'
 import { useHeadingCollapse } from '@/lib/hooks/useHeadingCollapse'
+import { useInitialVersions } from '@/lib/hooks/useInitialVersions'
 import { lawShortCite } from '@/lib/legal/cite'
 
 
@@ -148,6 +149,17 @@ export default function LawDetail() {
   // / Tout ouvrir buttons and ArticleListView's per-row chevrons
   // both read + write the same Set through this hook.
   const headingCollapse = useHeadingCollapse(law?.headings ?? [])
+
+  // Lazy-fetch V1 of every amended article when the user picks
+  // "Accéder à la version initiale". Reuses the existing
+  // ``/articles/{id}/versions`` endpoint (same one the Comparer
+  // button hits) so no new backend is needed. Cache survives the
+  // toggle so flipping back to "today" and "initial" again is
+  // instant.
+  const initialVersions = useInitialVersions(
+    law?.articles ?? [],
+    viewAsOfDate === 'initial',
+  )
 
   const articleCounts = useMemo(() => {
     if (!law?.articles || law.articles.length === 0) {
@@ -777,6 +789,8 @@ export default function LawDetail() {
                     hideAbrogated={hideAbrogated}
                     collapsed={headingCollapse.collapsed}
                     onToggleCollapsed={headingCollapse.toggle}
+                    showInitialVersion={viewAsOfDate === 'initial'}
+                    initialV1ById={initialVersions.v1ById}
                     emptyLabel={
                       viewMode === 'chapitre'
                         ? currentLang === 'fr'

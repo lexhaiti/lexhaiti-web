@@ -121,6 +121,9 @@ export function DocumentToolbar({
     'bg-primary text-white border-primary hover:bg-primary/90'
 
   return (
+    // Single row that wraps cleanly on narrow viewports. Every chip
+    // shares the same gap so Copier reads as part of the group
+    // rather than being banished to the right edge with ml-auto.
     <div className="flex items-center flex-wrap gap-2 mb-4 text-[12px]">
       {showViewAsOf && (
         <>
@@ -215,7 +218,7 @@ export function DocumentToolbar({
       <button
         type="button"
         onClick={copyLink}
-        className={cn(baseChip, idleChip, 'ml-auto')}
+        className={cn(baseChip, idleChip)}
       >
         <Copy className="w-3.5 h-3.5" aria-hidden />
         {isFr ? 'Copier le lien' : 'Kopye lyen'}
