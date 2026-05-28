@@ -337,13 +337,10 @@ export default function LawDetail() {
     const codeSubcategory = law?.code_subcategory ?? null
     const tops = (law?.headings ?? []).filter((h) => h.parent_id == null)
     const level = tops[0]?.level
+    // Lowercase, then drop a trailing « N° » / « Nº » numéro indicator
+    // (the Code-civil "Loi N°" override) so the chip reads "Par loi".
     const clean = (s: string | null) =>
-      s
-        ? s
-            .replace(/\s*N[°o]\b.*$/i, '')
-            .trim()
-            .toLowerCase()
-        : null
+      s ? s.toLowerCase().replace(/\s*n[°º].*$/i, '').trim() : null
     const fr = clean(getLevelLabel(level, 'fr', codeSubcategory))
     const ht = clean(getLevelLabel(level, 'ht', codeSubcategory))
     return {
@@ -678,26 +675,6 @@ export default function LawDetail() {
                       available={availableModes}
                       onChange={setViewMode}
                       chapitreLabel={chapitreLabel}
-                      visibleCount={(() => {
-                        if (viewMode === 'article')
-                          return selectedArticle ? 1 : 0
-                        if (
-                          viewMode === 'chapitre' &&
-                          selectedArticle?.heading_id != null
-                        ) {
-                          // Count the whole top-level division (matches
-                          // what the chapter view now renders).
-                          const top = topAncestorById.get(
-                            selectedArticle.heading_id,
-                          )
-                          return (law.articles ?? []).filter(
-                            (a: any) =>
-                              a.heading_id != null &&
-                              topAncestorById.get(a.heading_id) === top,
-                          ).length
-                        }
-                        return law.articles?.length ?? 0
-                      })()}
                       lang={currentLang}
                     />
                   ) : null

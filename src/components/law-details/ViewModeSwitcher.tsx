@@ -21,10 +21,6 @@ interface Props {
   mode: ViewMode
   available: ViewMode[]
   onChange: (next: ViewMode) => void
-  /** Number of articles currently visible — surfaced as a small count
-   *  on the active segment so the user always knows how much they're
-   *  about to read. */
-  visibleCount?: number
   /** ``fr`` / ``ht`` — labels translate. */
   lang: 'fr' | 'ht'
   /** Override for the "Par chapitre" segment label, derived from the
@@ -44,7 +40,6 @@ export function ViewModeSwitcher({
   mode,
   available,
   onChange,
-  visibleCount,
   lang,
   chapitreLabel,
   className,
@@ -86,16 +81,6 @@ export function ViewModeSwitcher({
           >
             <Icon className="w-3.5 h-3.5" aria-hidden />
             {label}
-            {isActive && typeof visibleCount === 'number' && visibleCount > 0 && (
-              <span
-                className={cn(
-                  'inline-flex items-center justify-center min-w-[1.25rem] h-4 px-1 rounded-full text-[10px] font-bold tabular-nums',
-                  'bg-white/20 text-white',
-                )}
-              >
-                {visibleCount}
-              </span>
-            )}
           </button>
         )
       })}
