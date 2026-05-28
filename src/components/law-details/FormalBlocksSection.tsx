@@ -3,6 +3,7 @@
 import React from 'react'
 import { EditableFormalBlock } from './EditableFormalBlock'
 import { IntroductoryPart } from './IntroductoryPart'
+import { IntroBlocksEditor } from './IntroBlocksEditor'
 import { updateLegalTextMetadata } from '@/lib/api/endpoints'
 import type { BilingualDisplay } from './_helpers/lawDetailTypes'
 import type { components } from '@/lib/api-types'
@@ -75,6 +76,9 @@ export function FormalBlocksSection({
   // blocks' version chain still drives the V1 swap. Préambule +
   // formule d'adoption always render on their own, outside this.
   const introBlocks = (law as any).intro_blocks ?? []
+  // Editors of migrated texts manage the ordered blocks directly.
+  const showIntroEditor = introBlocks.length > 0 && isEditor
+  // Public readers (today view) see the continuous render.
   const showContinuousIntro =
     introBlocks.length > 0 && !isEditor && !showInitialVersion
 
@@ -182,11 +186,18 @@ export function FormalBlocksSection({
   return (
     <div className="mb-8 space-y-3">
       {PreambleBlock}
-      {/* Continuous "partie introductive" for public readers when the
-          text has ordered intro blocks; otherwise the legacy per-kind
-          editable cards (editors + initial-version mode + un-migrated
-          texts). */}
-      {showContinuousIntro ? (
+      {/* Introductory part: editors of migrated texts get the ordered-
+          block editor; public readers (today view) get the continuous
+          render; everything else (un-migrated texts, initial-version
+          mode) falls back to the legacy per-kind editable cards. */}
+      {showIntroEditor ? (
+        <IntroBlocksEditor
+          slug={law.slug}
+          lang={currentLang}
+          initialBlocks={introBlocks}
+          onChanged={refetch}
+        />
+      ) : showContinuousIntro ? (
         <IntroductoryPart blocks={introBlocks} lang={currentLang} />
       ) : (
         <>
