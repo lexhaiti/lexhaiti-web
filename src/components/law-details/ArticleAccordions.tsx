@@ -792,20 +792,23 @@ function ModifiedByLine({
     : null
 
   return (
-    <div className="ml-auto text-right max-w-md min-w-0 flex flex-col items-end gap-1">
+    // Full width below ``lg`` so the long "Modifié par …" text drops
+    // onto its OWN line beneath the Versions / Comparer pills instead
+    // of crowding them (the truncated text used to sit shrunk on the
+    // same flex line through tablet widths). Only at ``lg`` — where
+    // there's real room — does it go inline right via ``ml-auto``.
+    <div className="w-full lg:w-auto lg:ml-auto text-left lg:text-right lg:max-w-md min-w-0 flex flex-col items-start lg:items-end gap-1">
       {formattedDate && (
         // Status pill — mirrors the VersionsPanel green "Version en
         // vigueur depuis le X" chip so the in-force date reads as a
-        // status, not a footnote. Sized down a touch to sit cleanly
-        // next to the version actions on the same row.
-        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-emerald-800 border border-emerald-200">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden />
+        // status, not a footnote.
+        <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-emerald-800 border border-emerald-200">
           {isFr
             ? `En vigueur depuis le ${formattedDate}`
             : `An vigè depi ${formattedDate}`}
         </span>
       )}
-      <p className="text-[11px] text-slate-500 truncate">
+      <p className="text-[11px] text-slate-500 truncate max-w-full">
         {isFr ? 'Modifié par' : 'Modifye pa'}{' '}
         {href ? (
           <a
