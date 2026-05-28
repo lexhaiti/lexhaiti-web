@@ -45,7 +45,7 @@ import { ArticleSection } from './ArticleSection'
 import { ArticleListView } from './ArticleListView'
 import { ViewModeSwitcher } from './ViewModeSwitcher'
 import { ChapterNav } from './ChapterNav'
-import { ClosingAddendum } from './ClosingAddendum'
+import { FinalSections } from './FinalSections'
 import { RelatedLaws } from './RelatedLaws'
 
 // View-mode plumbing — shape detection + persisted mode state.
@@ -1041,7 +1041,11 @@ export default function LawDetail() {
               refetch={refetch}
             />
 
-            <ClosingAddendum
+            {/* Partie finale — additional labelled sections (résolution,
+                ratification, acte de promulgation, approbation, …). The
+                old single closing_addendum block was folded into these
+                (migration 0049, as an `approbation` section). */}
+            <FinalSections
               law={law}
               currentLang={currentLang}
               isEditor={isEditor}

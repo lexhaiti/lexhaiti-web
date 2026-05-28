@@ -436,6 +436,89 @@ export async function deleteHeading(
 }
 
 // -----------------------------------------------------------------------
+// "Partie finale" sections — editor-added labelled rich-text blocks
+// (résolution, ratification, acte de promulgation, approbation, autre)
+// rendered after the articles.
+// -----------------------------------------------------------------------
+
+export type LegalTextSectionRead = components['schemas']['LegalTextSectionRead']
+export type SectionType = LegalTextSectionRead['section_type']
+
+/** Default bilingual label per section type — used when a section has no
+ *  explicit ``label_*`` override (``autre`` always needs its own). */
+export const SECTION_TYPE_LABELS: Record<
+  SectionType,
+  { fr: string; ht: string }
+> = {
+  promulgation: { fr: 'Acte de promulgation', ht: 'Akt pwomilgasyon' },
+  adoption: { fr: 'Adoption', ht: 'Adopsyon' },
+  ratification: { fr: 'Ratification', ht: 'Ratifikasyon' },
+  resolution: { fr: 'Résolution', ht: 'Rezolisyon' },
+  approbation: {
+    fr: 'Approbation / Mention finale',
+    ht: 'Apwobasyon / Mansyon final',
+  },
+  autre: { fr: 'Autre', ht: 'Lòt' },
+}
+
+/** Resolve a section's display label: explicit override → per-type
+ *  default. */
+export function sectionLabel(
+  section: Pick<LegalTextSectionRead, 'section_type' | 'label_fr' | 'label_ht'>,
+  lang: 'fr' | 'ht',
+): string {
+  const override = lang === 'ht' ? section.label_ht : section.label_fr
+  if (override && override.trim()) return override
+  const fallbackFr = section.label_fr
+  if (lang === 'ht' && fallbackFr && fallbackFr.trim()) return fallbackFr
+  return SECTION_TYPE_LABELS[section.section_type]?.[lang] ?? ''
+}
+
+export type LegalTextSectionInput = {
+  section_type?: SectionType
+  label_fr?: string | null
+  label_ht?: string | null
+  content_fr?: string
+  content_ht?: string | null
+  position?: number | null
+}
+
+export type LegalTextSectionPatch = Partial<LegalTextSectionInput>
+
+export async function createSection(
+  slug: string,
+  body: LegalTextSectionInput,
+) {
+  return apiPost<LegalTextSectionRead>(
+    `/editorial/legal-texts/${encodeURIComponent(slug)}/sections`,
+    body,
+  )
+}
+
+export async function updateSection(
+  sectionId: number,
+  patch: LegalTextSectionPatch,
+) {
+  return apiPatch<LegalTextSectionRead>(
+    `/editorial/sections/${sectionId}`,
+    patch,
+  )
+}
+
+export async function deleteSection(sectionId: number): Promise<void> {
+  return apiDelete(`/editorial/sections/${sectionId}`)
+}
+
+/** Reorder a text's sections — ``order`` is the desired sequence of
+ *  section IDs, top-to-bottom (must cover the set exactly). */
+export async function reorderSections(slug: string, order: number[]) {
+  return apiPatch<LegalTextSectionRead[]>(
+    `/editorial/legal-texts/${encodeURIComponent(slug)}/sections/reorder`,
+    { order },
+  )
+}
+
+// -----------------------------------------------------------------------
 // Formal-block versions (preamble / visas / considérants / enacting)
 // -----------------------------------------------------------------------
 

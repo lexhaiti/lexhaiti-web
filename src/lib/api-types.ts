@@ -990,6 +990,79 @@ export interface paths {
         patch: operations["reorder_articles_api_v1_editorial_legal_texts__slug__articles_reorder_patch"];
         trace?: never;
     };
+    "/api/v1/editorial/legal-texts/{slug}/sections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a legal text's partie-finale sections (ordered)
+         * @description Return the text's "partie finale" sections in display order.
+         */
+        get: operations["list_sections_api_v1_editorial_legal_texts__slug__sections_get"];
+        put?: never;
+        /**
+         * Create a partie-finale section on a legal text
+         * @description Append a new "partie finale" section. Bodies are scrubbed through
+         *     the same rich-text allowlist as article bodies before persistence.
+         */
+        post: operations["create_section_api_v1_editorial_legal_texts__slug__sections_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/editorial/legal-texts/{slug}/sections/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Reorder a legal text's sections to match an editor-supplied permutation
+         * @description Rewrite ``position`` on every section of the text so it matches
+         *     the supplied ID order. The body's ``order`` array must cover the
+         *     text's sections exactly — no missing, no extra.
+         */
+        patch: operations["reorder_sections_api_v1_editorial_legal_texts__slug__sections_reorder_patch"];
+        trace?: never;
+    };
+    "/api/v1/editorial/sections/{section_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete a partie-finale section
+         * @description Hard-delete a "partie finale" section.
+         */
+        delete: operations["delete_section_api_v1_editorial_sections__section_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a partie-finale section
+         * @description Patch a "partie finale" section. Only fields explicitly sent are
+         *     written; content fields are scrubbed through the rich-text
+         *     allowlist before persistence.
+         */
+        patch: operations["update_section_api_v1_editorial_sections__section_id__patch"];
+        trace?: never;
+    };
     "/api/v1/editorial/legal-texts/{slug}/parse-translation": {
         parameters: {
             query?: never;
@@ -4016,6 +4089,8 @@ export interface components {
             headings?: components["schemas"]["LegalHeadingCreate"][] | null;
             /** Articles */
             articles?: components["schemas"]["ArticleCreate"][] | null;
+            /** Sections */
+            sections?: components["schemas"]["LegalTextSectionCreate"][] | null;
         };
         /**
          * LegalTextListItem
@@ -4239,6 +4314,11 @@ export interface components {
              */
             articles: components["schemas"]["ArticleEmbed"][];
             /**
+             * Sections
+             * @default []
+             */
+            sections: components["schemas"]["LegalTextSectionRead"][];
+            /**
              * Theme Tags
              * @default []
              */
@@ -4261,6 +4341,79 @@ export interface components {
              */
             amended_by: components["schemas"]["AmendedByRef"][];
             abrogated_by?: components["schemas"]["AbrogatedByRef"] | null;
+        };
+        /** LegalTextSectionCreate */
+        LegalTextSectionCreate: {
+            /** @default autre */
+            section_type: components["schemas"]["SectionType"];
+            /** Label Fr */
+            label_fr?: string | null;
+            /** Label Ht */
+            label_ht?: string | null;
+            /**
+             * Content Fr
+             * @default
+             */
+            content_fr: string;
+            /** Content Ht */
+            content_ht?: string | null;
+            /**
+             * Position
+             * @default 0
+             */
+            position: number;
+        };
+        /** LegalTextSectionRead */
+        LegalTextSectionRead: {
+            /** @default autre */
+            section_type: components["schemas"]["SectionType"];
+            /** Label Fr */
+            label_fr?: string | null;
+            /** Label Ht */
+            label_ht?: string | null;
+            /**
+             * Content Fr
+             * @default
+             */
+            content_fr: string;
+            /** Content Ht */
+            content_ht?: string | null;
+            /**
+             * Position
+             * @default 0
+             */
+            position: number;
+            /** Id */
+            id: number;
+            /** Legal Text Id */
+            legal_text_id: number;
+        };
+        /**
+         * LegalTextSectionReorderInput
+         * @description Editor-supplied permutation of a text's sections — ``order`` is the
+         *     desired sequence of section IDs, top-to-bottom. Must cover the text's
+         *     sections exactly (no missing, no extra).
+         */
+        LegalTextSectionReorderInput: {
+            /** Order */
+            order: number[];
+        };
+        /**
+         * LegalTextSectionUpdate
+         * @description Editor patch — only the fields actually changed are sent.
+         */
+        LegalTextSectionUpdate: {
+            section_type?: components["schemas"]["SectionType"] | null;
+            /** Label Fr */
+            label_fr?: string | null;
+            /** Label Ht */
+            label_ht?: string | null;
+            /** Content Fr */
+            content_fr?: string | null;
+            /** Content Ht */
+            content_ht?: string | null;
+            /** Position */
+            position?: number | null;
         };
         /**
          * LegalTheme
@@ -5189,6 +5342,17 @@ export interface components {
              */
             snippet_ht: string;
         };
+        /**
+         * SectionType
+         * @description Kind of an editor-added "partie finale" section — the labelled
+         *     rich-text blocks that render after the articles (resolutions,
+         *     ratifications, the promulgation act, approbations, …). The type is
+         *     the queryable dimension (e.g. "all texts with a ratification"); the
+         *     human label defaults from the type but is editor-overridable, and
+         *     ``autre`` carries a fully custom label.
+         * @enum {string}
+         */
+        SectionType: "promulgation" | "adoption" | "ratification" | "resolution" | "approbation" | "autre";
         /**
          * SommaireBulkInput
          * @description Wrapper for the sommaire endpoint — N entries at once.
@@ -6880,6 +7044,171 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ArticleEmbed"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_sections_api_v1_editorial_legal_texts__slug__sections_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegalTextSectionRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_section_api_v1_editorial_legal_texts__slug__sections_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LegalTextSectionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegalTextSectionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reorder_sections_api_v1_editorial_legal_texts__slug__sections_reorder_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LegalTextSectionReorderInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegalTextSectionRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_section_api_v1_editorial_sections__section_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                section_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_section_api_v1_editorial_sections__section_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                section_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LegalTextSectionUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegalTextSectionRead"];
                 };
             };
             /** @description Validation Error */
