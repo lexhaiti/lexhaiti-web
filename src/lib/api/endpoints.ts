@@ -1107,8 +1107,21 @@ export type DecisionSubjectTag = {
 }
 
 /** Rich detail payload — extends the OpenAPI-typed `DecisionRead` with
- *  the structured fields the detail page renders. */
-export type DecisionDetail = DecisionRead & {
+ *  the structured fields the detail page renders.
+ *
+ *  ``parties`` / ``moyens`` / ``procedural_history`` are OMITTED from the
+ *  generated base before being re-declared: the backend's OpenAPI now
+ *  ships its own (differently-named) shapes for these — ``Party.lawyers``
+ *  vs our ``counsel``, ``Moyen.title/body_fr`` vs our
+ *  ``title_fr/argument_fr``, procedural ``decision_date`` vs our ``date``.
+ *  Intersecting (`&`) the two would merge into an unusable type; the
+ *  ``Omit`` lets these supplemental types fully *override* the generated
+ *  fields, which is what the detail page + editor seed already expect.
+ *  (See the TODO above — the read contract is still being reconciled.) */
+export type DecisionDetail = Omit<
+  DecisionRead,
+  'parties' | 'moyens' | 'procedural_history'
+> & {
   /** Parties to the proceeding. */
   parties?: DecisionParty[]
   /** Procedural history — prior decisions, in chronological order. */

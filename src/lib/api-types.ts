@@ -344,6 +344,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/articles/{article_id}/references": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Article References
+         * @description Resolved incoming + outgoing citations for an article.
+         *
+         *     Two columns in one response:
+         *
+         *       - ``cited_by`` — decisions, decrees, laws or other articles
+         *         that REFERENCE this article. Drives the "Cité par" side of
+         *         the public CrossReferencesPanel.
+         *       - ``cites`` — articles or texts that THIS article references
+         *         (outgoing edges). Drives the "Cite" side.
+         *
+         *     The polymorphic ``citations`` rows are resolved server-side to
+         *     presentation-ready link cards (kind, title, href, optional note)
+         *     so the frontend doesn't have to follow up with per-id fetches.
+         *     Returns both lists empty when there are no edges — the panel
+         *     renders nothing in that case.
+         */
+        get: operations["list_article_references_api_v1_articles__article_id__references_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/decisions": {
         parameters: {
             query?: never;
@@ -1323,6 +1357,167 @@ export interface paths {
         head?: never;
         /** Update Chronologie Entry */
         patch: operations["update_chronologie_entry_api_v1_editorial_chronologie__entry_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/editorial/decisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Decisions (editor view — all statuses by default) */
+        get: operations["list_decisions_api_v1_editorial_decisions_get"];
+        put?: never;
+        /**
+         * Create a draft Decision from full JSON
+         * @description Create a draft court Decision.
+         *
+         *     Accepts the full Decision shape (scalar fields + JSONB blocks for
+         *     parties / judges / moyens / procedural_history). Always lands as
+         *     ``draft`` regardless of ``editorial_status`` in the payload —
+         *     promotion to ``published`` is a separate audited step via the
+         *     ``/publish`` transition.
+         */
+        post: operations["create_decision_api_v1_editorial_decisions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/editorial/decisions/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a Decision regardless of editorial_status (editor view)
+         * @description Editor read — returns the Decision regardless of editorial_status.
+         *
+         *     The public ``GET /decisions/{slug}`` filters to ``published`` only
+         *     (drafts return 404 publicly). Editors use this route to access
+         *     drafts and pending-review rows for editing before they go live.
+         */
+        get: operations["get_decision_api_v1_editorial_decisions__slug__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Hard-delete a draft Decision (refuses on published)
+         * @description Hard-delete a Decision row. Refuses to act on a published one
+         *     (permalinks are forever per CLAUDE.md); editor must unpublish first.
+         *
+         *     The audit row keeps the slug + court + decision_date for forensics,
+         *     but not the full text. Re-creation under the same slug succeeds
+         *     after the delete commits.
+         */
+        delete: operations["delete_decision_api_v1_editorial_decisions__slug__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Sparse update — patch any subset of editable fields
+         * @description Patch a Decision. Only the fields the caller actually sent are
+         *     touched (``exclude_unset=True``). Setting a nullable field to
+         *     ``null`` clears it; omitting it leaves the column unchanged.
+         *
+         *     JSONB list fields (``parties``, ``judges``, ``moyens``,
+         *     ``procedural_history``) are replaced wholesale when sent — there's
+         *     no in-place item editing through this route. Send the full new
+         *     list, or omit the key to keep the existing list intact.
+         */
+        patch: operations["update_decision_api_v1_editorial_decisions__slug__patch"];
+        trace?: never;
+    };
+    "/api/v1/editorial/decisions/{slug}/submit-review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Flip draft → pending_review (peer-audit gate)
+         * @description Flip a draft to ``pending_review`` so another editor can audit
+         *     before publication. Idempotent on already-pending. Refuses on
+         *     already-published — use ``/unpublish`` first to take it back to draft.
+         */
+        post: operations["submit_for_review_api_v1_editorial_decisions__slug__submit_review_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/editorial/decisions/{slug}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Promote draft (or pending_review) to published
+         * @description Promote a Decision to ``published``. Idempotent if already published.
+         *
+         *     Direct publish from draft is allowed (no mandatory peer-review step
+         *     — mirrors LegalText's flow). Use ``/submit-review`` first when the
+         *     team workflow requires a second pair of eyes.
+         */
+        post: operations["publish_decision_api_v1_editorial_decisions__slug__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/editorial/decisions/{slug}/unpublish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Demote a published Decision back to draft (comment required)
+         * @description Demote a published Decision back to draft. The comment is
+         *     required and lands on the audit row — explain why the public
+         *     URL is being pulled, so a later editor can decide whether to
+         *     re-promote.
+         */
+        post: operations["unpublish_decision_api_v1_editorial_decisions__slug__unpublish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/editorial/decisions/{slug}/request-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Leave a comment requesting modifications (status unchanged)
+         * @description Leave a review comment on a Decision without changing its status.
+         *     Status stays draft / pending_review — the comment is the signal.
+         */
+        post: operations["request_changes_api_v1_editorial_decisions__slug__request_changes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/moniteur/issues": {
@@ -2383,6 +2578,12 @@ export interface components {
             source_amendment_slug?: string | null;
             /** Source Amendment Title Fr */
             source_amendment_title_fr?: string | null;
+            /** Source Amendment Article Number */
+            source_amendment_article_number?: string | null;
+            /** Explainer Fr */
+            explainer_fr?: string | null;
+            /** Explainer Ht */
+            explainer_ht?: string | null;
         };
         /**
          * ArticleInsertInput
@@ -2455,6 +2656,51 @@ export interface components {
              * @default []
              */
             domain_tags: string[];
+        };
+        /**
+         * ArticleRefItem
+         * @description One entry in either the ``cited_by`` or ``cites`` list.
+         *
+         *     ``kind`` lets the UI pick an icon (Gavel for decisions, Scroll
+         *     for laws, LinkIcon for sibling articles). ``href`` is the public
+         *     permalink the UI should link to — already includes any deep-link
+         *     params needed to land on a specific article.
+         */
+        ArticleRefItem: {
+            kind: components["schemas"]["ArticleRefKind"];
+            /** Title */
+            title: string;
+            /** Href */
+            href: string;
+            /** Note */
+            note?: string | null;
+            /** Decision Date */
+            decision_date?: string | null;
+        };
+        /**
+         * ArticleRefKind
+         * @enum {string}
+         */
+        ArticleRefKind: "decision" | "law" | "article";
+        /**
+         * ArticleReferences
+         * @description Two-column cross-reference payload for one article.
+         *
+         *     ``cited_by``: decisions, decrees, laws or other articles that
+         *                   reference THIS article.
+         *     ``cites``:    articles or texts that THIS article references.
+         */
+        ArticleReferences: {
+            /**
+             * Cited By
+             * @default []
+             */
+            cited_by: components["schemas"]["ArticleRefItem"][];
+            /**
+             * Cites
+             * @default []
+             */
+            cites: components["schemas"]["ArticleRefItem"][];
         };
         /**
          * ArticleReorderInput
@@ -2555,6 +2801,8 @@ export interface components {
             transferred_to_article_id?: number | null;
             /** Source Amendment Id */
             source_amendment_id?: number | null;
+            /** Source Amendment Article Number */
+            source_amendment_article_number?: string | null;
             /** Confidence */
             confidence?: number | string | null;
             /**
@@ -2585,6 +2833,8 @@ export interface components {
             transferred_to_article_id?: number | null;
             /** Source Amendment Id */
             source_amendment_id?: number | null;
+            /** Source Amendment Article Number */
+            source_amendment_article_number?: string | null;
             /** Confidence */
             confidence?: string | null;
             /** Id */
@@ -2964,6 +3214,70 @@ export interface components {
          * @enum {string}
          */
         CourtType: "cassation" | "appel" | "tpi" | "tribunal_commerce" | "tribunal_enfants" | "autre";
+        /**
+         * DecisionCreate
+         * @description Editorial-create payload — full Decision shape from JSON.
+         *
+         *     Backs ``POST /editorial/decisions``. Unknown keys are rejected
+         *     (``extra='forbid'``) so the parser can't sneak typos past us.
+         *     ``editorial_status`` defaults to ``draft`` — creating a published
+         *     decision in one shot is intentionally not allowed; promote with
+         *     ``POST /editorial/decisions/{slug}/publish`` instead so the audit
+         *     log captures the transition.
+         */
+        DecisionCreate: {
+            /** Slug */
+            slug: string;
+            court: components["schemas"]["CourtType"];
+            /** Chamber */
+            chamber?: string | null;
+            /** Formation */
+            formation?: string | null;
+            /** Case Number */
+            case_number?: string | null;
+            /**
+             * Decision Date
+             * Format: date
+             */
+            decision_date: string;
+            /** Hearing Date */
+            hearing_date?: string | null;
+            /**
+             * Parties Anonymized
+             * @default false
+             */
+            parties_anonymized: boolean;
+            /** Subject Matter */
+            subject_matter?: string[];
+            /** Summary Fr */
+            summary_fr?: string | null;
+            /** Summary Ht */
+            summary_ht?: string | null;
+            /** Headnotes Fr */
+            headnotes_fr?: string | null;
+            /** Headnotes Ht */
+            headnotes_ht?: string | null;
+            /** Full Text Fr */
+            full_text_fr?: string | null;
+            /** Full Text Ht */
+            full_text_ht?: string | null;
+            /** Outcome */
+            outcome?: string | null;
+            /** Dispositif Fr */
+            dispositif_fr?: string | null;
+            /** Dispositif Ht */
+            dispositif_ht?: string | null;
+            /** Parties */
+            parties?: components["schemas"]["Party"][];
+            /** Judges */
+            judges?: components["schemas"]["Judge"][];
+            /** Moyens */
+            moyens?: components["schemas"]["Moyen"][];
+            /** Procedural History */
+            procedural_history?: components["schemas"]["ProceduralStep"][];
+            /** @default draft */
+            editorial_status: components["schemas"]["EditorialStatus"];
+        };
         /** DecisionListItem */
         DecisionListItem: {
             /** Id */
@@ -2984,6 +3298,8 @@ export interface components {
             summary_fr?: string | null;
             /** Summary Ht */
             summary_ht?: string | null;
+            /** Subject Matter */
+            subject_matter?: string[] | null;
             /** Outcome */
             outcome?: string | null;
             editorial_status: components["schemas"]["EditorialStatus"];
@@ -3004,6 +3320,8 @@ export interface components {
              * Format: date
              */
             decision_date: string;
+            /** Hearing Date */
+            hearing_date?: string | null;
             /**
              * Parties Anonymized
              * @default true
@@ -3021,8 +3339,22 @@ export interface components {
             full_text_fr?: string | null;
             /** Full Text Ht */
             full_text_ht?: string | null;
+            /** Subject Matter */
+            subject_matter?: string[] | null;
             /** Outcome */
             outcome?: string | null;
+            /** Dispositif Fr */
+            dispositif_fr?: string | null;
+            /** Dispositif Ht */
+            dispositif_ht?: string | null;
+            /** Parties */
+            parties?: components["schemas"]["Party"][] | null;
+            /** Judges */
+            judges?: components["schemas"]["Judge"][] | null;
+            /** Moyens */
+            moyens?: components["schemas"]["Moyen"][] | null;
+            /** Procedural History */
+            procedural_history?: components["schemas"]["ProceduralStep"][] | null;
             /** @default draft */
             editorial_status: components["schemas"]["EditorialStatus"];
             /** Id */
@@ -3039,6 +3371,68 @@ export interface components {
             updated_at: string;
             /** Published At */
             published_at?: string | null;
+        };
+        /**
+         * DecisionUpdate
+         * @description Editorial-patch payload — every field optional, sparse update.
+         *
+         *     Backs ``PATCH /editorial/decisions/{slug}``. Use ``exclude_unset=True``
+         *     in the route to distinguish "field omitted" (no change) from
+         *     "field set to null" (clear nullable column). Unknown keys are
+         *     rejected the same way as ``DecisionCreate``.
+         *
+         *     ``slug`` is editable here (rename a draft URL) but the service
+         *     rejects collisions with existing decisions. ``editorial_status``
+         *     is intentionally absent — promote via the dedicated transition
+         *     endpoints (publish / unpublish / submit-review) so the audit log
+         *     captures the workflow.
+         */
+        DecisionUpdate: {
+            /** Slug */
+            slug?: string | null;
+            court?: components["schemas"]["CourtType"] | null;
+            /** Chamber */
+            chamber?: string | null;
+            /** Formation */
+            formation?: string | null;
+            /** Case Number */
+            case_number?: string | null;
+            /** Decision Date */
+            decision_date?: string | null;
+            /** Hearing Date */
+            hearing_date?: string | null;
+            /** Parties Anonymized */
+            parties_anonymized?: boolean | null;
+            /** Subject Matter */
+            subject_matter?: string[] | null;
+            /** Summary Fr */
+            summary_fr?: string | null;
+            /** Summary Ht */
+            summary_ht?: string | null;
+            /** Headnotes Fr */
+            headnotes_fr?: string | null;
+            /** Headnotes Ht */
+            headnotes_ht?: string | null;
+            /** Full Text Fr */
+            full_text_fr?: string | null;
+            /** Full Text Ht */
+            full_text_ht?: string | null;
+            /** Outcome */
+            outcome?: string | null;
+            /** Dispositif Fr */
+            dispositif_fr?: string | null;
+            /** Dispositif Ht */
+            dispositif_ht?: string | null;
+            /** Parties */
+            parties?: components["schemas"]["Party"][] | null;
+            /** Judges */
+            judges?: components["schemas"]["Judge"][] | null;
+            /** Moyens */
+            moyens?: components["schemas"]["Moyen"][] | null;
+            /** Procedural History */
+            procedural_history?: components["schemas"]["ProceduralStep"][] | null;
+            /** Comment */
+            comment?: string | null;
         };
         /** DocumentParseResponse */
         DocumentParseResponse: {
@@ -3083,6 +3477,20 @@ export interface components {
          */
         EditorialStatus: "draft" | "pending_review" | "published" | "rejected";
         /**
+         * EditorialStatusResponse
+         * @description Lightweight acknowledgement returned by editorial state-transition
+         *     endpoints (unpublish, request-changes) that don't return a full
+         *     LegalTextRead payload.
+         */
+        EditorialStatusResponse: {
+            /** Ok */
+            ok: boolean;
+            /** Slug */
+            slug: string;
+            /** Comment */
+            comment?: string | null;
+        };
+        /**
          * EntryReviewInput
          * @description Editor input for an entry review.
          *
@@ -3113,6 +3521,32 @@ export interface components {
             review_notes?: string | null;
             /** Raw Text */
             raw_text?: string | null;
+        };
+        /**
+         * ExtractedMetadataResponse
+         * @description Preview of issue metadata extracted from an uploaded Moniteur
+         *     file (PDF or DOCX). Returned by POST /moniteur/extract-metadata
+         *     before the editor commits the create-issue flow.
+         */
+        ExtractedMetadataResponse: {
+            /** Number */
+            number?: string | null;
+            /** Year */
+            year?: number | null;
+            /** Publication Date */
+            publication_date?: string | null;
+            /** Edition Label */
+            edition_label?: string | null;
+            /** Director */
+            director?: string | null;
+            /** Director Role */
+            director_role?: string | null;
+            /** Confidence */
+            confidence?: {
+                [key: string]: number;
+            };
+            /** Suggested Sommaire */
+            suggested_sommaire?: components["schemas"]["SommaireSuggestionResponse"][];
         };
         /**
          * ExtractionMethod
@@ -3320,6 +3754,38 @@ export interface components {
             articles?: components["schemas"]["ArticleCreate"][] | null;
             /** Signers */
             signers?: components["schemas"]["LegalSignerCreate"][] | null;
+        };
+        /** Judge */
+        Judge: {
+            /** Name */
+            name: string;
+            role: components["schemas"]["JudgeRole"];
+            /**
+             * Order
+             * @default 0
+             */
+            order: number;
+        };
+        /**
+         * JudgeRole
+         * @enum {string}
+         */
+        JudgeRole: "president" | "vice_president" | "juge" | "substitut" | "greffier";
+        /**
+         * Lawyer
+         * @description Avocat representing a party. ``barreau`` is the bar (e.g.
+         *     'Port-au-Prince'); ``identification`` carries optional ID fields
+         *     (CIN, NIF, patente) when the arrêt prints them.
+         */
+        Lawyer: {
+            /** Name */
+            name: string;
+            /** Barreau */
+            barreau?: string | null;
+            /** Identification */
+            identification?: {
+                [key: string]: unknown;
+            } | null;
         };
         /**
          * LegalCategory
@@ -3716,10 +4182,19 @@ export interface components {
             mentions_procedurales_fr?: string | null;
             /** Mentions Procedurales Ht */
             mentions_procedurales_ht?: string | null;
+            /**
+             * Mentions Procedurales Before Considerants
+             * @default false
+             */
+            mentions_procedurales_before_considerants: boolean;
             /** Enacting Formula Fr */
             enacting_formula_fr?: string | null;
             /** Enacting Formula Ht */
             enacting_formula_ht?: string | null;
+            /** Intro Fr */
+            intro_fr?: string | null;
+            /** Intro Ht */
+            intro_ht?: string | null;
             /**
              * Enacting Formula Align
              * @default left
@@ -3869,12 +4344,18 @@ export interface components {
             mentions_procedurales_fr?: string | null;
             /** Mentions Procedurales Ht */
             mentions_procedurales_ht?: string | null;
+            /** Mentions Procedurales Before Considerants */
+            mentions_procedurales_before_considerants?: boolean | null;
             /** Enacting Formula Fr */
             enacting_formula_fr?: string | null;
             /** Enacting Formula Ht */
             enacting_formula_ht?: string | null;
             /** Enacting Formula Align */
             enacting_formula_align?: string | null;
+            /** Intro Fr */
+            intro_fr?: string | null;
+            /** Intro Ht */
+            intro_ht?: string | null;
             /** Show Devise Banner */
             show_devise_banner?: boolean | null;
             /** Show Doc Type */
@@ -3902,21 +4383,6 @@ export interface components {
          * LegalTextRead
          * @description Full shape with timestamps. Children loaded on demand via includes.
          */
-        /** IntroBlockRead — one typed row of a legal text's ordered
-         *  introductory part (visa / considérant / mention / etc.). */
-        IntroBlockRead: {
-            /** Id */
-            id: number;
-            /** Position */
-            position: number;
-            kind: components["schemas"]["IntroBlockKind"];
-            /** Text Fr */
-            text_fr?: string | null;
-            /** Text Ht */
-            text_ht?: string | null;
-        };
-        /** IntroBlockKind */
-        IntroBlockKind: "sovereignty_formula" | "author" | "report_mention" | "visa" | "considerant" | "procedural_mention" | "enacting_formula";
         LegalTextRead: {
             /** Slug */
             slug: string;
@@ -3955,10 +4421,19 @@ export interface components {
             mentions_procedurales_fr?: string | null;
             /** Mentions Procedurales Ht */
             mentions_procedurales_ht?: string | null;
+            /**
+             * Mentions Procedurales Before Considerants
+             * @default false
+             */
+            mentions_procedurales_before_considerants: boolean;
             /** Enacting Formula Fr */
             enacting_formula_fr?: string | null;
             /** Enacting Formula Ht */
             enacting_formula_ht?: string | null;
+            /** Intro Fr */
+            intro_fr?: string | null;
+            /** Intro Ht */
+            intro_ht?: string | null;
             /**
              * Enacting Formula Align
              * @default left
@@ -4038,10 +4513,6 @@ export interface components {
              * @default []
              */
             signers: components["schemas"]["LegalSignerRead"][];
-            /** Intro Fr */
-            intro_fr?: string | null;
-            /** Intro Ht */
-            intro_ht?: string | null;
             /**
              * Theme Tags
              * @default []
@@ -4619,6 +5090,31 @@ export interface components {
             /** Entries */
             entries?: components["schemas"]["JsonImportEntry"][];
         };
+        /**
+         * Moyen
+         * @description A ``moyen de cassation`` — one ground of appeal, with the
+         *     court's response and ruling on it.
+         */
+        Moyen: {
+            /** Number */
+            number: number;
+            /** Title */
+            title: string;
+            /** Body Fr */
+            body_fr: string;
+            /** Body Ht */
+            body_ht?: string | null;
+            /** Court Response Fr */
+            court_response_fr: string;
+            /** Court Response Ht */
+            court_response_ht?: string | null;
+            outcome: components["schemas"]["MoyenOutcome"];
+        };
+        /**
+         * MoyenOutcome
+         * @enum {string}
+         */
+        MoyenOutcome: "accepted" | "rejected" | "partial";
         /** PaginatedResponse[ArticleListItem] */
         PaginatedResponse_ArticleListItem_: {
             /** Items */
@@ -4731,6 +5227,45 @@ export interface components {
          * @enum {string}
          */
         ParserProfile: "generic" | "constitution" | "code" | "loi" | "executive_act" | "circulaire" | "communique" | "traite";
+        /** Party */
+        Party: {
+            role: components["schemas"]["PartyRole"];
+            /** Name */
+            name: string;
+            party_type: components["schemas"]["PartyType"];
+            /** Representative Name */
+            representative_name?: string | null;
+            /** Identification */
+            identification?: {
+                [key: string]: unknown;
+            } | null;
+            /** Lawyers */
+            lawyers?: components["schemas"]["Lawyer"][];
+        };
+        /**
+         * PartyRole
+         * @enum {string}
+         */
+        PartyRole: "pourvoyante" | "intimee" | "partie_civile" | "ministere_public";
+        /**
+         * PartyType
+         * @enum {string}
+         */
+        PartyType: "person" | "company";
+        /**
+         * ProceduralStep
+         * @description One prior decision in the case's history (TPI → Appel → Cassation).
+         */
+        ProceduralStep: {
+            /** Court */
+            court: string;
+            /** Decision Date */
+            decision_date: string;
+            /** Case Number */
+            case_number?: string | null;
+            /** Outcome */
+            outcome: string;
+        };
         /**
          * PromulgationCreate
          * @description POST body — creates a promulgation linked to a Moniteur issue.
@@ -5015,6 +5550,28 @@ export interface components {
             parent_position?: number | null;
         };
         /**
+         * SommaireSuggestionResponse
+         * @description One auto-detected sommaire entry from the cover-page parser.
+         */
+        SommaireSuggestionResponse: {
+            /** Detected Category */
+            detected_category: string;
+            /** Detected Title */
+            detected_title?: string | null;
+            /** Detected Number */
+            detected_number?: string | null;
+            /**
+             * Page From
+             * @default 1
+             */
+            page_from: number;
+            /**
+             * Page To
+             * @default 1
+             */
+            page_to: number;
+        };
+        /**
          * ThemeSource
          * @description Provenance of a theme tag.
          *
@@ -5211,6 +5768,21 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /**
+         * WhoamiResponse
+         * @description Identity payload for the logged-in editor — drives the
+         *     EditorBar's "signed in as …" display.
+         */
+        WhoamiResponse: {
+            /** Id */
+            id: number;
+            /** Email */
+            email: string;
+            /** Name */
+            name?: string | null;
+            /** Role */
+            role: string;
         };
     };
     responses: never;
@@ -5722,6 +6294,37 @@ export interface operations {
             };
         };
     };
+    list_article_references_api_v1_articles__article_id__references_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleReferences"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_decisions_api_v1_decisions_get: {
         parameters: {
             query?: {
@@ -5730,6 +6333,8 @@ export interface operations {
                 court?: components["schemas"]["CourtType"] | null;
                 from?: string | null;
                 to?: string | null;
+                /** @description Filter on a single subject_matter tag — matches any decision whose subject_matter array contains it. */
+                subject?: string | null;
                 limit?: number;
                 offset?: number;
             };
@@ -6931,7 +7536,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["EditorialStatusResponse"];
                 };
             };
             /** @description Validation Error */
@@ -6966,7 +7571,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["EditorialStatusResponse"];
                 };
             };
             /** @description Validation Error */
@@ -7030,7 +7635,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["WhoamiResponse"];
                 };
             };
         };
@@ -7201,6 +7806,300 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LegislationIndexEntryRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_decisions_api_v1_editorial_decisions_get: {
+        parameters: {
+            query?: {
+                /** @description Editorial workflow filter; default = no filter (all statuses). Pass `published`, `draft`, `pending_review`, or `rejected` to narrow. */
+                editorial_status?: components["schemas"]["EditorialStatus"] | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_DecisionListItem_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_decision_api_v1_editorial_decisions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecisionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_decision_api_v1_editorial_decisions__slug__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_decision_api_v1_editorial_decisions__slug__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_decision_api_v1_editorial_decisions__slug__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecisionUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_for_review_api_v1_editorial_decisions__slug__submit_review_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_decision_api_v1_editorial_decisions__slug__publish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unpublish_decision_api_v1_editorial_decisions__slug__unpublish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorialStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_changes_api_v1_editorial_decisions__slug__request_changes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorialStatusResponse"];
                 };
             };
             /** @description Validation Error */
@@ -7455,7 +8354,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ExtractedMetadataResponse"];
                 };
             };
             /** @description Validation Error */
