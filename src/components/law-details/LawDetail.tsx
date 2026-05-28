@@ -467,6 +467,46 @@ export default function LawDetail() {
     }, 100)
   }
 
+  // Sommaire → body navigation. Clicking a heading (Titre / Chapitre /
+  // Section) in the sommaire jumps the body to that chapter and opens
+  // it: we find the first article anywhere under the heading and
+  // select it (chapter view filters to it; tous view scrolls to it),
+  // expanding the heading in the body tree if it was collapsed.
+  const handleHeadingNavigate = (heading: any) => {
+    if (!heading?.id || !law) return
+    const childrenByParent = new Map<number, number[]>()
+    for (const h of law.headings ?? []) {
+      if (h.parent_id != null) {
+        const arr = childrenByParent.get(h.parent_id) ?? []
+        arr.push(h.id)
+        childrenByParent.set(h.parent_id, arr)
+      }
+    }
+    const subtree = new Set<number>()
+    const stack = [heading.id as number]
+    while (stack.length) {
+      const id = stack.pop()!
+      subtree.add(id)
+      for (const c of childrenByParent.get(id) ?? []) stack.push(c)
+    }
+    // Expand the heading in the body tree (tous view) so the target
+    // article isn't hidden behind a collapsed ancestor.
+    if (headingCollapse.isCollapsed(heading.id)) headingCollapse.toggle(heading.id)
+    const firstArticle = (law.articles ?? []).find(
+      (a: any) => a.heading_id != null && subtree.has(a.heading_id),
+    )
+    if (firstArticle) {
+      handleArticleSelect(firstArticle)
+    } else {
+      setTimeout(() => {
+        articleViewerRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        })
+      }, 100)
+    }
+  }
+
   const handlePrevious = () => {
     if (law.articles && currentArticleIndex > 0) {
       setSelectedArticle(law.articles[currentArticleIndex - 1])
@@ -551,6 +591,7 @@ export default function LawDetail() {
               setVisasExpanded={setVisasExpanded}
               setConsiderantsExpanded={setConsiderantsExpanded}
               onArticleSelect={handleArticleSelect}
+              onHeadingNavigate={handleHeadingNavigate}
               onAddHeading={setAddHeadingAnchor}
               refetch={refetch}
             />

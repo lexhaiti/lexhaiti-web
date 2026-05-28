@@ -32,6 +32,9 @@ interface TocSidebarProps {
   setVisasExpanded: (expanded: boolean) => void
   setConsiderantsExpanded: (expanded: boolean) => void
   onArticleSelect: (article: any) => void
+  /** Fired when a heading row is clicked in the sommaire — the parent
+   *  jumps the body to that chapter and opens it. */
+  onHeadingNavigate?: (heading: any) => void
   onAddHeading: (anchor: HeadingAnchor) => void
   refetch: () => void
 }
@@ -58,6 +61,7 @@ export function TocSidebar({
   setVisasExpanded,
   setConsiderantsExpanded,
   onArticleSelect,
+  onHeadingNavigate,
   onAddHeading,
   refetch,
 }: TocSidebarProps) {
@@ -141,6 +145,14 @@ export function TocSidebar({
                     onArticleSelect(article)
                     setIsSidebarOpen(false)
                   }}
+                  onHeadingNavigate={
+                    onHeadingNavigate
+                      ? (h: any) => {
+                          onHeadingNavigate(h)
+                          setIsSidebarOpen(false)
+                        }
+                      : undefined
+                  }
                   onPreambleClick={() => {
                     setPreambleExpanded(true)
                     setIsSidebarOpen(false)
@@ -207,6 +219,7 @@ export function TocSidebar({
               <TableOfContents
                 {...tocProps}
                 onArticleSelect={onArticleSelect}
+                onHeadingNavigate={onHeadingNavigate}
                 onPreambleClick={() => {
                   setPreambleExpanded(true)
                   setTimeout(() => {

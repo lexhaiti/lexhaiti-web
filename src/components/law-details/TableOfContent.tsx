@@ -71,6 +71,10 @@ interface TableOfContentsProps {
    *  overrides (e.g. « Loi » instead of « Livre » for code_civil). */
   codeSubcategory?: string | null
   onArticleSelect: (article: Article) => void
+  /** Optional: fired when a heading row (Titre / Chapitre / Section)
+   *  is clicked, IN ADDITION to toggling its tree node. The parent
+   *  uses it to jump the body to that chapter and open it. */
+  onHeadingNavigate?: (heading: Heading) => void
   selectedArticle?: string
   /** Search query driven by the page-level search panel above the article column. */
   externalQuery?: string
@@ -344,6 +348,7 @@ export default function TableOfContents({
   currentLang = 'fr',
   codeSubcategory = null,
   onArticleSelect,
+  onHeadingNavigate,
   selectedArticle,
   externalQuery,
   hasPreamble,
@@ -785,11 +790,15 @@ export default function TableOfContents({
         <div
           role="button"
           tabIndex={0}
-          onClick={() => toggleSection(heading.key)}
+          onClick={() => {
+            toggleSection(heading.key)
+            onHeadingNavigate?.(heading)
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault()
               toggleSection(heading.key)
+              onHeadingNavigate?.(heading)
             }
           }}
           className={`w-full flex flex-col gap-1 px-3 py-2 text-left transition-colors group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-sm ${
