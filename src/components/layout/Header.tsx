@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 import { MENU_DATA } from '@/components/layout/menu'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
+import { useReaderChrome } from '@/components/layout/ReaderChromeContext'
 import {
   AddTextButton,
   MobileUserSection,
@@ -89,6 +90,11 @@ export default function Header() {
   // for visitors; signed-in editors get the new MobileUserSection.
   const { status: authStatus } = useSession()
   const [scrolled, setScrolled] = useState(false)
+  // When a document reader (law-detail page) is scrolled into its body
+  // it flips this on; the header slides up to give more reading room
+  // and the page pins its own compact tools bar in its place. Other
+  // routes never set it, so the header stays put everywhere else.
+  const { stickyActive } = useReaderChrome()
 
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -127,8 +133,8 @@ export default function Header() {
           scrolled ? 'bg-white shadow-sm' : 'bg-white',
         )}
         initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
+        animate={{ y: stickyActive ? -100 : 0 }}
+        transition={{ duration: stickyActive ? 0.25 : 0.35 }}
       >
         {/* Permanent red gradient — visual brand spine that anchors the header
             and merges seamlessly with the megamenu's own top accent when open. */}

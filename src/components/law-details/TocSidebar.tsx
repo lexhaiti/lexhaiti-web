@@ -2,8 +2,7 @@
 
 import React from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronRight, PanelLeft, PanelLeftClose } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { ChevronRight, PanelLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import TableOfContents from '@/components/law-details/TableOfContent'
 import {
@@ -190,19 +189,9 @@ export function TocSidebar({
         </AnimatePresence>
       </div>
 
-      {/* Desktop Sidebar Toggle */}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="hidden lg:flex fixed bottom-6 right-6 z-40 shadow-lg bg-white border-gray-200 rounded-full w-12 h-12 p-0"
-      >
-        {isSidebarOpen ? (
-          <PanelLeftClose className="w-5 h-5" />
-        ) : (
-          <PanelLeft className="w-5 h-5" />
-        )}
-      </Button>
+      {/* The floating bottom-right sommaire toggle was removed — the
+          sommaire is reached from the "Voir le sommaire" pill in the
+          tools row (and its pinned copy in the sticky reader bar). */}
 
       {/* Desktop Sidebar */}
       <AnimatePresence>

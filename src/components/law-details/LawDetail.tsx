@@ -35,6 +35,7 @@ import {
 
 // Sub-components extracted from this file
 import { DocumentToolbar } from './DocumentToolbar'
+import { StickyReaderBar } from './StickyReaderBar'
 import { ChronoTimelinePanel } from './_panels/ChronoTimelinePanel'
 import { EditorPreviewBanner } from './EditorPreviewBanner'
 import { LawHero } from './LawHero'
@@ -55,6 +56,7 @@ import { useHeadingCollapse } from '@/lib/hooks/useHeadingCollapse'
 import { useInitialVersions } from '@/lib/hooks/useInitialVersions'
 import { lawShortCite } from '@/lib/legal/cite'
 import { cn } from '@/lib/utils'
+import { useReaderChrome } from '@/components/layout/ReaderChromeContext'
 
 
 export default function LawDetail() {
@@ -457,6 +459,31 @@ export default function LawDetail() {
   }, [])
 
   const articleViewerRef = React.useRef<HTMLDivElement>(null)
+  // Sentinel placed at the top of the in-flow tools row. Once it
+  // scrolls under where the header sits, we flip ``stickyActive`` —
+  // the global header hides and the compact tools bar pins to the top.
+  const toolsSentinelRef = React.useRef<HTMLDivElement>(null)
+  const { stickyActive, setStickyActive } = useReaderChrome()
+  useEffect(() => {
+    const onScroll = () => {
+      const el = toolsSentinelRef.current
+      // No sentinel (law still loading / richtext shape) → header stays.
+      if (!el) {
+        setStickyActive(false)
+        return
+      }
+      // Activate once the tools row has scrolled up to ~the header
+      // line; deactivate (header returns) when it drops back below.
+      setStickyActive(el.getBoundingClientRect().top <= 72)
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      // Leaving the page must restore the header for every other route.
+      setStickyActive(false)
+    }
+  }, [setStickyActive])
   const preambleRef = React.useRef<HTMLDivElement>(null)
   const visasRef = React.useRef<HTMLDivElement>(null)
   const considerantsRef = React.useRef<HTMLDivElement>(null)
@@ -667,6 +694,73 @@ export default function LawDetail() {
 
           {/* Main Content Area */}
           <div className="flex-1 min-w-0 pb-12 sm:pb-16 lg:py-8">
+            {/* Sentinel — when this scrolls up to the header line the
+                ReaderChrome flips ``stickyActive`` (header hides, the
+                pinned bar below takes over). */}
+            <div ref={toolsSentinelRef} aria-hidden className="h-0" />
+
+            {/* Pinned compact tools bar — only meaningful when the page
+                has structural chrome. Re-exposes the switcher + sommaire
+                + document actions while reading. */}
+            {showStructuralUi && (
+              <StickyReaderBar
+                active={stickyActive}
+                lang={currentLang}
+                isSidebarOpen={isSidebarOpen}
+                onToggleSidebar={() => handleSidebarToggle(!isSidebarOpen)}
+                switcher={
+                  shape !== 'richtext' &&
+                  hasArticles &&
+                  availableModes.length > 1 ? (
+                    <ViewModeSwitcher
+                      mode={viewMode}
+                      available={availableModes}
+                      onChange={setViewMode}
+                      chapitreLabel={chapitreLabel}
+                      lang={currentLang}
+                    />
+                  ) : null
+                }
+                toolbar={
+                  shape !== 'richtext' &&
+                  hasArticles &&
+                  !(shape === 'switchable' && viewMode === 'article') ? (
+                    <DocumentToolbar
+                      compact
+                      lang={currentLang}
+                      viewAsOfDate={viewAsOfDate}
+                      onChangeViewAsOfDate={(next) => {
+                        setViewAsOfDate(next)
+                        if (next === 'initial' && law.articles?.[0]) {
+                          const el = document.getElementById(
+                            `article-${String(law.articles[0].number)}`,
+                          )
+                          el?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start',
+                          })
+                        }
+                      }}
+                      chronoOpen={chronoOpen}
+                      onToggleChrono={() => setChronoOpen((v) => !v)}
+                      hideAbrogated={hideAbrogated}
+                      onToggleHideAbrogated={() => setHideAbrogated((v) => !v)}
+                      onCollapseAll={
+                        (law.headings?.length ?? 0) > 0
+                          ? headingCollapse.collapseAll
+                          : undefined
+                      }
+                      onExpandAll={
+                        (law.headings?.length ?? 0) > 0
+                          ? headingCollapse.expandAll
+                          : undefined
+                      }
+                    />
+                  ) : null
+                }
+              />
+            )}
+
             {showStructuralUi && (
               <SearchPanel
                 currentLang={currentLang}

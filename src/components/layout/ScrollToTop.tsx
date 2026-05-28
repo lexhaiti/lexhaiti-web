@@ -13,14 +13,20 @@
 import { useEffect, useState } from 'react'
 import { ArrowUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useReaderChrome } from '@/components/layout/ReaderChromeContext'
 
 export function ScrollToTop() {
-  const [visible, setVisible] = useState(false)
+  const [scrolledFar, setScrolledFar] = useState(false)
+  // On the law-detail reader the button is tied to the pinned tools
+  // bar (it appears exactly when the header has slid away). Elsewhere
+  // it falls back to the classic "scrolled past one viewport" rule.
+  const { stickyActive } = useReaderChrome()
+  const visible = stickyActive || scrolledFar
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     const onScroll = () => {
-      setVisible(window.scrollY > window.innerHeight)
+      setScrolledFar(window.scrollY > window.innerHeight)
     }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -29,7 +35,43 @@ export function ScrollToTop() {
 
   const handleClick = () => {
     if (typeof window === 'undefined') return
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (window.scrollY <= 0) return
+
+    // Respect reduced-motion: jump instantly.
+    const reduce = window.matchMedia?.(
+      '(prefers-reduced-motion: reduce)',
+    )?.matches
+    if (reduce) {
+      window.scrollTo({ top: 0, behavior: 'instant' })
+      return
+    }
+
+    // Drive the scroll ourselves rather than leaning on
+    // ``behavior: 'smooth'``: the law reader puts ``content-visibility:
+    // auto`` on hundreds of article cards whose real heights replace
+    // their estimates as they scroll into view, shifting the layout
+    // above the viewport. A browser smooth-scroll animates toward a
+    // *fixed* target Y and stalls when that target moves. Easing from
+    // the **current** position toward 0 each frame stays smooth no
+    // matter how the height shifts — and y=0 is always reachable.
+    //
+    // ``behavior: 'instant'`` is essential here: plain ``'auto'``
+    // resolves to the CSS ``scroll-behavior`` (which is ``smooth`` on
+    // <html>), so each per-frame set would itself animate and the loop
+    // would crawl ~1px/frame. ``'instant'`` forces a true jump.
+    // The deadline is a safety net so a misbehaving page can't loop
+    // forever.
+    const deadline = performance.now() + 1200
+    const step = () => {
+      const cur = window.scrollY
+      if (cur <= 2 || performance.now() > deadline) {
+        window.scrollTo({ top: 0, behavior: 'instant' })
+        return
+      }
+      window.scrollTo({ top: Math.floor(cur * 0.78), behavior: 'instant' })
+      requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
   }
 
   return (
