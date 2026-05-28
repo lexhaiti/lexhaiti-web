@@ -867,32 +867,6 @@ export default function LawDetail() {
                 }
                 return (
                   <>
-                    {/* Prev/next chapter strip — Par chapitre only.
-                        Steps through the chapters that carry articles. */}
-                    {viewMode === 'chapitre' && currentChapterIdx >= 0 && (
-                      <ChapterNav
-                        lang={currentLang}
-                        currentLabel={
-                          chapters[currentChapterIdx]?.label ?? ''
-                        }
-                        prevLabel={
-                          chapters[currentChapterIdx - 1]?.label ?? null
-                        }
-                        nextLabel={
-                          chapters[currentChapterIdx + 1]?.label ?? null
-                        }
-                        index={currentChapterIdx}
-                        total={chapters.length}
-                        onPrev={() => {
-                          const prev = chapters[currentChapterIdx - 1]
-                          if (prev) handleArticleSelect(prev.firstArticle)
-                        }}
-                        onNext={() => {
-                          const next = chapters[currentChapterIdx + 1]
-                          if (next) handleArticleSelect(next.firstArticle)
-                        }}
-                      />
-                    )}
                     <ArticleListView
                       articles={
                         viewMode === 'chapitre' && selectedArticle
@@ -935,6 +909,33 @@ export default function LawDetail() {
                           : undefined
                       }
                     />
+                    {/* Prev/next Titre strip — Par chapitre only, placed
+                        BELOW the chapter so the reader advances after
+                        finishing it. Steps between top-level divisions. */}
+                    {viewMode === 'chapitre' && currentChapterIdx >= 0 && (
+                      <div className="mt-6">
+                        <ChapterNav
+                          lang={currentLang}
+                          currentLabel={chapters[currentChapterIdx]?.label ?? ''}
+                          prevLabel={
+                            chapters[currentChapterIdx - 1]?.label ?? null
+                          }
+                          nextLabel={
+                            chapters[currentChapterIdx + 1]?.label ?? null
+                          }
+                          index={currentChapterIdx}
+                          total={chapters.length}
+                          onPrev={() => {
+                            const prev = chapters[currentChapterIdx - 1]
+                            if (prev) handleArticleSelect(prev.firstArticle)
+                          }}
+                          onNext={() => {
+                            const next = chapters[currentChapterIdx + 1]
+                            if (next) handleArticleSelect(next.firstArticle)
+                          }}
+                        />
+                      </div>
+                    )}
                   </>
                 )
               })()}
