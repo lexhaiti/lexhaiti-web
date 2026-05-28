@@ -254,15 +254,29 @@ button:focus-visible {
         list-style: decimal;
     }
 
-    /* Formal-block HTML (préambule / visas / considérants / enacting)
-       uses a similar but lighter scale — these blocks are typically
-       shorter than article bodies, so 0.5em paragraph spacing reads
-       better. */
+    /* Formal-block HTML (préambule / visas / considérants / enacting).
+       Visas are the dense case: a long run of "Vu le … ;" lines that,
+       without breathing room, collapse into an unreadable wall (see
+       the cramped lower half of a Légifrance decree). We give each
+       paragraph a generous bottom margin AND a comfortable line-height
+       so multi-line visas stay legible, plus spacing around any <br>-
+       separated runs the editor pasted as a single paragraph. */
+    .formal-block-html {
+        line-height: 1.75;
+    }
     .formal-block-html > p {
-        margin: 0 0 0.5em 0;
+        margin: 0 0 0.7em 0;
     }
     .formal-block-html > p:last-child {
         margin-bottom: 0;
+    }
+    /* When a block is one big paragraph broken by <br> (common from
+       Word/PDF paste), give each visual line a little air so the
+       "Vu le …" enumeration doesn't pack together. */
+    .formal-block-html br {
+        content: "";
+        display: block;
+        margin-bottom: 0.4em;
     }
     .formal-block-html > p.indent,
     .formal-block-html > p.legal-list {

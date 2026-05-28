@@ -120,6 +120,11 @@ export interface EditableFormalBlockProps {
   align?: 'left' | 'center'
   /** Save handler for the alignment toggle. Editor-only. */
   onAlignChange?: (next: 'left' | 'center') => Promise<void>
+  /** When true, the reader picked "Accéder à la version initiale" —
+   *  show this block's V1 text (from its version history) instead of
+   *  the live value. No-op when the block has no history (its current
+   *  text already IS V1). */
+  showInitialVersion?: boolean
 }
 
 /**
@@ -157,6 +162,7 @@ export function EditableFormalBlock({
   fallbackToFr = false,
   align = 'left',
   onAlignChange,
+  showInitialVersion = false,
 }: EditableFormalBlockProps) {
   const [expanded, setExpanded] = useState(defaultExpanded)
   const [editing, setEditing] = useState(false)
@@ -247,6 +253,22 @@ export function EditableFormalBlock({
       }
     : null
 
+  // "Accéder à la version initiale" support. When the reader is in
+  // initial-version mode AND this block has real history (>1 version),
+  // render V1's text instead of the live value. Blocks with only one
+  // version are left alone — their current text already IS the initial
+  // text. ``value`` itself is untouched so the editor still edits the
+  // live version, not the historical view.
+  const v1Version =
+    versions.length > 1
+      ? (versions.find((v) => v.version_number === 1) ?? null)
+      : null
+  const showingInitial = showInitialVersion && !!v1Version
+  const displayValue = showingInitial
+    ? ((isFr ? v1Version!.text_fr : (v1Version!.text_ht ?? v1Version!.text_fr)) ??
+      value)
+    : value
+
   // Compact variant — unchanged from before; the redesign focuses on
   // the collapsible accordion.
   const renderCompact = () => (
@@ -276,15 +298,15 @@ export function EditableFormalBlock({
             </button>
           </div>
         </div>
-      ) : value ? (
+      ) : displayValue ? (
         <div className="flex items-start gap-2">
-          {looksLikeHtml(value) ? (
+          {looksLikeHtml(displayValue) ? (
             <div
               className={cn(
                 'flex-1 text-sm font-semibold italic text-slate-500 tracking-wide leading-relaxed formal-block-html',
                 align === 'center' ? 'text-center' : 'text-left',
               )}
-              dangerouslySetInnerHTML={{ __html: value }}
+              dangerouslySetInnerHTML={{ __html: displayValue }}
             />
           ) : (
             <p
@@ -293,7 +315,7 @@ export function EditableFormalBlock({
                 align === 'center' ? 'text-center' : 'text-left',
               )}
             >
-              {value}
+              {displayValue}
             </p>
           )}
           {isEditor && onAlignChange && (
@@ -350,8 +372,10 @@ export function EditableFormalBlock({
   )
 
   // ── Collapsible variant — the redesign ─────────────────────────────
-  const hasContent = !!value && !isHtmlEffectivelyEmpty(value)
-  const snippet = previewSnippet(value)
+  // ``displayValue`` reflects the active view (live or V1); the
+  // content gate + snippet follow it so initial-mode swaps cleanly.
+  const hasContent = !!displayValue && !isHtmlEffectivelyEmpty(displayValue)
+  const snippet = previewSnippet(displayValue)
 
   const renderCollapsible = () => (
     <div
@@ -424,19 +448,33 @@ export function EditableFormalBlock({
             {hint}
           </span>
         )}
-        {/* Right-side meta: version pill when there's history. */}
-        {currentVersionPill && (
-          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5 flex-shrink-0">
-            <span>v{currentVersionPill.number}</span>
-            {currentVersionPill.from && (
-              <>
-                <span className="text-emerald-300">·</span>
-                <span className="font-medium normal-case tracking-normal text-emerald-700/80">
-                  {currentVersionPill.from}
-                </span>
-              </>
-            )}
+        {/* Right-side meta: version pill. In initial-version mode the
+            block shows V1, so the pill flips to a neutral "v1 ·
+            initiale" amber badge to signal the reader is NOT looking
+            at the in-force text. Otherwise it's the green live-version
+            pill. */}
+        {showingInitial ? (
+          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 flex-shrink-0">
+            <span>v1</span>
+            <span className="text-amber-300">·</span>
+            <span className="font-medium normal-case tracking-normal text-amber-700/80">
+              {isFr ? 'initiale' : 'inisyal'}
+            </span>
           </span>
+        ) : (
+          currentVersionPill && (
+            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5 flex-shrink-0">
+              <span>v{currentVersionPill.number}</span>
+              {currentVersionPill.from && (
+                <>
+                  <span className="text-emerald-300">·</span>
+                  <span className="font-medium normal-case tracking-normal text-emerald-700/80">
+                    {currentVersionPill.from}
+                  </span>
+                </>
+              )}
+            </span>
+          )
         )}
       </button>
 
@@ -454,7 +492,7 @@ export function EditableFormalBlock({
               {/* "Modifié par X · En vigueur depuis Y" line — shows
                   whenever the live version was introduced by an
                   amending law. Matches the article-viewer pattern. */}
-              {!editing && liveVersion?.source_amendment_slug && (
+              {!editing && !showingInitial && liveVersion?.source_amendment_slug && (
                 <p className="mb-3 text-xs text-slate-500 flex items-center gap-2 flex-wrap">
                   <span>
                     {isFr ? 'Modifié par ' : 'Modifye pa '}
@@ -596,14 +634,14 @@ export function EditableFormalBlock({
                 // doubled the visual frame for the same data. Now
                 // the action-chip row above is the only divider; the
                 // content reads as the primary body of the block.
-                looksLikeHtml(value) ? (
+                looksLikeHtml(displayValue) ? (
                   <div
                     className="text-sm text-slate-700 leading-relaxed formal-block-html"
-                    dangerouslySetInnerHTML={{ __html: value ?? '' }}
+                    dangerouslySetInnerHTML={{ __html: displayValue ?? '' }}
                   />
                 ) : (
                   <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-                    {value}
+                    {displayValue}
                   </div>
                 )
               ) : isEditor ? (

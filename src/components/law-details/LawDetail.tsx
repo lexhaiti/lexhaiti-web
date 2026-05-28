@@ -634,6 +634,7 @@ export default function LawDetail() {
               preambleRef={preambleRef}
               visasRef={visasRef}
               considerantsRef={considerantsRef}
+              showInitialVersion={viewAsOfDate === 'initial'}
               refetch={refetch}
             />
 

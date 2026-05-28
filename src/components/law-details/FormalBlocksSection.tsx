@@ -20,6 +20,11 @@ interface FormalBlocksSectionProps {
   preambleRef: React.RefObject<HTMLDivElement | null>
   visasRef: React.RefObject<HTMLDivElement | null>
   considerantsRef: React.RefObject<HTMLDivElement | null>
+  /** When true ("Accéder à la version initiale" active), each block
+   *  with version history renders its V1 text instead of the live
+   *  value — keeping the formal blocks in sync with the article body
+   *  swap the toolbar drives. */
+  showInitialVersion?: boolean
   refetch: () => void
 }
 
@@ -41,6 +46,7 @@ export function FormalBlocksSection({
   preambleRef,
   visasRef,
   considerantsRef,
+  showInitialVersion = false,
   refetch,
 }: FormalBlocksSectionProps) {
   const shouldShow =
@@ -68,6 +74,7 @@ export function FormalBlocksSection({
         value={preambleDisplay.value}
         valueHt={law.preamble_ht ?? null}
         fallbackToFr={preambleDisplay.fallback}
+        showInitialVersion={showInitialVersion}
         lawSlug={law.slug}
         lawId={law.id}
         blockKind="preamble"
@@ -90,6 +97,7 @@ export function FormalBlocksSection({
         value={visasDisplay.value}
         valueHt={law.visas_ht ?? null}
         fallbackToFr={visasDisplay.fallback}
+        showInitialVersion={showInitialVersion}
         lawSlug={law.slug}
         lawId={law.id}
         blockKind="visa"
@@ -144,6 +152,7 @@ export function FormalBlocksSection({
         value={considerantsDisplay.value}
         valueHt={law.considerants_ht ?? null}
         fallbackToFr={considerantsDisplay.fallback}
+        showInitialVersion={showInitialVersion}
         lawSlug={law.slug}
         lawId={law.id}
         blockKind="considerant"
@@ -183,6 +192,7 @@ export function FormalBlocksSection({
         value={enactingDisplay.value}
         valueHt={law.enacting_formula_ht ?? null}
         fallbackToFr={enactingDisplay.fallback}
+        showInitialVersion={showInitialVersion}
         lawSlug={law.slug}
         lawId={law.id}
         blockKind="enacting_formula"
