@@ -14,14 +14,17 @@ import { useEffect, useState } from 'react'
 import { ArrowUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useReaderChrome } from '@/components/layout/ReaderChromeContext'
+import { useFooterAvoidance } from '@/lib/hooks/useFooterAvoidance'
 
 export function ScrollToTop() {
   const [scrolledFar, setScrolledFar] = useState(false)
-  // On the law-detail reader the button is tied to the pinned tools
-  // bar (it appears exactly when the header has slid away). Elsewhere
-  // it falls back to the classic "scrolled past one viewport" rule.
+  // On the law-detail reader the button appears as soon as the reader
+  // enters the body (in sync with the floating Sommaire toggle).
+  // Elsewhere it falls back to the classic "scrolled past one viewport".
   const { stickyActive } = useReaderChrome()
   const visible = stickyActive || scrolledFar
+  // Lifts the button above the footer instead of overlapping it.
+  const footerRef = useFooterAvoidance<HTMLButtonElement>()
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -76,6 +79,7 @@ export function ScrollToTop() {
 
   return (
     <button
+      ref={footerRef}
       type="button"
       onClick={handleClick}
       aria-label="Retour en haut"
@@ -88,10 +92,12 @@ export function ScrollToTop() {
         'bg-primary text-white shadow-lg shadow-primary/30',
         'hover:bg-primary/90 hover:shadow-primary/40',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2',
-        'transition-all duration-200',
+        // Only opacity transitions — the footer-avoidance transform is
+        // applied imperatively and must track scroll instantly.
+        'transition-opacity duration-200',
         visible
-          ? 'opacity-100 translate-y-0 pointer-events-auto'
-          : 'opacity-0 translate-y-3 pointer-events-none',
+          ? 'opacity-100 pointer-events-auto'
+          : 'opacity-0 pointer-events-none',
       )}
     >
       <ArrowUp className="w-5 h-5" aria-hidden />

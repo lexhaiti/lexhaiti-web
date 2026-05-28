@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { ChevronRight, PanelLeft, PanelLeftClose } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useReaderChrome } from '@/components/layout/ReaderChromeContext'
+import { useFooterAvoidance } from '@/lib/hooks/useFooterAvoidance'
 import TableOfContents from '@/components/law-details/TableOfContent'
 import {
   deleteHeading,
@@ -69,6 +70,8 @@ export function TocSidebar({
   // body; here it only drives the floating « Sommaire » toggle below
   // (shown once the in-flow Sommaire pill has scrolled away).
   const { stickyActive } = useReaderChrome()
+  // Lifts the floating toggle above the footer instead of overlapping.
+  const sommaireFooterRef = useFooterAvoidance<HTMLButtonElement>()
 
   // Shared TOC props
   const tocProps = {
@@ -203,6 +206,7 @@ export function TocSidebar({
           colliding. White so it reads as a distinct control, not a
           second navy action. */}
       <button
+        ref={sommaireFooterRef}
         type="button"
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         aria-pressed={isSidebarOpen}
@@ -224,10 +228,12 @@ export function TocSidebar({
           'bg-white text-slate-700 border border-slate-200 shadow-lg',
           'hover:border-primary hover:text-primary',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2',
-          'transition-all duration-200',
+          // Only opacity transitions — the footer-avoidance transform is
+          // applied imperatively and must track scroll instantly.
+          'transition-opacity duration-200',
           stickyActive
-            ? 'opacity-100 translate-y-0 pointer-events-auto'
-            : 'opacity-0 translate-y-3 pointer-events-none',
+            ? 'opacity-100 pointer-events-auto'
+            : 'opacity-0 pointer-events-none',
         )}
       >
         {isSidebarOpen ? (
