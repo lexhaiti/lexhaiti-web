@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronRight, PanelLeft } from 'lucide-react'
+import { ChevronRight, PanelLeft, PanelLeftClose } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useReaderChrome } from '@/components/layout/ReaderChromeContext'
 import TableOfContents from '@/components/law-details/TableOfContent'
@@ -195,9 +195,47 @@ export function TocSidebar({
         </AnimatePresence>
       </div>
 
-      {/* The floating bottom-right sommaire toggle was removed — the
-          sommaire is reached from the "Voir le sommaire" pill in the
-          tools row (and its pinned copy in the sticky reader bar). */}
+      {/* Floating Sommaire toggle (desktop) — appears once the reader
+          scrolls into the body (``stickyActive``), so the sommaire stays
+          one tap away after the in-flow "Sommaire" pill has scrolled
+          off. It sits *above* the global back-to-top button (which pins
+          to bottom-6/8); the bottom-20/24 offset keeps them from
+          colliding. White so it reads as a distinct control, not a
+          second navy action. */}
+      <button
+        type="button"
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        aria-pressed={isSidebarOpen}
+        aria-label={
+          currentLang === 'fr'
+            ? isSidebarOpen
+              ? 'Masquer le sommaire'
+              : 'Afficher le sommaire'
+            : isSidebarOpen
+              ? 'Kache somè a'
+              : 'Montre somè a'
+        }
+        title={currentLang === 'fr' ? 'Sommaire' : 'Somè'}
+        tabIndex={stickyActive ? 0 : -1}
+        className={cn(
+          'hidden lg:inline-flex items-center justify-center',
+          'fixed z-40 right-6 sm:right-8 bottom-20 sm:bottom-24',
+          'h-11 w-11 rounded-full',
+          'bg-white text-slate-700 border border-slate-200 shadow-lg',
+          'hover:border-primary hover:text-primary',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2',
+          'transition-all duration-200',
+          stickyActive
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 translate-y-3 pointer-events-none',
+        )}
+      >
+        {isSidebarOpen ? (
+          <PanelLeftClose className="w-5 h-5" aria-hidden />
+        ) : (
+          <PanelLeft className="w-5 h-5" aria-hidden />
+        )}
+      </button>
 
       {/* Desktop Sidebar */}
       <AnimatePresence>
