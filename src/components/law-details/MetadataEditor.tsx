@@ -102,7 +102,6 @@ export type LegalTextMetadata = {
   // modern header structure entirely.
   official_number: string | null
   issuing_authority: string | null
-  official_formula: string | null
   // Whole-text abrogator — present when an editor has recorded
   // which law abrogated this one. Rendered as a chip on the hero;
   // editable here when status==abrogated. ``null`` when unset.
@@ -189,7 +188,6 @@ export function MetadataEditor({
     status: text.status,
     official_number: text.official_number ?? '',
     issuing_authority: text.issuing_authority ?? '',
-    official_formula: text.official_formula ?? '',
     comment: '',
   }))
 
@@ -242,7 +240,6 @@ export function MetadataEditor({
         status: text.status,
         official_number: text.official_number ?? '',
         issuing_authority: text.issuing_authority ?? '',
-        official_formula: text.official_formula ?? '',
         comment: '',
       })
       setAbrogatingLaw(seedAbrogatingLaw(text.abrogated_by))
@@ -307,7 +304,6 @@ export function MetadataEditor({
       status: text.status,
       official_number: text.official_number ?? '',
       issuing_authority: text.issuing_authority ?? '',
-      official_formula: text.official_formula ?? '',
     }
     const body: LegalTextMetadataPatch = {}
     ;(Object.keys(original) as (keyof typeof original)[]).forEach((key) => {
@@ -680,18 +676,9 @@ export function MetadataEditor({
             />
           </Field>
 
-          <Field
-            label={t('metadataEditor.officialFormula')}
-            hint={t('metadataEditor.officialFormulaHint')}
-          >
-            <Textarea
-              rows={6}
-              value={form.official_formula}
-              onChange={(e) => patch('official_formula', e.target.value)}
-              placeholder={'Votée au Sénat …\n\nDonné au Palais National …'}
-              className="font-mono text-xs"
-            />
-          </Field>
+          {/* The closing formula + signatures ("partie finale") are now
+              edited inline on the law page via the FinalPart block
+              (closing_fr/ht), not here. */}
 
           <Field label={t('metadataEditor.comment')}>
             <Textarea

@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/tooltip'
 import { usePathname, useParams, useRouter, useSearchParams } from 'next/navigation'
 import { EditorBar } from './EditorBar'
-import { SignataireBlock } from '@/components/law-details/SignataireBlock'
+import { FinalPart } from '@/components/law-details/FinalPart'
 import { ChangesMadePanel } from '@/components/law-details/_panels/ChangesMadePanel'
 import { AddHeadingDialog } from '@/components/law-details/_panels/AddHeadingDialog'
 import { AddArticleDialog } from '@/components/law-details/_panels/AddArticleDialog'
@@ -1032,22 +1032,14 @@ export default function LawDetail() {
               })()}
             </div>
 
-            {/* Signataires block */}
-            {(law.signers && law.signers.length > 0) ||
-            law.official_formula ||
-            isEditor ? (
-              <SignataireBlock
-                slug={law.slug}
-                signers={(law.signers ?? []) as any}
-                officialFormula={law.official_formula ?? null}
-                category={law.category as any}
-                lang={currentLang}
-                isEditor={isEditor}
-                onChanged={refetch}
-                promulgationDate={law.promulgation_date ?? null}
-                issuingDate={law.issuing_date ?? null}
-              />
-            ) : null}
+            {/* Partie finale — closing formula + signatures as one
+                combined rich-text field (closing_fr/ht). */}
+            <FinalPart
+              law={law}
+              currentLang={currentLang}
+              isEditor={isEditor}
+              refetch={refetch}
+            />
 
             <ClosingAddendum
               law={law}
@@ -1088,7 +1080,6 @@ export default function LawDetail() {
                   status: law.status,
                   official_number: law.official_number ?? null,
                   issuing_authority: law.issuing_authority ?? null,
-                  official_formula: law.official_formula ?? null,
                   abrogated_by: law.abrogated_by
                     ? {
                         slug: law.abrogated_by.slug,

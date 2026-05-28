@@ -104,7 +104,7 @@ type Draft = {
   mentions_procedurales_ht: string
   enacting_formula_fr: string
   enacting_formula_ht: string
-  official_formula: string
+  closing_fr: string
 }
 
 const EMPTY_DRAFT: Draft = {
@@ -132,7 +132,7 @@ const EMPTY_DRAFT: Draft = {
   mentions_procedurales_ht: '',
   enacting_formula_fr: '',
   enacting_formula_ht: '',
-  official_formula: '',
+  closing_fr: '',
 }
 
 export default function NewLegalTextPage() {
@@ -198,7 +198,7 @@ export default function NewLegalTextPage() {
           draft.mentions_procedurales_ht,
           draft.enacting_formula_ht,
         ),
-        official_formula: emptyToHtmlOrNull(draft.official_formula),
+        closing_fr: emptyToHtmlOrNull(draft.closing_fr),
       }
       const created = await createLegalText(payload)
       // Stay on the wizard chrome until the editor can publish or add
@@ -610,13 +610,13 @@ function BlocksSection({
         }}
       />
       <FieldGroup
-        label="Formule de clôture"
-        help="« Donné au Palais National… » — apparaît en bloc italique au-dessus des signataires."
+        label="Partie finale (clôture + signataires)"
+        help="« Donné au Palais National… » suivi des signataires — texte libre, rendu en bloc de clôture du document."
       >
         <RichArticleEditor
-          value={draft.official_formula}
-          onChange={(html: string) => update('official_formula', html)}
-          ariaLabel="Formule de clôture"
+          value={draft.closing_fr}
+          onChange={(html: string) => update('closing_fr', html)}
+          ariaLabel="Partie finale"
           placeholder="Donné au Palais National, à Port-au-Prince, le 8 août 2025, An 222e de l'Indépendance."
           tone="amber"
         />

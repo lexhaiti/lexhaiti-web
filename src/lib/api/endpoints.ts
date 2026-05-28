@@ -1454,7 +1454,9 @@ export type LegalTextCreatePayload = {
   // migration 0046; callers fold them into intro_fr / intro_ht.
   intro_fr?: string | null
   intro_ht?: string | null
-  official_formula?: string | null
+  // Combined closing part ("partie finale") — formula + signatures.
+  closing_fr?: string | null
+  closing_ht?: string | null
   issuing_authority?: string | null
   promulgation_date?: string | null
   publication_date?: string | null
@@ -1595,7 +1597,8 @@ export type LegalTextMetadataPatch = {
   // pass `null` to clear, `undefined` (omit) to leave untouched.
   official_number?: string | null
   issuing_authority?: string | null
-  official_formula?: string | null
+  closing_fr?: string | null
+  closing_ht?: string | null
   // Formal blocks (Phase 1 — editable in-place via EditableFormalBlock).
   preamble_fr?: string | null
   preamble_ht?: string | null
@@ -1713,89 +1716,10 @@ export type LegalHeadingRead = {
   position: number | null
 }
 
-/** Signer of a legal text — one person + their role + capacity. */
-export type LegalSignerRead = {
-  id: number
-  legal_text_id: number
-  name: string
-  function_fr: string
-  function_ht: string | null
-  signing_capacity:
-    | 'authoring'
-    | 'presiding'
-    | 'attesting'
-    | 'promulgating'
-    | 'countersigning'
-    | 'other'
-  chamber: 'senat' | 'chambre' | 'executive' | 'ministerial' | null
-  signed_at: string | null
-  position: number
-}
-
-export type LegalSignerInput = {
-  name: string
-  function_fr: string
-  function_ht?: string | null
-  signing_capacity?: LegalSignerRead['signing_capacity']
-  chamber?: LegalSignerRead['chamber']
-  signed_at?: string | null
-  position?: number | null
-}
-
-export type LegalSignerPatch = Partial<LegalSignerInput>
-
-export async function createLegalSigner(slug: string, body: LegalSignerInput) {
-  return apiPost<LegalSignerRead>(
-    `/editorial/legal-texts/${encodeURIComponent(slug)}/signers`,
-    body,
-  )
-}
-
-/** Bulk-append a list of signers — used for the Constituante paste
- *  flow on the 1987 Constitution (60+ rows). The backend commits the
- *  whole batch atomically. */
-export async function bulkCreateLegalSigners(
-  slug: string,
-  signers: LegalSignerInput[],
-) {
-  return apiPost<LegalSignerRead[]>(
-    `/editorial/legal-texts/${encodeURIComponent(slug)}/signers/bulk`,
-    { signers },
-  )
-}
-
-export async function updateLegalSigner(
-  signerId: number,
-  patch: LegalSignerPatch,
-) {
-  return apiPatch<LegalSignerRead>(`/editorial/signers/${signerId}`, patch)
-}
-
-export async function deleteLegalSigner(signerId: number): Promise<void> {
-  return apiDelete(`/editorial/signers/${signerId}`)
-}
-
-/** Wipe every signer attached to a legal text — used by the editor
- *  before re-importing a clean signers JSON with the correct order.
- *  Idempotent: hitting it on a text with no signers returns 204. */
-export async function deleteAllLegalSigners(slug: string): Promise<void> {
-  return apiDelete(
-    `/editorial/legal-texts/${encodeURIComponent(slug)}/signers`,
-  )
-}
-
-/** Reorder the signataires list. ``order`` is the desired sequence
- *  of signer IDs, top-to-bottom. Must cover the text's signers
- *  exactly — backend rejects partial / extra lists. */
-export async function reorderLegalSigners(
-  slug: string,
-  order: number[],
-) {
-  return apiPatch<LegalSignerRead[]>(
-    `/editorial/legal-texts/${encodeURIComponent(slug)}/signers/reorder`,
-    { order },
-  )
-}
+// Signers are no longer a structured entity — the closing formula +
+// signatures live together in the ``closing_fr`` / ``closing_ht`` rich
+// field ("partie finale"), edited inline via the FinalPart block. The
+// LegalSigner* types + CRUD helpers were removed in that refactor.
 
 /** Inline-edit for a heading title in the TOC tree. Bilingual — pass
  *  either field independently; null leaves the existing value

@@ -935,75 +935,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/editorial/legal-texts/{slug}/signers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List signers attached to a legal text
-         * @description Editor-facing list (no public mirror). The public detail endpoint
-         *     already includes signers inline on the LegalText payload — this
-         *     route only exists so the manual editor UI can refetch the list
-         *     after add/edit/delete without re-pulling the whole law payload.
-         */
-        get: operations["list_signers_api_v1_editorial_legal_texts__slug__signers_get"];
-        put?: never;
-        /**
-         * Add a signer to a legal text (editor-driven, not parser-driven)
-         * @description Add one signer to a legal text. Used when the parser missed
-         *     structured signatories (typical for the 1987 Constitution and
-         *     other non-standard closing-formula layouts) and the editor wants
-         *     to enter them by hand.
-         *
-         *     Position defaults to "append to the end" when not specified — most
-         *     editor workflows want chronological insertion order, not arbitrary
-         *     re-shuffling of existing signers.
-         */
-        post: operations["create_signer_api_v1_editorial_legal_texts__slug__signers_post"];
-        /**
-         * Wipe every signer attached to a legal text
-         * @description Clear the entire signataires list in one shot. Editor workflow:
-         *     re-import a clean JSON of signers with the correct order without
-         *     having to delete each row by hand first. Idempotent — deleting an
-         *     already-empty list is a no-op (returns 204 either way).
-         */
-        delete: operations["delete_all_signers_api_v1_editorial_legal_texts__slug__signers_delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/editorial/legal-texts/{slug}/signers/bulk": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Bulk-add signers from a pasted JSON list (Constituante use case)
-         * @description Bulk-append signers to a legal text. The 1987 Constitution has
-         *     ~60 Constituante members; entering them one row at a time through
-         *     the manual editor is impractical, so the editor pastes a JSON list
-         *     and they are all appended in order.
-         *
-         *     Each entry is treated like ``POST /signers`` — ``create_signer``
-         *     auto-assigns a position past the current tail, so order is preserved
-         *     in submission order. The whole batch commits atomically (one
-         *     rollback on validation failure, never half-loaded).
-         */
-        post: operations["bulk_create_signers_api_v1_editorial_legal_texts__slug__signers_bulk_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/editorial/legal-texts/{slug}/headings/reorder": {
         parameters: {
             query?: never;
@@ -1057,52 +988,6 @@ export interface paths {
          *     aren't allowed via this route.
          */
         patch: operations["reorder_articles_api_v1_editorial_legal_texts__slug__articles_reorder_patch"];
-        trace?: never;
-    };
-    "/api/v1/editorial/legal-texts/{slug}/signers/reorder": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * Reorder the signataires list to match an editor-supplied permutation
-         * @description Rewrite the ``position`` of every signer on this text so it
-         *     matches the supplied ID order. The body's ``order`` array must
-         *     cover the text's signers exactly — no missing, no extra — so the
-         *     call is a pure permutation and the frontend can't accidentally
-         *     drop rows by shipping a stale list.
-         */
-        patch: operations["reorder_signers_api_v1_editorial_legal_texts__slug__signers_reorder_patch"];
-        trace?: never;
-    };
-    "/api/v1/editorial/signers/{signer_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Remove a signer from a legal text */
-        delete: operations["delete_signer_api_v1_editorial_signers__signer_id__delete"];
-        options?: never;
-        head?: never;
-        /**
-         * Edit a signer's name / function / capacity / chamber
-         * @description Partial update. Only the fields the editor actually changed
-         *     flow through (``exclude_unset=True``).
-         */
-        patch: operations["update_signer_api_v1_editorial_signers__signer_id__patch"];
         trace?: never;
     };
     "/api/v1/editorial/legal-texts/{slug}/parse-translation": {
@@ -3736,16 +3621,16 @@ export interface components {
             official_number?: string | null;
             /** Issuing Authority */
             issuing_authority?: string | null;
-            /** Official Formula */
-            official_formula?: string | null;
+            /** Closing Fr */
+            closing_fr?: string | null;
+            /** Closing Ht */
+            closing_ht?: string | null;
             /** @default in_force */
             status: components["schemas"]["LegalStatus"];
             /** Headings */
             headings?: components["schemas"]["LegalHeadingCreate"][] | null;
             /** Articles */
             articles?: components["schemas"]["ArticleCreate"][] | null;
-            /** Signers */
-            signers?: components["schemas"]["LegalSignerCreate"][] | null;
         };
         /** Judge */
         Judge: {
@@ -4023,97 +3908,6 @@ export interface components {
             order: number[];
         };
         /**
-         * LegalSignerBulkInput
-         * @description Editor-supplied JSON payload for the bulk-add endpoint.
-         *
-         *     Use case: pasting a Constituante membership list (60+ signataires
-         *     on the 1987 Constitution) is impractical row-by-row. The editor
-         *     pastes a JSON array; each item is appended in order with
-         *     auto-assigned positions starting from the current tail.
-         *
-         *     Each entry accepts the same fields as ``LegalSignerCreate`` —
-         *     only ``name`` and ``function_fr`` are required; everything else
-         *     falls back to the defaults from ``LegalSignerBase`` (capacity =
-         *     other, chamber = null, signed_at = null).
-         */
-        LegalSignerBulkInput: {
-            /** Signers */
-            signers: components["schemas"]["LegalSignerCreate"][];
-        };
-        /** LegalSignerCreate */
-        LegalSignerCreate: {
-            /** Name */
-            name: string;
-            /** Function Fr */
-            function_fr: string;
-            /** Function Ht */
-            function_ht?: string | null;
-            /** @default other */
-            signing_capacity: components["schemas"]["SigningCapacity"];
-            chamber?: components["schemas"]["SignatoryChamber"] | null;
-            /** Signed At */
-            signed_at?: string | null;
-            /**
-             * Position
-             * @default 0
-             */
-            position: number;
-        };
-        /** LegalSignerRead */
-        LegalSignerRead: {
-            /** Name */
-            name: string;
-            /** Function Fr */
-            function_fr: string;
-            /** Function Ht */
-            function_ht?: string | null;
-            /** @default other */
-            signing_capacity: components["schemas"]["SigningCapacity"];
-            chamber?: components["schemas"]["SignatoryChamber"] | null;
-            /** Signed At */
-            signed_at?: string | null;
-            /**
-             * Position
-             * @default 0
-             */
-            position: number;
-            /** Id */
-            id: number;
-            /** Legal Text Id */
-            legal_text_id: number;
-        };
-        /**
-         * LegalSignerReorderInput
-         * @description Editor-supplied permutation of a text's signers.
-         *
-         *     ``order`` is the desired sequence of signer IDs, top-to-bottom.
-         *     Must cover the text's signer set exactly — no missing, no extra.
-         *     The backend rewrites ``position`` to match this order (0..n-1).
-         */
-        LegalSignerReorderInput: {
-            /** Order */
-            order: number[];
-        };
-        /**
-         * LegalSignerUpdate
-         * @description Editor-supplied patch for an existing signer row. Every field is
-         *     optional — only the fields the editor actually changed are sent.
-         */
-        LegalSignerUpdate: {
-            /** Name */
-            name?: string | null;
-            /** Function Fr */
-            function_fr?: string | null;
-            /** Function Ht */
-            function_ht?: string | null;
-            signing_capacity?: components["schemas"]["SigningCapacity"] | null;
-            chamber?: components["schemas"]["SignatoryChamber"] | null;
-            /** Signed At */
-            signed_at?: string | null;
-            /** Position */
-            position?: number | null;
-        };
-        /**
          * LegalStatus
          * @description Legal status of the whole legal text (not the editorial workflow).
          *
@@ -4183,8 +3977,10 @@ export interface components {
             official_number?: string | null;
             /** Issuing Authority */
             issuing_authority?: string | null;
-            /** Official Formula */
-            official_formula?: string | null;
+            /** Closing Fr */
+            closing_fr?: string | null;
+            /** Closing Ht */
+            closing_ht?: string | null;
             /**
              * Show Devise Banner
              * @default true
@@ -4220,8 +4016,6 @@ export interface components {
             headings?: components["schemas"]["LegalHeadingCreate"][] | null;
             /** Articles */
             articles?: components["schemas"]["ArticleCreate"][] | null;
-            /** Signers */
-            signers?: components["schemas"]["LegalSignerCreate"][] | null;
         };
         /**
          * LegalTextListItem
@@ -4297,8 +4091,10 @@ export interface components {
             official_number?: string | null;
             /** Issuing Authority */
             issuing_authority?: string | null;
-            /** Official Formula */
-            official_formula?: string | null;
+            /** Closing Fr */
+            closing_fr?: string | null;
+            /** Closing Ht */
+            closing_ht?: string | null;
             /** Preamble Fr */
             preamble_fr?: string | null;
             /** Preamble Ht */
@@ -4383,8 +4179,10 @@ export interface components {
             official_number?: string | null;
             /** Issuing Authority */
             issuing_authority?: string | null;
-            /** Official Formula */
-            official_formula?: string | null;
+            /** Closing Fr */
+            closing_fr?: string | null;
+            /** Closing Ht */
+            closing_ht?: string | null;
             /**
              * Show Devise Banner
              * @default true
@@ -4440,11 +4238,6 @@ export interface components {
              * @default []
              */
             articles: components["schemas"]["ArticleEmbed"][];
-            /**
-             * Signers
-             * @default []
-             */
-            signers: components["schemas"]["LegalSignerRead"][];
             /**
              * Theme Tags
              * @default []
@@ -5396,27 +5189,6 @@ export interface components {
              */
             snippet_ht: string;
         };
-        /**
-         * SignatoryChamber
-         * @description Which body the signer belongs to. Drives the SignatureGrid grouping
-         *     on the frontend (Sénat block, Chambre block, Executive block, joint
-         *     ministerial block).
-         * @enum {string}
-         */
-        SignatoryChamber: "senat" | "chambre" | "executive" | "ministerial";
-        /**
-         * SigningCapacity
-         * @description How a `LegalSigner` is signing — the legal *kind* of signature.
-         *
-         *     Distinguishes the role-on-the-page from the role-in-government,
-         *     which `function_fr` already carries (e.g. "Sénateur", "Ministre de
-         *     la Justice"). Two people with `function_fr = 'Ministre'` can be
-         *     signing in different capacities: one *authoring* the arrêté they
-         *     co-issued, another *countersigning* a presidential décret because
-         *     its execution falls in their portfolio.
-         * @enum {string}
-         */
-        SigningCapacity: "authoring" | "presiding" | "attesting" | "promulgating" | "countersigning" | "other";
         /**
          * SommaireBulkInput
          * @description Wrapper for the sommaire endpoint — N entries at once.
@@ -7051,136 +6823,6 @@ export interface operations {
             };
         };
     };
-    list_signers_api_v1_editorial_legal_texts__slug__signers_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LegalSignerRead"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_signer_api_v1_editorial_legal_texts__slug__signers_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LegalSignerCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LegalSignerRead"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_all_signers_api_v1_editorial_legal_texts__slug__signers_delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    bulk_create_signers_api_v1_editorial_legal_texts__slug__signers_bulk_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LegalSignerBulkInput"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LegalSignerRead"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     reorder_headings_api_v1_editorial_legal_texts__slug__headings_reorder_patch: {
         parameters: {
             query?: never;
@@ -7238,105 +6880,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ArticleEmbed"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    reorder_signers_api_v1_editorial_legal_texts__slug__signers_reorder_patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LegalSignerReorderInput"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LegalSignerRead"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_signer_api_v1_editorial_signers__signer_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                signer_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_signer_api_v1_editorial_signers__signer_id__patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                signer_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LegalSignerUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LegalSignerRead"];
                 };
             };
             /** @description Validation Error */
