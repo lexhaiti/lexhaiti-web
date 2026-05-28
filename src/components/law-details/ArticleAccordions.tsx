@@ -265,12 +265,17 @@ export function ArticleAccordions({
   const [versionsLoading, setVersionsLoading] = useState(false)
   const [versions, setVersions] = useState<ArticleVersionRead[]>([])
 
-  // Trigger when Versions or Comparer opens, OR in editor mode at
-  // mount (mirrors the focused viewer).
+  // Lazy: only fetch when the reader actually opens Versions or
+  // Comparer. We deliberately do NOT eager-fetch on mount in editor
+  // mode — this component renders once per article in the list view,
+  // so an editor opening "Tous" on a 500-article law would otherwise
+  // fire 500 version requests at once. The version-count badge falls
+  // back to ``versionNumber`` (already on the embed) so nothing is
+  // lost by waiting.
   useEffect(() => {
     const hasHistory = (versionNumber ?? 1) > 1
     const wantsNow =
-      openPanel === 'versions' || openPanel === 'compare' || isEditor
+      openPanel === 'versions' || openPanel === 'compare'
     const needLoad =
       !versionsLoaded &&
       !versionsLoading &&

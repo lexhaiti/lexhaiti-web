@@ -1,6 +1,12 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Loader2 } from 'lucide-react'
 import {
   TooltipProvider,
@@ -146,6 +152,15 @@ export default function LawDetail() {
     available: availableModes,
     hasDeepLink: hasArticleDeepLink,
   })
+  // The switcher reflects ``viewMode`` immediately (instant button
+  // feedback), but the heavy article list renders off ``renderViewMode``
+  // — a deferred copy. On a switch (e.g. Un article → Tous, ~500 cards)
+  // React keeps the old view painted and builds the new one as a
+  // non-blocking, interruptible background render, then swaps it in.
+  // ``isViewSwitching`` is true during that window so we can dim the
+  // outgoing content for a beat instead of freezing the click.
+  const renderViewMode = useDeferredValue(viewMode)
+  const isViewSwitching = renderViewMode !== viewMode
 
   // Shared heading-collapse state — DocumentToolbar's Tout fermer
   // / Tout ouvrir buttons and ArticleListView's per-row chevrons
@@ -758,7 +773,15 @@ export default function LawDetail() {
               refetch={refetch}
             />
 
-            <div ref={articleViewerRef} className="mb-8 scroll-mt-24">
+            <div
+              ref={articleViewerRef}
+              className={cn(
+                'mb-8 scroll-mt-24 transition-opacity duration-150',
+                // Dim the outgoing view for the brief beat while the
+                // deferred render builds the incoming one.
+                isViewSwitching && 'opacity-50',
+              )}
+            >
               {/* ── Article rendering branches by view mode ───────────
                   - 'article' (current default) → ArticleSection: one
                     focused article with prev/next + full chrome.
@@ -770,6 +793,10 @@ export default function LawDetail() {
                     walking up to a chapter-level ancestor is a future
                     refinement. */}
               {(() => {
+                // Render off the DEFERRED view mode so a switch doesn't
+                // block on building ~500 cards — the old view stays
+                // painted until the new one is ready.
+                const vm = renderViewMode
                 // Decision table for which renderer takes over:
                 //
                 //   richtext  → ArticleSection (handles document_mode
@@ -812,7 +839,7 @@ export default function LawDetail() {
                   // unique" actually swaps the layout (used to fall
                   // back to the list view, which made the link a
                   // no-op).
-                  if (viewMode === 'article') {
+                  if (vm === 'article') {
                     return (
                       <ArticleSection
                         law={law}
@@ -881,7 +908,7 @@ export default function LawDetail() {
                   <>
                     <ArticleListView
                       articles={
-                        viewMode === 'chapitre' && selectedArticle
+                        vm === 'chapitre' && selectedArticle
                           ? (law.articles ?? []).filter(
                               (a: any) =>
                                 a.heading_id != null &&
@@ -914,7 +941,7 @@ export default function LawDetail() {
                       showInitialVersion={viewAsOfDate === 'initial'}
                       initialV1ById={initialVersions.v1ById}
                       emptyLabel={
-                        viewMode === 'chapitre'
+                        vm === 'chapitre'
                           ? currentLang === 'fr'
                             ? 'Aucun article dans cette section.'
                             : 'Pa gen atik nan seksyon sa a.'
@@ -924,7 +951,7 @@ export default function LawDetail() {
                     {/* Prev/next Titre strip — Par chapitre only, placed
                         BELOW the chapter so the reader advances after
                         finishing it. Steps between top-level divisions. */}
-                    {viewMode === 'chapitre' && currentChapterIdx >= 0 && (
+                    {vm === 'chapitre' && currentChapterIdx >= 0 && (
                       <div className="mt-6">
                         <ChapterNav
                           lang={currentLang}

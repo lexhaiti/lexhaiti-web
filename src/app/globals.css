@@ -289,6 +289,21 @@ button:focus-visible {
         font-style: italic;
     }
 
+    /* Off-screen render skipping for long article lists.
+       ``content-visibility: auto`` lets the browser skip layout +
+       paint for rows that aren't near the viewport, so mounting a
+       498-article law (e.g. switching to "Tous") only does real work
+       for the handful of visible cards — the rest are reserved at the
+       ``contain-intrinsic-size`` estimate and rendered lazily on
+       scroll. The ``auto`` keyword remembers each row's real height
+       after its first render so the scrollbar stays stable. Anchors
+       (``#article-N``) + scrollIntoView still resolve because the box
+       keeps its layout slot. */
+    .article-cv {
+        content-visibility: auto;
+        contain-intrinsic-size: auto 220px;
+    }
+
     /* Smooth scrolling */
     html {
         scroll-behavior: smooth;

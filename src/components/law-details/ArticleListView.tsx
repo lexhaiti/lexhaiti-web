@@ -280,7 +280,7 @@ export function ArticleListView({
           !q && path.some((h) => collapsed.has(h.id))
 
         return (
-          <div key={a.id ?? `${a.number}`}>
+          <div key={a.id ?? `${a.number}`} className="article-cv">
             {showBreak &&
               newSegments.map((h) => {
                 // Accordion rule: a heading row hides entirely when
