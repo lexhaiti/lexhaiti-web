@@ -21,19 +21,17 @@ interface FormalBlocksSectionProps {
   preambleRef: React.RefObject<HTMLDivElement | null>
   visasRef: React.RefObject<HTMLDivElement | null>
   considerantsRef: React.RefObject<HTMLDivElement | null>
-  /** When true ("Accéder à la version initiale" active), each block
-   *  with version history renders its V1 text instead of the live
-   *  value — keeping the formal blocks in sync with the article body
-   *  swap the toolbar drives. */
   showInitialVersion?: boolean
   refetch: () => void
 }
 
 /**
- * Pre-article formal blocks: Preambule, Visas, Considerants,
- * Mentions procedurales, Formule d'adoption.
- * Editable in-place for editors via EditableFormalBlock; read-only
- * for the public.
+ * Pre-article formal blocks. Préambule renders on its own; the rest of
+ * the introductory part — visas + considérants + mentions + the
+ * enacting formula — is ONE combined "Partie introductive": read-only
+ * for the public, a single editable field (``intro_fr/ht``) for
+ * editors. The legacy per-kind columns survive only as a render
+ * fallback for data not yet on the combined field.
  */
 export function FormalBlocksSection({
   law,
@@ -46,46 +44,30 @@ export function FormalBlocksSection({
   enactingDisplay,
   preambleRef,
   visasRef,
-  considerantsRef,
   showInitialVersion = false,
   refetch,
 }: FormalBlocksSectionProps) {
+  const introFr = (law as any).intro_fr as string | null | undefined
+  const introHt = (law as any).intro_ht as string | null | undefined
+
   const shouldShow =
     isEditor ||
     law.preamble_fr ||
+    introFr ||
     law.visas_fr ||
     law.considerants_fr ||
     law.enacting_formula_fr
 
   if (!shouldShow) return null
 
-  // Per-document toggle: modern drafting (default) prints considérants
-  // BEFORE mentions procédurales. 19th-century Haitian laws often
-  // invert this — see ``mentions_procedurales_before_considerants``
-  // on LegalText. The two blocks below are rendered as inline JSX
-  // constants then placed in the right order in the JSX tree.
+  // Reading-order parts for the public combined render, losing no data
+  // across the model's transitional shapes: the consolidated
+  // ``intro_*`` field first (it already includes the enacting formula),
+  // else the ordered ``intro_blocks`` rows (older API) + enacting, else
+  // the flat visas/considérants/mentions columns + enacting.
   const mpFirst = !!(law as any).mentions_procedurales_before_considerants
-
-  // Public readers (today view) get ONE continuous "partie
-  // introductive" — visas + considérants + mentions + the enacting
-  // formula, flowing together like Légifrance rather than as separate
-  // labelled cards. Editors and initial-version mode keep the per-field
-  // editable cards (so editors can edit each field and the V1 swap
-  // still works off each block's version chain). Préambule always
-  // renders on its own, above this.
-  const showCombinedIntro = !isEditor && !showInitialVersion
-
-  // Build the combined intro's reading-order parts, losing no data
-  // across the model's transitional shapes:
-  //   1. the consolidated single ``intro_*`` field (target model — it
-  //      already includes the enacting formula), else
-  //   2. the ordered ``intro_blocks`` rows (migrated texts) + enacting,
-  //      else
-  //   3. the flat visas / considérants / mentions columns + enacting.
   const combinedIntro = (
-    (currentLang === 'ht'
-      ? ((law as any).intro_ht ?? (law as any).intro_fr)
-      : (law as any).intro_fr) ?? ''
+    (currentLang === 'ht' ? (introHt ?? introFr) : introFr) ?? ''
   ).trim()
   const introBlockTexts: (string | null | undefined)[] = (
     ((law as any).intro_blocks ?? []) as Array<{
@@ -133,147 +115,44 @@ export function FormalBlocksSection({
     </div>
   )
 
-  const VisasBlock = (
+  // Single combined introductory part — what editors actually edit.
+  const introEditValue =
+    (currentLang === 'ht' ? (introHt ?? introFr) : introFr) ?? null
+  const IntroEditorBlock = (
     <div ref={visasRef} className="scroll-mt-24">
       <EditableFormalBlock
         isFr={currentLang === 'fr'}
         isEditor={isEditor}
-        title={currentLang === 'fr' ? 'Visas' : 'Viza'}
-        hint={currentLang === 'fr' ? 'Vu les articles...' : 'Wi atik yo...'}
-        value={visasDisplay.value}
-        valueHt={law.visas_ht ?? null}
-        fallbackToFr={visasDisplay.fallback}
-        showInitialVersion={showInitialVersion}
-        lawSlug={law.slug}
-        lawId={law.id}
-        blockKind="visa"
-        onSave={async (v) => {
-          const field = currentLang === 'ht' ? 'visas_ht' : 'visas_fr'
-          await updateLegalTextMetadata(law.slug, { [field]: v })
-          refetch()
-        }}
-      />
-    </div>
-  )
-
-  const MentionsBlock = (
-    <div className="scroll-mt-24">
-      <EditableFormalBlock
-        isFr={currentLang === 'fr'}
-        isEditor={isEditor}
         title={
-          currentLang === 'fr' ? 'Mentions procédurales' : 'Mansyon pwosedi'
+          currentLang === 'fr' ? 'Partie introductive' : 'Pati entwodiktif'
         }
         hint={
           currentLang === 'fr'
-            ? 'Sur le rapport du… ; Et après délibération…'
-            : 'Sou rapò… ; Epi apre deliberasyon…'
+            ? 'Vu… ; Considérant que… ; … a rendu / arrête…'
+            : 'Wi… ; Konsidere ke… ; … rezoud / dekrè…'
         }
-        value={mentionsProceduralesDisplay.value}
-        valueHt={(law as any).mentions_procedurales_ht ?? null}
-        fallbackToFr={mentionsProceduralesDisplay.fallback}
+        value={introEditValue}
+        valueHt={introHt ?? null}
         lawSlug={law.slug}
         lawId={law.id}
         onSave={async (v) => {
-          const field =
-            currentLang === 'ht'
-              ? 'mentions_procedurales_ht'
-              : 'mentions_procedurales_fr'
+          const field = currentLang === 'ht' ? 'intro_ht' : 'intro_fr'
           await updateLegalTextMetadata(law.slug, { [field]: v })
           refetch()
         }}
       />
     </div>
-  )
-
-  const ConsiderantsBlock = (
-    <div ref={considerantsRef} className="scroll-mt-24">
-      <EditableFormalBlock
-        isFr={currentLang === 'fr'}
-        isEditor={isEditor}
-        title={currentLang === 'fr' ? 'Considérants' : 'Konsideran'}
-        hint={
-          currentLang === 'fr' ? 'Considérant que...' : 'Konsidere ke...'
-        }
-        value={considerantsDisplay.value}
-        valueHt={law.considerants_ht ?? null}
-        fallbackToFr={considerantsDisplay.fallback}
-        showInitialVersion={showInitialVersion}
-        lawSlug={law.slug}
-        lawId={law.id}
-        blockKind="considerant"
-        onSave={async (v) => {
-          const field =
-            currentLang === 'ht' ? 'considerants_ht' : 'considerants_fr'
-          await updateLegalTextMetadata(law.slug, { [field]: v })
-          refetch()
-        }}
-      />
-    </div>
-  )
-
-  const EnactingBlock = (
-    <EditableFormalBlock
-      isFr={currentLang === 'fr'}
-      isEditor={isEditor}
-      variant="compact"
-      title={currentLang === 'fr' ? "Formule d'adoption" : "Fòmil adopsyon"}
-      value={enactingDisplay.value}
-      valueHt={law.enacting_formula_ht ?? null}
-      fallbackToFr={enactingDisplay.fallback}
-      showInitialVersion={showInitialVersion}
-      lawSlug={law.slug}
-      lawId={law.id}
-      blockKind="enacting_formula"
-      align={
-        (law.enacting_formula_align as 'left' | 'center' | undefined) ?? 'left'
-      }
-      onAlignChange={async (next) => {
-        await updateLegalTextMetadata(law.slug, {
-          enacting_formula_align: next,
-        } as any)
-        refetch()
-      }}
-      onSave={async (v) => {
-        const field =
-          currentLang === 'ht' ? 'enacting_formula_ht' : 'enacting_formula_fr'
-        await updateLegalTextMetadata(law.slug, { [field]: v })
-        refetch()
-      }}
-    />
   )
 
   return (
-    // ``mb-4`` + ``space-y-4`` so the préambule / partie introductive
-    // blocks sit at the SAME 16px rhythm as the TITRE accordions below
-    // — the formal blocks read as part of the same stack rather than a
-    // detached header with an oversized gap.
+    // ``mb-4`` + ``space-y-4`` so préambule + the partie introductive
+    // sit at the SAME 16px rhythm as the TITRE accordions below.
     <div className="mb-4 space-y-4">
       {PreambleBlock}
-      {showCombinedIntro ? (
-        // Public, today view: one continuous "Partie introductive" —
-        // visas + considérants + mentions + the enacting formula.
-        <IntroductoryPart parts={introParts} lang={currentLang} />
+      {isEditor ? (
+        IntroEditorBlock
       ) : (
-        // Editors + initial-version mode: per-field editable cards, so
-        // each field stays editable and the V1 swap works per block.
-        <>
-          {VisasBlock}
-          {/* Order flipped when the law sets
-              mentions_procedurales_before_considerants = true. */}
-          {mpFirst ? (
-            <>
-              {MentionsBlock}
-              {ConsiderantsBlock}
-            </>
-          ) : (
-            <>
-              {ConsiderantsBlock}
-              {MentionsBlock}
-            </>
-          )}
-          {EnactingBlock}
-        </>
+        <IntroductoryPart parts={introParts} lang={currentLang} />
       )}
     </div>
   )

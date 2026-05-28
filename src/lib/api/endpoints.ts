@@ -1589,6 +1589,11 @@ export type LegalTextMetadataPatch = {
   // Formal blocks (Phase 1 — editable in-place via EditableFormalBlock).
   preamble_fr?: string | null
   preamble_ht?: string | null
+  /** Single combined "partie introductive" — visas + considérants +
+   *  mentions + enacting formula in one field. Supersedes the per-kind
+   *  columns below (kept for legacy data only). */
+  intro_fr?: string | null
+  intro_ht?: string | null
   visas_fr?: string | null
   visas_ht?: string | null
   considerants_fr?: string | null
