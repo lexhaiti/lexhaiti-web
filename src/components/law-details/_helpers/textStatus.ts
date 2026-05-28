@@ -102,6 +102,24 @@ export const TEXT_STATUS_PILL: Record<
 }
 
 /**
+ * Light-background variant of the status pill classes. The dark-themed
+ * ``TEXT_STATUS_PILL`` above is tuned for the navy hero; this set is for
+ * pills rendered on light surfaces (e.g. the pinned reader bar's gray
+ * background) where translucent-on-dark colors would wash out.
+ */
+export const TEXT_STATUS_PILL_LIGHT: Record<TextStatus, string> = {
+  in_force: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  abrogated: 'bg-red-50 text-red-700 border-red-200',
+  suspended: 'bg-amber-50 text-amber-700 border-amber-200',
+  partially_abrogated: 'bg-amber-50 text-amber-700 border-amber-200',
+  historique: 'bg-slate-100 text-slate-600 border-slate-300',
+  draft: 'bg-slate-100 text-slate-600 border-slate-300',
+  signed: 'bg-amber-50 text-amber-700 border-amber-200',
+  ratified: 'bg-sky-50 text-sky-700 border-sky-200',
+  denounced: 'bg-red-50 text-red-700 border-red-200',
+}
+
+/**
  * Map a legal-text status to the equivalent article-level status.
  * Used so individual articles inherit the parent text's status when no
  * per-article override is set in the data.

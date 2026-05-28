@@ -114,7 +114,11 @@ export default function Header() {
     <>
       <motion.header
         className={cn(
-          'fixed top-0 z-50 w-full transition-all duration-300',
+          // ``transition-shadow`` (not ``transition-all``) so the CSS
+          // transition only drives the scrolled box-shadow and never
+          // competes with framer-motion's JS-driven ``transform`` — that
+          // would smear the slide and throw off the handoff timing below.
+          'fixed top-0 z-50 w-full transition-shadow duration-300',
           // 1. Enforce consistent height/padding so it doesn't narrow
           'h-20',
 
@@ -134,7 +138,12 @@ export default function Header() {
         )}
         initial={{ y: -100 }}
         animate={{ y: stickyActive ? -100 : 0 }}
-        transition={{ duration: stickyActive ? 0.25 : 0.35 }}
+        // Sequenced handoff with the law-page sticky bar so they never
+        // overlap at top-0: on activation the header leaves immediately
+        // (delay 0) and the sticky bar waits for it; on deactivation the
+        // sticky bar leaves first and the header waits (delay 0.2s)
+        // before sliding back in.
+        transition={{ duration: 0.2, delay: stickyActive ? 0 : 0.2 }}
       >
         {/* Permanent red gradient — visual brand spine that anchors the header
             and merges seamlessly with the megamenu's own top accent when open. */}

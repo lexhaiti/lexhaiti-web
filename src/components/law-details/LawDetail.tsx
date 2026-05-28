@@ -36,6 +36,11 @@ import {
 // Sub-components extracted from this file
 import { DocumentToolbar } from './DocumentToolbar'
 import { StickyReaderBar } from './StickyReaderBar'
+import {
+  TEXT_STATUS_PILL,
+  TEXT_STATUS_PILL_LIGHT,
+  type TextStatus,
+} from './_helpers/textStatus'
 import { ChronoTimelinePanel } from './_panels/ChronoTimelinePanel'
 import { EditorPreviewBanner } from './EditorPreviewBanner'
 import { LawHero } from './LawHero'
@@ -505,6 +510,15 @@ export default function LawDetail() {
 
   const title =
     currentLang === 'ht' && law.title_ht ? law.title_ht : law.title_fr
+  // Dynamic status pill for the sticky reader bar — label + colors
+  // follow the law's own status (« En vigueur », « Abrogée », …),
+  // never hardcoded. Light-surface palette since the bar is gray.
+  const textStatus = ((law.status as TextStatus) ?? 'in_force') as TextStatus
+  const statusText = (
+    TEXT_STATUS_PILL[textStatus] ?? TEXT_STATUS_PILL.in_force
+  ).label[currentLang]
+  const statusPillCls =
+    TEXT_STATUS_PILL_LIGHT[textStatus] ?? TEXT_STATUS_PILL_LIGHT.in_force
   const officialTitleStored =
     currentLang === 'ht'
       ? (law.official_title_ht ?? null)
@@ -707,6 +721,8 @@ export default function LawDetail() {
                 active={stickyActive}
                 lang={currentLang}
                 title={title}
+                statusText={statusText}
+                statusClassName={statusPillCls}
                 isSidebarOpen={isSidebarOpen}
                 onToggleSidebar={() => handleSidebarToggle(!isSidebarOpen)}
                 switcher={
