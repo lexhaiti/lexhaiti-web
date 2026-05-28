@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { PanelLeft, RotateCcw, Search } from 'lucide-react'
+import { PanelLeft, PanelLeftClose, RotateCcw, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface SearchPanelProps {
@@ -80,10 +80,10 @@ export function SearchPanel({
             <div className="ml-auto hidden lg:flex items-center gap-3">
               {rightControls}
               {showSidebarToggle && (
-                // Static label + icon — the button toggles the sommaire
-                // but doesn't swap its glyph/text on open/close (kept
-                // simple at the user's request). ``h-9`` + ``text-[12px]``
-                // match the ViewModeSwitcher pill so the two read as a set.
+                // Static label, but the icon flips on open/close so it
+                // still signals state at a glance (panel-open vs panel-
+                // closed glyph). ``h-9`` + ``text-[12px]`` match the
+                // ViewModeSwitcher pill so the two read as a set.
                 <button
                   type="button"
                   onClick={onToggleSidebar}
@@ -95,8 +95,12 @@ export function SearchPanel({
                     'hover:border-primary hover:text-primary transition-colors',
                   )}
                 >
-                  <PanelLeft className="w-3.5 h-3.5" />
-                  {currentLang === 'fr' ? 'Voir le sommaire' : 'Wè somè'}
+                  {isSidebarOpen ? (
+                    <PanelLeftClose className="w-3.5 h-3.5" />
+                  ) : (
+                    <PanelLeft className="w-3.5 h-3.5" />
+                  )}
+                  {currentLang === 'fr' ? ' Sommaire' : 'Somè'}
                 </button>
               )}
             </div>
