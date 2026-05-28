@@ -4,6 +4,7 @@ import React from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { ChevronRight, PanelLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useReaderChrome } from '@/components/layout/ReaderChromeContext'
 import TableOfContents from '@/components/law-details/TableOfContent'
 import {
   deleteHeading,
@@ -64,6 +65,11 @@ export function TocSidebar({
   onAddHeading,
   refetch,
 }: TocSidebarProps) {
+  // When the reader's compact tools bar is pinned, the sticky sidebar
+  // must drop below it (the bar is taller than the global header), so
+  // the « Sommaire » header never tucks under the bar.
+  const { stickyActive } = useReaderChrome()
+
   // Shared TOC props
   const tocProps = {
     articles: law.articles,
@@ -204,7 +210,15 @@ export function TocSidebar({
               "hidden lg:block lg:flex-shrink-0 lg:w-[25%] lg:bg-slate-50/70 lg:border-r lg:border-gray-200 lg:pr-6 lg:py-8 lg:relative lg:before:content-[''] lg:before:absolute lg:before:inset-y-0 lg:before:right-full lg:before:w-screen lg:before:bg-slate-50/70 lg:before:pointer-events-none"
             }
           >
-            <div className="lg:sticky lg:top-24 h-[calc(100vh-12rem)]">
+            <div
+              className={cn(
+                'h-[calc(100vh-12rem)] lg:sticky lg:transition-[top] lg:duration-300 lg:ease-out',
+                // Clear the global header (~80px) normally; clear the
+                // taller pinned tools bar (~102px) with a comfortable gap
+                // once it's active.
+                stickyActive ? 'lg:top-32' : 'lg:top-24',
+              )}
+            >
               <TableOfContents
                 {...tocProps}
                 onArticleSelect={onArticleSelect}
