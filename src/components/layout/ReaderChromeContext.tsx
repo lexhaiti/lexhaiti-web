@@ -3,13 +3,14 @@
 /**
  * Shared "reader chrome" state for the document-reading experience.
  *
- * When the law-detail page is scrolled into its body, it flips
- * ``stickyActive`` on. Two surfaces react to that single flag:
- *   - the global Header slides up out of the way (more reading room),
- *   - the floating "back to top" button appears.
+ * When the law-detail page is scrolled into its body it flips
+ * ``stickyActive`` on — the signal that the reader has left the hero +
+ * tools row behind and is now reading. The floating reading controls
+ * fade in on it: the "Sommaire" toggle and the "back to top" button (so
+ * they're absent at the very top, where the in-flow tools row already
+ * offers the same controls).
  *
- * Default ``stickyActive = false`` and only the law page ever sets it,
- * so every other route keeps the header pinned exactly as before.
+ * Default ``stickyActive = false`` and only the law page ever sets it.
  */
 
 import { createContext, useContext, useMemo, useState } from 'react'

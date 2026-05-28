@@ -65,9 +65,9 @@ export function TocSidebar({
   onAddHeading,
   refetch,
 }: TocSidebarProps) {
-  // Once the reader scrolls into the body the global header slides
-  // away; the sticky sidebar then rises toward the top to use the
-  // freed space (see the wrapper's stickyActive-driven top below).
+  // The reader flips ``stickyActive`` on once it scrolls into the law
+  // body; here it only drives the floating « Sommaire » toggle below
+  // (shown once the in-flow Sommaire pill has scrolled away).
   const { stickyActive } = useReaderChrome()
 
   // Shared TOC props
@@ -248,17 +248,7 @@ export function TocSidebar({
               "hidden lg:block lg:flex-shrink-0 lg:w-[25%] lg:bg-slate-50/70 lg:border-r lg:border-gray-200 lg:pr-6 lg:py-8 lg:relative lg:before:content-[''] lg:before:absolute lg:before:inset-y-0 lg:before:right-full lg:before:w-screen lg:before:bg-slate-50/70 lg:before:pointer-events-none"
             }
           >
-            <div
-              className={cn(
-                'lg:sticky lg:transition-[top] lg:duration-300 lg:ease-out',
-                // Sit below the global header normally; once it slides
-                // away on scroll, rise toward the top to use the freed
-                // reading space (and grow to fill it).
-                stickyActive
-                  ? 'lg:top-6 h-[calc(100vh-5rem)]'
-                  : 'lg:top-24 h-[calc(100vh-12rem)]',
-              )}
-            >
+            <div className="lg:sticky lg:top-24 h-[calc(100vh-12rem)]">
               <TableOfContents
                 {...tocProps}
                 onArticleSelect={onArticleSelect}

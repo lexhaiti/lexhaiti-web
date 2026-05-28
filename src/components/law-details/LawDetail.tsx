@@ -460,8 +460,8 @@ export default function LawDetail() {
   const articleViewerRef = React.useRef<HTMLDivElement>(null)
   // Sentinel placed at the top of the in-flow tools row. Once it
   // scrolls under where the header sits, we flip ``stickyActive`` —
-  // the global header slides away (more reading room) and the
-  // scroll-to-top button appears.
+  // the signal that the reader is now in the body, which fades in the
+  // floating reading controls (Sommaire toggle + back-to-top).
   const toolsSentinelRef = React.useRef<HTMLDivElement>(null)
   const { stickyActive, setStickyActive } = useReaderChrome()
   useEffect(() => {

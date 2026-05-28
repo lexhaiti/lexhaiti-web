@@ -13,7 +13,6 @@ import { cn } from '@/lib/utils'
 import { MENU_DATA } from '@/components/layout/menu'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
-import { useReaderChrome } from '@/components/layout/ReaderChromeContext'
 import {
   AddTextButton,
   MobileUserSection,
@@ -90,10 +89,6 @@ export default function Header() {
   // for visitors; signed-in editors get the new MobileUserSection.
   const { status: authStatus } = useSession()
   const [scrolled, setScrolled] = useState(false)
-  // When a document reader (law-detail page) is scrolled into its body
-  // it flips this on; the header slides up to give more reading room.
-  // Other routes never set it, so the header stays put everywhere else.
-  const { stickyActive } = useReaderChrome()
 
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -113,11 +108,7 @@ export default function Header() {
     <>
       <motion.header
         className={cn(
-          // ``transition-shadow`` (not ``transition-all``) so the CSS
-          // transition only drives the scrolled box-shadow and never
-          // competes with framer-motion's JS-driven ``transform`` — that
-          // would smear the slide and throw off the handoff timing below.
-          'fixed top-0 z-50 w-full transition-shadow duration-300',
+          'fixed top-0 z-50 w-full transition-all duration-300',
           // 1. Enforce consistent height/padding so it doesn't narrow
           'h-20',
 
@@ -136,11 +127,8 @@ export default function Header() {
           scrolled ? 'bg-white shadow-sm' : 'bg-white',
         )}
         initial={{ y: -100 }}
-        animate={{ y: stickyActive ? -100 : 0 }}
-        // On the law reader, scrolling into the body slides the header
-        // away for more reading room; it returns at the top. Other
-        // routes never flip ``stickyActive``, so it stays put.
-        transition={{ duration: 0.3 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5 }}
       >
         {/* Permanent red gradient — visual brand spine that anchors the header
             and merges seamlessly with the megamenu's own top accent when open. */}
