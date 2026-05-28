@@ -182,18 +182,22 @@ export default function NewLegalTextPage() {
         moniteur_ref: emptyToNull(draft.moniteur_ref),
         preamble_fr: emptyToHtmlOrNull(draft.preamble_fr),
         preamble_ht: emptyToHtmlOrNull(draft.preamble_ht),
-        visas_fr: emptyToHtmlOrNull(draft.visas_fr),
-        visas_ht: emptyToHtmlOrNull(draft.visas_ht),
-        considerants_fr: emptyToHtmlOrNull(draft.considerants_fr),
-        considerants_ht: emptyToHtmlOrNull(draft.considerants_ht),
-        mentions_procedurales_fr: emptyToHtmlOrNull(
+        // Fold the per-kind authoring fields into the single combined
+        // intro field the backend now stores (migration 0046 dropped the
+        // flat columns). Reading order: visas → considérants → mentions
+        // → enacting formula; blank line between parts.
+        intro_fr: combineIntro(
+          draft.visas_fr,
+          draft.considerants_fr,
           draft.mentions_procedurales_fr,
+          draft.enacting_formula_fr,
         ),
-        mentions_procedurales_ht: emptyToHtmlOrNull(
+        intro_ht: combineIntro(
+          draft.visas_ht,
+          draft.considerants_ht,
           draft.mentions_procedurales_ht,
+          draft.enacting_formula_ht,
         ),
-        enacting_formula_fr: emptyToHtmlOrNull(draft.enacting_formula_fr),
-        enacting_formula_ht: emptyToHtmlOrNull(draft.enacting_formula_ht),
         official_formula: emptyToHtmlOrNull(draft.official_formula),
       }
       const created = await createLegalText(payload)
@@ -929,6 +933,20 @@ function validate(d: Draft, slug: string): { identity: string[] } {
 function emptyToNull(s: string): string | null {
   const t = (s ?? '').trim()
   return t === '' ? null : t
+}
+/**
+ * Fold the per-kind introductory authoring fields (visas, considérants,
+ * mentions procédurales, enacting formula) into one combined intro
+ * string. Each part is HTML-normalised + empty-pruned, then non-empty
+ * parts are joined by a blank line — matching the backend's
+ * ``services.corpus.intro.combine_intro`` so the reader renders the same
+ * "partie introductive" whether the text was created here or ingested.
+ */
+function combineIntro(...parts: string[]): string | null {
+  const cleaned = parts
+    .map((p) => emptyToHtmlOrNull(p))
+    .filter((p): p is string => p !== null)
+  return cleaned.length > 0 ? cleaned.join('\n\n') : null
 }
 function emptyToHtmlOrNull(s: string): string | null {
   const t = (s ?? '').trim()

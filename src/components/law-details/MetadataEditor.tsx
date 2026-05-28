@@ -94,11 +94,6 @@ export type LegalTextMetadata = {
   promulgation_date: string | null
   publication_date: string | null
   moniteur_ref: string | null
-  /** Provenance line ("Source : … Voir <url>.") rendered as the
-   *  Source tile in the hero. Bilingual; the FR side is the primary
-   *  carrier — HT is rarely set. */
-  mentions_procedurales_fr: string | null
-  mentions_procedurales_ht: string | null
   category: string
   code_subcategory: string | null
   status: string
@@ -108,12 +103,6 @@ export type LegalTextMetadata = {
   official_number: string | null
   issuing_authority: string | null
   official_formula: string | null
-  // Short formula that sits just *above* the article block on the
-  // reader page — e.g. "Sur proposition de … le Sénat a adopté la
-  // loi suivante :". Distinct from ``official_formula`` (the long
-  // page-1 + post-dispositif sovereignty/promulgation block).
-  enacting_formula_fr: string | null
-  enacting_formula_ht: string | null
   // Whole-text abrogator — present when an editor has recorded
   // which law abrogated this one. Rendered as a chip on the hero;
   // editable here when status==abrogated. ``null`` when unset.
@@ -129,10 +118,6 @@ export type LegalTextMetadata = {
     theme: string
     source: 'auto' | 'editor'
   }>
-  /** When true, « Mentions procédurales » prints BEFORE the
-   *  considérants block on the reader page. Default false (modern
-   *  drafting order). 19th-century Haitian laws often need this set. */
-  mentions_procedurales_before_considerants?: boolean
 }
 
 // Closed vocabulary of theme keys — kept in sync with the backend
@@ -199,16 +184,12 @@ export function MetadataEditor({
     promulgation_date: text.promulgation_date ?? '',
     publication_date: text.publication_date ?? '',
     moniteur_ref: text.moniteur_ref ?? '',
-    mentions_procedurales_fr: text.mentions_procedurales_fr ?? '',
-    mentions_procedurales_ht: text.mentions_procedurales_ht ?? '',
     category: text.category,
     code_subcategory: text.code_subcategory ?? '',
     status: text.status,
     official_number: text.official_number ?? '',
     issuing_authority: text.issuing_authority ?? '',
     official_formula: text.official_formula ?? '',
-    enacting_formula_fr: text.enacting_formula_fr ?? '',
-    enacting_formula_ht: text.enacting_formula_ht ?? '',
     comment: '',
   }))
 
@@ -241,13 +222,6 @@ export function MetadataEditor({
     () => seedThemeSet(text.theme_tags),
   )
 
-  // 19th-century-style ordering toggle. See LegalText column with
-  // the same name. Tracked separately from the main form because
-  // it's a boolean, while ``form`` carries only string fields.
-  const [mpBeforeConsiderants, setMpBeforeConsiderants] = useState<boolean>(
-    () => !!text.mentions_procedurales_before_considerants,
-  )
-
   // Reset form on each open so changes don't leak across openings.
   function handleOpenChange(next: boolean) {
     if (next) {
@@ -263,21 +237,16 @@ export function MetadataEditor({
         promulgation_date: text.promulgation_date ?? '',
         publication_date: text.publication_date ?? '',
         moniteur_ref: text.moniteur_ref ?? '',
-        mentions_procedurales_fr: text.mentions_procedurales_fr ?? '',
-        mentions_procedurales_ht: text.mentions_procedurales_ht ?? '',
         category: text.category,
         code_subcategory: text.code_subcategory ?? '',
         status: text.status,
         official_number: text.official_number ?? '',
         issuing_authority: text.issuing_authority ?? '',
         official_formula: text.official_formula ?? '',
-        enacting_formula_fr: text.enacting_formula_fr ?? '',
-        enacting_formula_ht: text.enacting_formula_ht ?? '',
         comment: '',
       })
       setAbrogatingLaw(seedAbrogatingLaw(text.abrogated_by))
       setSelectedThemes(seedThemeSet(text.theme_tags))
-      setMpBeforeConsiderants(!!text.mentions_procedurales_before_considerants)
     }
     onOpenChange(next)
   }
@@ -333,16 +302,12 @@ export function MetadataEditor({
       promulgation_date: text.promulgation_date ?? '',
       publication_date: text.publication_date ?? '',
       moniteur_ref: text.moniteur_ref ?? '',
-      mentions_procedurales_fr: text.mentions_procedurales_fr ?? '',
-      mentions_procedurales_ht: text.mentions_procedurales_ht ?? '',
       category: text.category,
       code_subcategory: text.code_subcategory ?? '',
       status: text.status,
       official_number: text.official_number ?? '',
       issuing_authority: text.issuing_authority ?? '',
       official_formula: text.official_formula ?? '',
-      enacting_formula_fr: text.enacting_formula_fr ?? '',
-      enacting_formula_ht: text.enacting_formula_ht ?? '',
     }
     const body: LegalTextMetadataPatch = {}
     ;(Object.keys(original) as (keyof typeof original)[]).forEach((key) => {
@@ -379,15 +344,6 @@ export function MetadataEditor({
     if (originalAbrogatingSlug !== currentAbrogatingSlug) {
       ;(body as Record<string, string | null>).abrogated_by_slug =
         currentAbrogatingSlug
-    }
-
-    // Boolean toggle for the 19th-century block order.
-    if (
-      mpBeforeConsiderants !==
-      !!text.mentions_procedurales_before_considerants
-    ) {
-      ;(body as Record<string, boolean>).mentions_procedurales_before_considerants =
-        mpBeforeConsiderants
     }
 
     // Theme tag diff — separate API endpoint (PUT /themes). Editor-
@@ -696,70 +652,6 @@ export function MetadataEditor({
             />
           </Field>
 
-          {/* Provenance / source citation. Rendered on the law-detail
-              hero as the "Source" tile when the value starts with
-              "Source :" and includes a URL. Editors fill this in for
-              historical texts (e.g. the Janvier book chapters) and
-              archive-scan provenance. Two textareas so both languages
-              can carry their own citation (HT rarely set). */}
-          <Field
-            label={t('metadataEditor.source', { fallback: 'Source / provenance' })}
-            hint={t('metadataEditor.sourceHint', {
-              fallback:
-                'Citation du document source. Format reconnu par la fiche : « Source : <référence>. Voir <url>. ». Le tuile « Source » sur la fiche extrait l\'URL automatiquement.',
-            })}
-          >
-            <Textarea
-              rows={2}
-              value={form.mentions_procedurales_fr}
-              onChange={(e) => patch('mentions_procedurales_fr', e.target.value)}
-              placeholder="Source : gallica.bnf.fr — Les Constitutions d'Haïti par L.-J. Janvier, 1886, Chapitre VIII. Voir https://gallica.bnf.fr/ark:/…"
-              className="font-mono text-xs"
-            />
-          </Field>
-          <Field
-            label={t('metadataEditor.sourceHt', { fallback: 'Source / provenance (Kreyòl)' })}
-          >
-            <Textarea
-              rows={2}
-              value={form.mentions_procedurales_ht}
-              onChange={(e) => patch('mentions_procedurales_ht', e.target.value)}
-              placeholder="(facultatif)"
-              className="font-mono text-xs"
-            />
-          </Field>
-
-          {/* Pre-article block-order toggle. Defaults to false (modern
-              drafting: considérants before mentions procédurales).
-              Many 19th-century Haitian laws print the order inverted —
-              the editor flips this checkbox to mirror the source. */}
-          <Field
-            label={
-              isFr
-                ? "Ordre d'affichage : mentions avant considérants"
-                : 'Lòd afichaj : mansyon anvan konsideran'
-            }
-            hint={
-              isFr
-                ? "À activer pour les textes historiques (XIXᵉ siècle) qui impriment « Sur le rapport du… » AVANT les « Considérant que… ». Laissé décoché, l'affichage suit l'ordre moderne (considérants en premier)."
-                : 'Aktive li pou tèks istorik yo (XIXyèm syèk) ki ekri « Sur le rapport du… » AVAN « Considérant que… ». Si w pa chèke l, afichaj la swiv lòd modèn nan (konsideran an premye).'
-            }
-          >
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={mpBeforeConsiderants}
-                onChange={(e) => setMpBeforeConsiderants(e.target.checked)}
-                className="mt-0.5 w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-2 focus:ring-amber-300 focus:ring-offset-1"
-              />
-              <span className="text-sm text-slate-700 group-hover:text-slate-900 transition-colors">
-                {isFr
-                  ? 'Afficher « Mentions procédurales » avant « Considérants »'
-                  : 'Montre « Mansyon pwosedi » anvan « Konsideran »'}
-              </span>
-            </label>
-          </Field>
-
           {/* Official metadata block — page-1 + post-dispositif fields.
               Editable as plain text; the parser pre-fills these on
               import but the editor has the final word. */}
@@ -798,35 +690,6 @@ export function MetadataEditor({
               onChange={(e) => patch('official_formula', e.target.value)}
               placeholder={'Votée au Sénat …\n\nDonné au Palais National …'}
               className="font-mono text-xs"
-            />
-          </Field>
-
-          {/* Enacting formula — the short adoption line that sits
-              just above the article block on the reader page
-              ("Sur proposition de … le Sénat a adopté la loi
-              suivante :"). Distinct from ``official_formula`` which
-              is the long page-1 + post-dispositif sovereignty /
-              promulgation block. Bilingual; either or both can be
-              filled. */}
-          <Field
-            label={t('metadataEditor.enactingFormulaFr')}
-            hint={t('metadataEditor.enactingFormulaHint')}
-          >
-            <Textarea
-              rows={2}
-              value={form.enacting_formula_fr}
-              onChange={(e) => patch('enacting_formula_fr', e.target.value)}
-              placeholder="Sur proposition de … le Sénat a adopté la loi suivante :"
-              className="italic text-sm"
-            />
-          </Field>
-
-          <Field label={t('metadataEditor.enactingFormulaHt')}>
-            <Textarea
-              rows={2}
-              value={form.enacting_formula_ht}
-              onChange={(e) => patch('enacting_formula_ht', e.target.value)}
-              className="italic text-sm"
             />
           </Field>
 

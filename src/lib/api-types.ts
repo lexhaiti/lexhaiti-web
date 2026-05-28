@@ -3717,18 +3717,10 @@ export interface components {
             preamble_fr?: string | null;
             /** Preamble Ht */
             preamble_ht?: string | null;
-            /** Visas Fr */
-            visas_fr?: string | null;
-            /** Visas Ht */
-            visas_ht?: string | null;
-            /** Considerants Fr */
-            considerants_fr?: string | null;
-            /** Considerants Ht */
-            considerants_ht?: string | null;
-            /** Enacting Formula Fr */
-            enacting_formula_fr?: string | null;
-            /** Enacting Formula Ht */
-            enacting_formula_ht?: string | null;
+            /** Intro Fr */
+            intro_fr?: string | null;
+            /** Intro Ht */
+            intro_ht?: string | null;
             /**
              * Enacting Formula Align
              * @default left
@@ -4170,27 +4162,6 @@ export interface components {
             preamble_fr?: string | null;
             /** Preamble Ht */
             preamble_ht?: string | null;
-            /** Visas Fr */
-            visas_fr?: string | null;
-            /** Visas Ht */
-            visas_ht?: string | null;
-            /** Considerants Fr */
-            considerants_fr?: string | null;
-            /** Considerants Ht */
-            considerants_ht?: string | null;
-            /** Mentions Procedurales Fr */
-            mentions_procedurales_fr?: string | null;
-            /** Mentions Procedurales Ht */
-            mentions_procedurales_ht?: string | null;
-            /**
-             * Mentions Procedurales Before Considerants
-             * @default false
-             */
-            mentions_procedurales_before_considerants: boolean;
-            /** Enacting Formula Fr */
-            enacting_formula_fr?: string | null;
-            /** Enacting Formula Ht */
-            enacting_formula_ht?: string | null;
             /** Intro Fr */
             intro_fr?: string | null;
             /** Intro Ht */
@@ -4332,24 +4303,6 @@ export interface components {
             preamble_fr?: string | null;
             /** Preamble Ht */
             preamble_ht?: string | null;
-            /** Visas Fr */
-            visas_fr?: string | null;
-            /** Visas Ht */
-            visas_ht?: string | null;
-            /** Considerants Fr */
-            considerants_fr?: string | null;
-            /** Considerants Ht */
-            considerants_ht?: string | null;
-            /** Mentions Procedurales Fr */
-            mentions_procedurales_fr?: string | null;
-            /** Mentions Procedurales Ht */
-            mentions_procedurales_ht?: string | null;
-            /** Mentions Procedurales Before Considerants */
-            mentions_procedurales_before_considerants?: boolean | null;
-            /** Enacting Formula Fr */
-            enacting_formula_fr?: string | null;
-            /** Enacting Formula Ht */
-            enacting_formula_ht?: string | null;
             /** Enacting Formula Align */
             enacting_formula_align?: string | null;
             /** Intro Fr */
@@ -4409,27 +4362,6 @@ export interface components {
             preamble_fr?: string | null;
             /** Preamble Ht */
             preamble_ht?: string | null;
-            /** Visas Fr */
-            visas_fr?: string | null;
-            /** Visas Ht */
-            visas_ht?: string | null;
-            /** Considerants Fr */
-            considerants_fr?: string | null;
-            /** Considerants Ht */
-            considerants_ht?: string | null;
-            /** Mentions Procedurales Fr */
-            mentions_procedurales_fr?: string | null;
-            /** Mentions Procedurales Ht */
-            mentions_procedurales_ht?: string | null;
-            /**
-             * Mentions Procedurales Before Considerants
-             * @default false
-             */
-            mentions_procedurales_before_considerants: boolean;
-            /** Enacting Formula Fr */
-            enacting_formula_fr?: string | null;
-            /** Enacting Formula Ht */
-            enacting_formula_ht?: string | null;
             /** Intro Fr */
             intro_fr?: string | null;
             /** Intro Ht */

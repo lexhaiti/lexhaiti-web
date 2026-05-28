@@ -522,23 +522,10 @@ export default function LawDetail() {
       : law.description_fr
   const category = categoryLabels[law.category] || categoryLabels.loi
 
+  // Préambule is its own block; the rest of the introductory part is the
+  // single combined ``intro_fr/ht`` field (the flat per-kind columns were
+  // dropped in migration 0046), handled inside FormalBlocksSection.
   const preambleDisplay = pickBilingual(law.preamble_fr, law.preamble_ht, currentLang)
-  const visasDisplay = pickBilingual(law.visas_fr, law.visas_ht, currentLang)
-  const considerantsDisplay = pickBilingual(
-    law.considerants_fr,
-    law.considerants_ht,
-    currentLang,
-  )
-  const mentionsProceduralesDisplay = pickBilingual(
-    (law as any).mentions_procedurales_fr,
-    (law as any).mentions_procedurales_ht,
-    currentLang,
-  )
-  const enactingDisplay = pickBilingual(
-    law.enacting_formula_fr,
-    law.enacting_formula_ht,
-    currentLang,
-  )
 
   const handleArticleSelect = (article: any) => {
     setSelectedArticle(article)
@@ -820,10 +807,6 @@ export default function LawDetail() {
               currentLang={currentLang}
               isEditor={isEditor}
               preambleDisplay={preambleDisplay}
-              visasDisplay={visasDisplay}
-              considerantsDisplay={considerantsDisplay}
-              mentionsProceduralesDisplay={mentionsProceduralesDisplay}
-              enactingDisplay={enactingDisplay}
               preambleRef={preambleRef}
               visasRef={visasRef}
               preambleExpanded={preambleExpanded}
@@ -1100,18 +1083,12 @@ export default function LawDetail() {
                   promulgation_date: law.promulgation_date ?? null,
                   publication_date: law.publication_date ?? null,
                   moniteur_ref: law.moniteur_ref ?? null,
-                  mentions_procedurales_fr:
-                    law.mentions_procedurales_fr ?? null,
-                  mentions_procedurales_ht:
-                    law.mentions_procedurales_ht ?? null,
                   category: law.category,
                   code_subcategory: law.code_subcategory ?? null,
                   status: law.status,
                   official_number: law.official_number ?? null,
                   issuing_authority: law.issuing_authority ?? null,
                   official_formula: law.official_formula ?? null,
-                  enacting_formula_fr: law.enacting_formula_fr ?? null,
-                  enacting_formula_ht: law.enacting_formula_ht ?? null,
                   abrogated_by: law.abrogated_by
                     ? {
                         slug: law.abrogated_by.slug,
@@ -1123,11 +1100,6 @@ export default function LawDetail() {
                   // editor can see what's already attached and toggle
                   // additions / removals.
                   theme_tags: law.theme_tags ?? [],
-                  // Per-document block-order toggle (mentions
-                  // procédurales before considérants for 19th-century
-                  // texts). Defaults to false / modern drafting.
-                  mentions_procedurales_before_considerants:
-                    (law as any).mentions_procedurales_before_considerants ?? false,
                 }}
                 headings={law.headings ?? []}
                 onChanged={refetch}

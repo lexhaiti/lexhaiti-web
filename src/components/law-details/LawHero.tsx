@@ -8,7 +8,6 @@ import {
   ChevronRight,
   FileText,
   Info,
-  Library,
   Newspaper,
   PenLine,
   Tags,
@@ -290,9 +289,6 @@ export function LawHero({
                 </div>
               )}
             </div>
-
-            {/* Source tile */}
-            <SourceTile law={law} currentLang={currentLang} />
 
             {/* Amendments link */}
             {law.amended_by && law.amended_by.length > 0 && (
@@ -708,57 +704,3 @@ function AmendedByChip({
   )
 }
 
-/** Source tile -- archive provenance */
-function SourceTile({
-  law,
-  currentLang,
-}: {
-  law: LegalTextRead
-  currentLang: 'fr' | 'ht'
-}) {
-  const mp = (law as any).mentions_procedurales_fr as
-    | string
-    | null
-    | undefined
-  if (!mp || !/^\s*Source\s*:/i.test(mp)) return null
-  const urlMatch = mp.match(/https?:\/\/\S+/)
-  const url = urlMatch?.[0]?.replace(/[.)\]]+$/, '') ?? null
-  if (!url) return null
-  const noPrefix = mp.replace(/^\s*Source\s*:\s*/i, '').trim()
-  const beforeVoir = noPrefix.replace(/\s+Voir\s+https?:\/\/.*$/i, '').trim()
-  const compact = beforeVoir
-    .replace(/\s*\([^)]*\)\s*/g, ' ')
-    .replace(/\s*—\s*/g, ' — ')
-    .replace(/\s+([,.;:])/g, '$1')
-    .replace(/\s+/g, ' ')
-    .replace(/[.,;:]+$/, '')
-    .trim()
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={`Voir la source : ${compact}`}
-      className={cn(
-        'group/src flex items-center gap-4 text-left',
-        'rounded-xl -m-2 p-2 hover:bg-white/5 transition-colors',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
-      )}
-    >
-      <div
-        aria-hidden
-        className="p-3 bg-white/5 rounded-full border border-white/10 group-hover/src:bg-white/10 group-hover/src:border-white/20 transition-colors"
-      >
-        <Library className="w-5 h-5 text-slate-400 group-hover/src:text-white transition-colors" />
-      </div>
-      <div className="min-w-0 max-w-[18rem]">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">
-          {currentLang === 'fr' ? 'Source' : 'Sous'}
-        </p>
-        <p className="text-white font-bold underline underline-offset-4 decoration-white/20 group-hover/src:decoration-white/60 transition-colors line-clamp-2 text-sm sm:text-base">
-          {compact}
-        </p>
-      </div>
-    </a>
-  )
-}

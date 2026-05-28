@@ -14,10 +14,6 @@ interface FormalBlocksSectionProps {
   currentLang: 'fr' | 'ht'
   isEditor: boolean
   preambleDisplay: BilingualDisplay
-  visasDisplay: BilingualDisplay
-  considerantsDisplay: BilingualDisplay
-  mentionsProceduralesDisplay: BilingualDisplay
-  enactingDisplay: BilingualDisplay
   preambleRef: React.RefObject<HTMLDivElement | null>
   visasRef: React.RefObject<HTMLDivElement | null>
   /** Controlled expand of the Préambule block — synced with the
@@ -35,20 +31,16 @@ interface FormalBlocksSectionProps {
 /**
  * Pre-article formal blocks. Préambule renders on its own; the rest of
  * the introductory part — visas + considérants + mentions + the
- * enacting formula — is ONE combined "Partie introductive": read-only
- * for the public, a single editable field (``intro_fr/ht``) for
- * editors. The legacy per-kind columns survive only as a render
- * fallback for data not yet on the combined field.
+ * enacting formula — is ONE combined "Partie introductive" stored in
+ * ``intro_fr/ht``: read-only for the public, a single editable field
+ * for editors. The legacy per-kind columns were dropped in migration
+ * 0046, so ``intro_fr/ht`` is now the sole source.
  */
 export function FormalBlocksSection({
   law,
   currentLang,
   isEditor,
   preambleDisplay,
-  visasDisplay,
-  considerantsDisplay,
-  mentionsProceduralesDisplay,
-  enactingDisplay,
   preambleRef,
   visasRef,
   preambleExpanded,
@@ -58,51 +50,19 @@ export function FormalBlocksSection({
   showInitialVersion = false,
   refetch,
 }: FormalBlocksSectionProps) {
-  const introFr = (law as any).intro_fr as string | null | undefined
-  const introHt = (law as any).intro_ht as string | null | undefined
+  const introFr = law.intro_fr
+  const introHt = law.intro_ht
 
-  const shouldShow =
-    isEditor ||
-    law.preamble_fr ||
-    introFr ||
-    law.visas_fr ||
-    law.considerants_fr ||
-    law.enacting_formula_fr
+  const shouldShow = isEditor || law.preamble_fr || introFr || introHt
 
   if (!shouldShow) return null
 
-  // Reading-order parts for the public combined render, losing no data
-  // across the model's transitional shapes: the consolidated
-  // ``intro_*`` field first (it already includes the enacting formula),
-  // else the ordered ``intro_blocks`` rows (older API) + enacting, else
-  // the flat visas/considérants/mentions columns + enacting.
-  const mpFirst = !!(law as any).mentions_procedurales_before_considerants
+  // The introductory part is one combined field per language; the public
+  // render takes the active-language value (falling back to FR).
   const combinedIntro = (
     (currentLang === 'ht' ? (introHt ?? introFr) : introFr) ?? ''
   ).trim()
-  const introBlockTexts: (string | null | undefined)[] = (
-    ((law as any).intro_blocks ?? []) as Array<{
-      text_fr?: string | null
-      text_ht?: string | null
-    }>
-  ).map((b) => (currentLang === 'ht' ? (b.text_ht ?? b.text_fr) : b.text_fr))
-  const introParts = combinedIntro
-    ? [combinedIntro]
-    : introBlockTexts.length > 0
-      ? [...introBlockTexts, enactingDisplay.value]
-      : mpFirst
-        ? [
-            visasDisplay.value,
-            mentionsProceduralesDisplay.value,
-            considerantsDisplay.value,
-            enactingDisplay.value,
-          ]
-        : [
-            visasDisplay.value,
-            considerantsDisplay.value,
-            mentionsProceduralesDisplay.value,
-            enactingDisplay.value,
-          ]
+  const introParts = combinedIntro ? [combinedIntro] : []
 
   const PreambleBlock = (
     <div ref={preambleRef} className="scroll-mt-24">

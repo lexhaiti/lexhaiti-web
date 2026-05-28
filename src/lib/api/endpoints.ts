@@ -1449,14 +1449,11 @@ export type LegalTextCreatePayload = {
   description_ht?: string | null
   preamble_fr?: string | null
   preamble_ht?: string | null
-  visas_fr?: string | null
-  visas_ht?: string | null
-  considerants_fr?: string | null
-  considerants_ht?: string | null
-  mentions_procedurales_fr?: string | null
-  mentions_procedurales_ht?: string | null
-  enacting_formula_fr?: string | null
-  enacting_formula_ht?: string | null
+  // Combined introductory part (visas + considérants + mentions +
+  // enacting formula). The flat per-kind fields were dropped in
+  // migration 0046; callers fold them into intro_fr / intro_ht.
+  intro_fr?: string | null
+  intro_ht?: string | null
   official_formula?: string | null
   issuing_authority?: string | null
   promulgation_date?: string | null
