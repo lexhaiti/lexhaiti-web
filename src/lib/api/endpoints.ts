@@ -483,59 +483,6 @@ export async function addBlockVersion(
   )
 }
 
-// ── Introductory-part blocks (ordered visas / considérants / mentions) ──
-
-export type IntroBlockRead = components['schemas']['IntroBlockRead']
-export type IntroBlockKind = components['schemas']['IntroBlockKind']
-
-/** List a text's ordered intro blocks (editor view — sees drafts). */
-export async function listIntroBlocks(slug: string) {
-  return apiGet<IntroBlockRead[]>(
-    `/editorial/legal-texts/${encodeURIComponent(slug)}/intro-blocks`,
-  )
-}
-
-/** Add an intro block. Omit ``position`` to append; pass an index to
- *  insert (siblings shift). */
-export async function createIntroBlock(
-  slug: string,
-  body: {
-    kind: IntroBlockKind
-    text_fr?: string | null
-    text_ht?: string | null
-    position?: number | null
-  },
-) {
-  return apiPost<IntroBlockRead>(
-    `/editorial/legal-texts/${encodeURIComponent(slug)}/intro-blocks`,
-    body,
-  )
-}
-
-/** Edit an intro block's text or kind. */
-export async function updateIntroBlock(
-  blockId: number,
-  body: {
-    kind?: IntroBlockKind
-    text_fr?: string | null
-    text_ht?: string | null
-  },
-) {
-  return apiPatch<IntroBlockRead>(`/editorial/intro-blocks/${blockId}`, body)
-}
-
-/** Delete an intro block. */
-export async function deleteIntroBlock(blockId: number) {
-  return apiDelete(`/editorial/intro-blocks/${blockId}`)
-}
-
-/** Reorder a text's intro blocks — full list of ids in new order. */
-export async function reorderIntroBlocks(slug: string, orderedIds: number[]) {
-  return apiPut<IntroBlockRead[]>(
-    `/editorial/legal-texts/${encodeURIComponent(slug)}/intro-blocks/order`,
-    { ordered_ids: orderedIds },
-  )
-}
 
 /** One change this legal text made to an article *or* a formal
  *  block in another text. Powers the "Modifications apportées" panel

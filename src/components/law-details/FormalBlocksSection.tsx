@@ -3,7 +3,6 @@
 import React from 'react'
 import { EditableFormalBlock } from './EditableFormalBlock'
 import { IntroductoryPart } from './IntroductoryPart'
-import { IntroBlocksEditor } from './IntroBlocksEditor'
 import { updateLegalTextMetadata } from '@/lib/api/endpoints'
 import type { BilingualDisplay } from './_helpers/lawDetailTypes'
 import type { components } from '@/lib/api-types'
@@ -67,20 +66,50 @@ export function FormalBlocksSection({
   // constants then placed in the right order in the JSX tree.
   const mpFirst = !!(law as any).mentions_procedurales_before_considerants
 
-  // Ordered introductory part (visas / considérants / mentions as
-  // typed rows). When present we render ONE continuous "partie
-  // introductive" for public readers — matching Légifrance, which
-  // doesn't visually separate the three. We keep the legacy per-kind
-  // editable cards for (a) editors, until the dedicated intro-block
-  // editor lands, and (b) initial-version mode, where the flat
-  // blocks' version chain still drives the V1 swap. Préambule +
-  // formule d'adoption always render on their own, outside this.
-  const introBlocks = (law as any).intro_blocks ?? []
-  // Editors of migrated texts manage the ordered blocks directly.
-  const showIntroEditor = introBlocks.length > 0 && isEditor
-  // Public readers (today view) see the continuous render.
-  const showContinuousIntro =
-    introBlocks.length > 0 && !isEditor && !showInitialVersion
+  // Public readers (today view) get ONE continuous "partie
+  // introductive" — visas + considérants + mentions + the enacting
+  // formula, flowing together like Légifrance rather than as separate
+  // labelled cards. Editors and initial-version mode keep the per-field
+  // editable cards (so editors can edit each field and the V1 swap
+  // still works off each block's version chain). Préambule always
+  // renders on its own, above this.
+  const showCombinedIntro = !isEditor && !showInitialVersion
+
+  // Build the combined intro's reading-order parts, losing no data
+  // across the model's transitional shapes:
+  //   1. the consolidated single ``intro_*`` field (target model — it
+  //      already includes the enacting formula), else
+  //   2. the ordered ``intro_blocks`` rows (migrated texts) + enacting,
+  //      else
+  //   3. the flat visas / considérants / mentions columns + enacting.
+  const combinedIntro = (
+    (currentLang === 'ht'
+      ? ((law as any).intro_ht ?? (law as any).intro_fr)
+      : (law as any).intro_fr) ?? ''
+  ).trim()
+  const introBlockTexts: (string | null | undefined)[] = (
+    ((law as any).intro_blocks ?? []) as Array<{
+      text_fr?: string | null
+      text_ht?: string | null
+    }>
+  ).map((b) => (currentLang === 'ht' ? (b.text_ht ?? b.text_fr) : b.text_fr))
+  const introParts = combinedIntro
+    ? [combinedIntro]
+    : introBlockTexts.length > 0
+      ? [...introBlockTexts, enactingDisplay.value]
+      : mpFirst
+        ? [
+            visasDisplay.value,
+            mentionsProceduralesDisplay.value,
+            considerantsDisplay.value,
+            enactingDisplay.value,
+          ]
+        : [
+            visasDisplay.value,
+            considerantsDisplay.value,
+            mentionsProceduralesDisplay.value,
+            enactingDisplay.value,
+          ]
 
   const PreambleBlock = (
     <div ref={preambleRef} className="scroll-mt-24">
@@ -183,27 +212,51 @@ export function FormalBlocksSection({
     </div>
   )
 
+  const EnactingBlock = (
+    <EditableFormalBlock
+      isFr={currentLang === 'fr'}
+      isEditor={isEditor}
+      variant="compact"
+      title={currentLang === 'fr' ? "Formule d'adoption" : "Fòmil adopsyon"}
+      value={enactingDisplay.value}
+      valueHt={law.enacting_formula_ht ?? null}
+      fallbackToFr={enactingDisplay.fallback}
+      showInitialVersion={showInitialVersion}
+      lawSlug={law.slug}
+      lawId={law.id}
+      blockKind="enacting_formula"
+      align={
+        (law.enacting_formula_align as 'left' | 'center' | undefined) ?? 'left'
+      }
+      onAlignChange={async (next) => {
+        await updateLegalTextMetadata(law.slug, {
+          enacting_formula_align: next,
+        } as any)
+        refetch()
+      }}
+      onSave={async (v) => {
+        const field =
+          currentLang === 'ht' ? 'enacting_formula_ht' : 'enacting_formula_fr'
+        await updateLegalTextMetadata(law.slug, { [field]: v })
+        refetch()
+      }}
+    />
+  )
+
   return (
-    // ``mb-4`` + ``space-y-4`` so the préambule / visas-considérants
+    // ``mb-4`` + ``space-y-4`` so the préambule / partie introductive
     // blocks sit at the SAME 16px rhythm as the TITRE accordions below
     // — the formal blocks read as part of the same stack rather than a
     // detached header with an oversized gap.
     <div className="mb-4 space-y-4">
       {PreambleBlock}
-      {/* Introductory part: editors of migrated texts get the ordered-
-          block editor; public readers (today view) get the continuous
-          render; everything else (un-migrated texts, initial-version
-          mode) falls back to the legacy per-kind editable cards. */}
-      {showIntroEditor ? (
-        <IntroBlocksEditor
-          slug={law.slug}
-          lang={currentLang}
-          initialBlocks={introBlocks}
-          onChanged={refetch}
-        />
-      ) : showContinuousIntro ? (
-        <IntroductoryPart blocks={introBlocks} lang={currentLang} />
+      {showCombinedIntro ? (
+        // Public, today view: one continuous "Partie introductive" —
+        // visas + considérants + mentions + the enacting formula.
+        <IntroductoryPart parts={introParts} lang={currentLang} />
       ) : (
+        // Editors + initial-version mode: per-field editable cards, so
+        // each field stays editable and the V1 swap works per block.
         <>
           {VisasBlock}
           {/* Order flipped when the law sets
@@ -219,39 +272,9 @@ export function FormalBlocksSection({
               {MentionsBlock}
             </>
           )}
+          {EnactingBlock}
         </>
       )}
-
-      <EditableFormalBlock
-        isFr={currentLang === 'fr'}
-        isEditor={isEditor}
-        variant="compact"
-        title={currentLang === 'fr' ? "Formule d'adoption" : "Fòmil adopsyon"}
-        value={enactingDisplay.value}
-        valueHt={law.enacting_formula_ht ?? null}
-        fallbackToFr={enactingDisplay.fallback}
-        showInitialVersion={showInitialVersion}
-        lawSlug={law.slug}
-        lawId={law.id}
-        blockKind="enacting_formula"
-        align={
-          (law.enacting_formula_align as
-            | 'left'
-            | 'center'
-            | undefined) ?? 'left'
-        }
-        onAlignChange={async (next) => {
-          await updateLegalTextMetadata(law.slug, {
-            enacting_formula_align: next,
-          } as any)
-          refetch()
-        }}
-        onSave={async (v) => {
-          const field = currentLang === 'ht' ? 'enacting_formula_ht' : 'enacting_formula_fr'
-          await updateLegalTextMetadata(law.slug, { [field]: v })
-          refetch()
-        }}
-      />
     </div>
   )
 }

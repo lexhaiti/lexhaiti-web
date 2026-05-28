@@ -2,32 +2,26 @@
 
 /**
  * Continuous "partie introductive" — the Légifrance-style rendering of
- * a legal text's ordered introductory blocks (visas, considérants,
- * mentions procédurales, author / report mention). Unlike the legacy
- * per-kind accordion cards, these flow together as ONE block in their
- * stored order, so a text that interleaves them (visa → considérant →
- * visa again) reads exactly as drafted.
+ * a legal text's introductory part (visas, considérants, mentions
+ * procédurales, and the enacting formula) as ONE flowing block rather
+ * than separate per-kind cards.
  *
- * Data comes from ``LegalTextRead.intro_blocks`` (the ordered
- * ``legal_text_intro_blocks`` rows). When that list is empty the
- * parent falls back to the flat-column FormalBlocksSection, so
- * un-migrated texts keep rendering.
- *
- * Read-only: editing the ordered blocks happens in the dedicated
- * editor (separate component). Préambule + formule d'adoption keep
- * their own treatment outside this block.
+ * Takes the already-resolved display strings (in reading order) from
+ * the parent, which pulls them from the flat ``visas_* /
+ * considerants_* / mentions_procedurales_* / enacting_formula_*``
+ * columns. Read-only — editors still edit the underlying fields via
+ * FormalBlocksSection's per-field cards. Préambule keeps its own block.
  */
 
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { components } from '@/lib/api-types'
 import { looksLikeHtml } from './_editor/utils'
 
-type IntroBlock = components['schemas']['IntroBlockRead']
-
 interface Props {
-  blocks: IntroBlock[]
+  /** Already-resolved (current-language) text parts, in reading order.
+   *  Empty / blank entries are dropped. */
+  parts: (string | null | undefined)[]
   lang: 'fr' | 'ht'
   /** Expanded on first render. Default false to match the other
    *  pre-article blocks (keeps the article list prominent). */
@@ -35,12 +29,8 @@ interface Props {
 }
 
 /** Plain-text preview for the collapsed header — strips tags from the
- *  first block so the reader can scan without expanding. */
-function previewSnippet(blocks: IntroBlock[], lang: 'fr' | 'ht', limit = 90): string {
-  const first = blocks.find((b) =>
-    (lang === 'ht' ? b.text_ht : null) ?? b.text_fr,
-  )
-  const raw = (lang === 'ht' ? first?.text_ht : null) ?? first?.text_fr ?? ''
+ *  first part so the reader can scan without expanding. */
+function previewSnippet(raw: string, limit = 90): string {
   const plain = raw
     .replace(/<\/(p|li|blockquote|h[1-6])>/gi, ' ')
     .replace(/<br\s*\/?\s*>/gi, ' ')
@@ -51,19 +41,17 @@ function previewSnippet(blocks: IntroBlock[], lang: 'fr' | 'ht', limit = 90): st
   return plain.length <= limit ? plain : plain.slice(0, limit).trimEnd() + '…'
 }
 
-export function IntroductoryPart({ blocks, lang, defaultExpanded = false }: Props) {
+export function IntroductoryPart({ parts, lang, defaultExpanded = false }: Props) {
   const [expanded, setExpanded] = useState(defaultExpanded)
   const isFr = lang === 'fr'
 
-  // Keep only blocks that actually carry text in the active language
-  // (or French as fallback). Empty rows would render as blank gaps.
-  const visible = blocks.filter(
-    (b) => ((lang === 'ht' ? b.text_ht : null) ?? b.text_fr ?? '').trim(),
-  )
+  const visible = parts
+    .map((p) => (p ?? '').trim())
+    .filter((t) => t.length > 0)
   if (visible.length === 0) return null
 
-  const title = isFr ? 'Visas et considérants' : 'Viza ak konsideran'
-  const snippet = previewSnippet(visible, lang)
+  const title = isFr ? 'Partie introductive' : 'Pati entwodiktif'
+  const snippet = previewSnippet(visible[0])
 
   return (
     <div
@@ -110,26 +98,23 @@ export function IntroductoryPart({ blocks, lang, defaultExpanded = false }: Prop
 
       {expanded && (
         <div className="px-5 pb-5 pt-1">
-          {/* Continuous flow — each block's text in stored order, no
-              per-kind labels (mirrors Légifrance, which doesn't visually
-              separate visas / considérants / mentions). The
-              ``formal-block-html`` rhythm gives each "Vu le …" line room
-              to breathe; ``space-y`` separates successive blocks. */}
+          {/* Continuous flow — each part in reading order, no per-kind
+              labels (mirrors Légifrance, which doesn't visually separate
+              visas / considérants / mentions / formule). */}
           <div className="space-y-3 text-sm text-slate-700 leading-relaxed">
-            {visible.map((b) => {
-              const text = (lang === 'ht' ? b.text_ht : null) ?? b.text_fr ?? ''
-              return looksLikeHtml(text) ? (
+            {visible.map((text, i) =>
+              looksLikeHtml(text) ? (
                 <div
-                  key={b.id}
+                  key={i}
                   className="formal-block-html"
                   dangerouslySetInnerHTML={{ __html: text }}
                 />
               ) : (
-                <div key={b.id} className="whitespace-pre-wrap">
+                <div key={i} className="whitespace-pre-wrap">
                   {text}
                 </div>
-              )
-            })}
+              ),
+            )}
           </div>
         </div>
       )}
