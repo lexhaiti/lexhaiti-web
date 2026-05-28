@@ -280,7 +280,7 @@ export function ArticleListView({
           !q && path.some((h) => collapsed.has(h.id))
 
         return (
-          <div key={a.id ?? `${a.number}`} className="article-cv">
+          <div key={a.id ?? `${a.number}`}>
             {showBreak &&
               newSegments.map((h) => {
                 // Accordion rule: a heading row hides entirely when
@@ -585,7 +585,11 @@ const ArticleCard = memo(function ArticleCard({
     <article
       id={`article-${numStr}`}
       className={cn(
-        'group rounded-xl border border-slate-200/80 bg-white p-5 sm:p-6',
+        // ``article-cv`` (content-visibility:auto) lives on the CARD,
+        // not the list wrapper — so a collapsed heading (card not
+        // rendered) reserves zero space instead of an intrinsic-size
+        // placeholder, which was leaving big gaps between headings.
+        'article-cv group rounded-xl border border-slate-200/80 bg-white p-5 sm:p-6',
         'transition-shadow hover:shadow-[0_2px_12px_-4px_rgba(15,23,42,0.08)]',
         isAbrogated && 'opacity-70',
       )}
