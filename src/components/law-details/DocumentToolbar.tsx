@@ -126,7 +126,7 @@ export function DocumentToolbar({
     // buried beneath a 7-row button stack. Desktop/tablet: wrap to
     // the existing 1–2 row layout. Scrollbar hidden so the chip
     // strip reads cleanly without an underline.
-    <div className="flex items-center flex-nowrap sm:flex-wrap gap-2 mt-3 text-[12px] overflow-x-auto sm:overflow-visible -mx-2 px-2 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex items-center flex-nowrap sm:flex-wrap gap-2 mt-3 mb-5 text-[12px] overflow-x-auto sm:overflow-visible -mx-2 px-2 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {showViewAsOf && (
         <>
           <button
