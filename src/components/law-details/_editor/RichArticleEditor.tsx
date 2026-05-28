@@ -1,17 +1,30 @@
 'use client'
 
 import { useEffect } from 'react'
-import { EditorContent, Extension, useEditor } from '@tiptap/react'
+import {
+  EditorContent,
+  Extension,
+  Node,
+  useEditor,
+  type Editor,
+} from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import TextAlign from '@tiptap/extension-text-align'
 import Underline from '@tiptap/extension-underline'
 import Subscript from '@tiptap/extension-subscript'
 import Superscript from '@tiptap/extension-superscript'
+import { Table } from '@tiptap/extension-table'
+import { TableRow } from '@tiptap/extension-table-row'
+import { TableHeader } from '@tiptap/extension-table-header'
+import { TableCell } from '@tiptap/extension-table-cell'
 import {
   AlignCenter,
+  AlignJustify,
   AlignLeft,
   AlignRight,
   Bold,
+  Columns2,
+  Columns3,
   CornerDownLeft,
   Heading1,
   Heading2,
@@ -22,10 +35,13 @@ import {
   List,
   ListOrdered,
   Minus,
+  PilcrowLeft,
   Quote,
   Strikethrough,
   Subscript as SubscriptIcon,
   Superscript as SuperscriptIcon,
+  Table as TableIcon,
+  Trash2,
   Underline as UnderlineIcon,
 } from 'lucide-react'
 
@@ -65,6 +81,24 @@ const ParagraphIndent = Extension.create({
               const v = attrs.indent
               if (!v) return {}
               return { style: `margin-left: ${v}em` }
+            },
+          },
+          // First-line indent ("retrait de première ligne") — the classic
+          // legal-paragraph alinéa indent. Stored as ``text-indent`` so it
+          // is independent of the block-level ``margin-left`` indent above
+          // and round-trips through the sanitizer's text-indent allowance.
+          firstLine: {
+            default: 0,
+            parseHTML: (el) => {
+              const ti = (el as HTMLElement).style.textIndent
+              if (!ti) return 0
+              const m = /^(\d+(?:\.\d+)?)em$/.exec(ti.trim())
+              return m ? Math.min(parseFloat(m[1]), MAX_EM) : 0
+            },
+            renderHTML: (attrs) => {
+              const v = attrs.firstLine
+              if (!v) return {}
+              return { style: `text-indent: ${v}em` }
             },
           },
         },
@@ -107,6 +141,87 @@ const ParagraphIndent = Extension.create({
       Tab: adjustIndent(1),
       'Shift-Tab': adjustIndent(-1),
     }
+  },
+})
+
+/**
+ * Ordered-list marker styles — the enumeration types editors can pick
+ * (1. / a. / i. / A. / I.). Stored as a ``rt-ol-<style>`` class on the
+ * ``<ol>`` (survives the sanitizer's class allowance); the global CSS
+ * maps each class to a ``list-style-type``. ``decimal`` is the default
+ * and renders no class.
+ */
+const ORDERED_LIST_STYLES = [
+  { value: 'decimal', label: '1. 2. 3.' },
+  { value: 'lower-alpha', label: 'a. b. c.' },
+  { value: 'upper-alpha', label: 'A. B. C.' },
+  { value: 'lower-roman', label: 'i. ii. iii.' },
+  { value: 'upper-roman', label: 'I. II. III.' },
+] as const
+
+const _OL_STYLE_VALUES = ORDERED_LIST_STYLES.map((s) => s.value) as string[]
+
+const OrderedListStyle = Extension.create({
+  name: 'orderedListStyle',
+  addGlobalAttributes() {
+    return [
+      {
+        types: ['orderedList'],
+        attributes: {
+          listStyle: {
+            default: 'decimal',
+            parseHTML: (el) => {
+              const cls = (el as HTMLElement).getAttribute('class') || ''
+              const m = /rt-ol-([a-z-]+)/.exec(cls)
+              return m && _OL_STYLE_VALUES.includes(m[1]) ? m[1] : 'decimal'
+            },
+            renderHTML: (attrs) => {
+              const v = attrs.listStyle
+              if (!v || v === 'decimal') return {}
+              return { class: `rt-ol-${v}` }
+            },
+          },
+        },
+      },
+    ]
+  },
+})
+
+/**
+ * Multi-column block — wraps its child blocks in a
+ * ``<div class="rt-columns rt-columns-N">`` that the global CSS flows
+ * into N newspaper-style columns (``column-count``). Used for dense
+ * signer lists / side-by-side runs. The column count rides on the class
+ * so it survives the sanitizer; ``wrapIn`` / ``lift`` (built-in
+ * commands) create / remove the wrapper from the toolbar.
+ */
+const Columns = Node.create({
+  name: 'columns',
+  group: 'block',
+  content: 'block+',
+  defining: true,
+  isolating: false,
+  addAttributes() {
+    return {
+      count: {
+        default: 2,
+        parseHTML: (el) => {
+          const cls = (el as HTMLElement).getAttribute('class') || ''
+          const m = /rt-columns-(\d)/.exec(cls)
+          const n = m ? parseInt(m[1], 10) : 2
+          return n === 3 ? 3 : 2
+        },
+        renderHTML: (attrs) => ({
+          class: `rt-columns rt-columns-${attrs.count === 3 ? 3 : 2}`,
+        }),
+      },
+    }
+  },
+  parseHTML() {
+    return [{ tag: 'div.rt-columns' }]
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['div', HTMLAttributes, 0]
   },
 })
 
@@ -207,6 +322,19 @@ export function RichArticleEditor({
       Subscript,
       Superscript,
       ParagraphIndent,
+      OrderedListStyle,
+      Columns,
+      // Tables — non-resizable so the output stays clean HTML
+      // (``<table class="rt-table">`` + colspan/rowspan only); the
+      // global CSS handles borders + width. Signature grids and any
+      // side-by-side content live here.
+      Table.configure({
+        resizable: false,
+        HTMLAttributes: { class: 'rt-table' },
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
     ],
     content: toEditorHtml(value),
     editable: !disabled,
@@ -390,6 +518,32 @@ export function RichArticleEditor({
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           tone={tone}
         />
+        {/* Enumeration type for the active ordered list (1. / a. / i. /
+            A. / I.). Disabled until the cursor is inside an ordered
+            list. */}
+        <select
+          aria-label="Type de numérotation"
+          title="Type de numérotation"
+          value={
+            (editor.getAttributes('orderedList').listStyle as string) ||
+            'decimal'
+          }
+          disabled={!editor.isActive('orderedList')}
+          onChange={(e) =>
+            editor
+              .chain()
+              .focus()
+              .updateAttributes('orderedList', { listStyle: e.target.value })
+              .run()
+          }
+          className="h-8 rounded border border-slate-200 bg-white/70 px-1.5 text-xs text-slate-600 outline-none disabled:opacity-40"
+        >
+          {ORDERED_LIST_STYLES.map((s) => (
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
+          ))}
+        </select>
         <ToolbarSeparator />
         <ToolbarButton
           icon={AlignLeft}
@@ -410,6 +564,13 @@ export function RichArticleEditor({
           label="Aligner à droite"
           active={editor.isActive({ textAlign: 'right' })}
           onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          tone={tone}
+        />
+        <ToolbarButton
+          icon={AlignJustify}
+          label="Justifier"
+          active={editor.isActive({ textAlign: 'justify' })}
+          onClick={() => editor.chain().focus().setTextAlign('justify').run()}
           tone={tone}
         />
         <ToolbarSeparator />
@@ -456,6 +617,93 @@ export function RichArticleEditor({
           }}
           tone={tone}
         />
+        <ToolbarButton
+          icon={PilcrowLeft}
+          label="Retrait de première ligne (alinéa)"
+          active={!!editor.getAttributes('paragraph').firstLine}
+          onClick={() => {
+            const cur = (editor.getAttributes('paragraph').firstLine as
+              | number
+              | undefined) ?? 0
+            editor
+              .chain()
+              .focus()
+              .updateAttributes('paragraph', { firstLine: cur ? 0 : 1.5 })
+              .run()
+          }}
+          tone={tone}
+        />
+
+        <ToolbarSeparator />
+        {/* Multi-column block — wrap the current block(s) into 2 or 3
+            newspaper-style columns. Clicking the active count removes
+            the wrapper. */}
+        <ToolbarButton
+          icon={Columns2}
+          label="2 colonnes"
+          active={editor.isActive('columns', { count: 2 })}
+          onClick={() => toggleColumns(editor, 2)}
+          tone={tone}
+        />
+        <ToolbarButton
+          icon={Columns3}
+          label="3 colonnes"
+          active={editor.isActive('columns', { count: 3 })}
+          onClick={() => toggleColumns(editor, 3)}
+          tone={tone}
+        />
+
+        <ToolbarSeparator />
+        {/* Tables — insert a 2×2 grid; cell/row/column ops appear once
+            the cursor is inside a table. */}
+        <ToolbarButton
+          icon={TableIcon}
+          label="Insérer un tableau"
+          active={editor.isActive('table')}
+          onClick={() =>
+            editor
+              .chain()
+              .focus()
+              .insertTable({ rows: 2, cols: 2, withHeaderRow: false })
+              .run()
+          }
+          tone={tone}
+        />
+        {editor.isActive('table') && (
+          <>
+            <TextToolButton
+              label="Ajouter une colonne"
+              text="+ Col."
+              onClick={() => editor.chain().focus().addColumnAfter().run()}
+            />
+            <TextToolButton
+              label="Ajouter une ligne"
+              text="+ Lig."
+              onClick={() => editor.chain().focus().addRowAfter().run()}
+            />
+            <TextToolButton
+              label="Supprimer la colonne"
+              text="− Col."
+              onClick={() => editor.chain().focus().deleteColumn().run()}
+            />
+            <TextToolButton
+              label="Supprimer la ligne"
+              text="− Lig."
+              onClick={() => editor.chain().focus().deleteRow().run()}
+            />
+            <TextToolButton
+              label="Ligne d'en-tête"
+              text="En-tête"
+              onClick={() => editor.chain().focus().toggleHeaderRow().run()}
+            />
+            <ToolbarButton
+              icon={Trash2}
+              label="Supprimer le tableau"
+              onClick={() => editor.chain().focus().deleteTable().run()}
+              tone={tone}
+            />
+          </>
+        )}
       </div>
       <EditorContent editor={editor} />
     </div>
@@ -503,4 +751,48 @@ function ToolbarButton({
 
 function ToolbarSeparator() {
   return <span className="w-px h-5 bg-slate-200/80 mx-0.5" aria-hidden="true" />
+}
+
+/** Wrap the current block(s) in an N-column block, switch the count if
+ *  already columned, or unwrap when the active count is clicked again. */
+function toggleColumns(editor: Editor, n: number) {
+  if (editor.isActive('columns')) {
+    const cur = editor.getAttributes('columns').count as number | undefined
+    if (cur === n) {
+      editor.chain().focus().lift('columns').run()
+    } else {
+      editor.chain().focus().updateAttributes('columns', { count: n }).run()
+    }
+  } else {
+    editor.chain().focus().wrapIn('columns', { count: n }).run()
+  }
+}
+
+/** Compact text-label toolbar button — used for the table row/column
+ *  operations that have no good single glyph. */
+function TextToolButton({
+  label,
+  text,
+  onClick,
+}: {
+  label: string
+  text: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center justify-center h-8 px-1.5 rounded',
+        'text-[11px] font-semibold text-slate-600 hover:bg-white/70',
+        'transition-colors whitespace-nowrap',
+      )}
+    >
+      {text}
+    </button>
+  )
 }

@@ -289,6 +289,81 @@ button:focus-visible {
         font-style: italic;
     }
 
+    /* ── Rich-text layout primitives (Tiptap editor + read views) ──
+       Self-contained class selectors (rt-*) so they render identically
+       in the editable .ProseMirror and in published .formal-block-html /
+       .prose / DocumentBody. Tailwind-typography uses :where() (zero
+       specificity), so a tag+class selector here wins without
+       !important. Emitted by RichArticleEditor's Columns node,
+       OrderedListStyle attribute, and the Table extension. */
+
+    /* Multi-column blocks — newspaper-style flow into 2 / 3 columns. */
+    .rt-columns-2 {
+        column-count: 2;
+        column-gap: 2.5rem;
+    }
+    .rt-columns-3 {
+        column-count: 3;
+        column-gap: 1.75rem;
+    }
+    .rt-columns-2 > *,
+    .rt-columns-3 > * {
+        break-inside: avoid;
+        margin-top: 0;
+    }
+    @media (max-width: 640px) {
+        .rt-columns-2,
+        .rt-columns-3 {
+            column-count: 1;
+        }
+    }
+
+    /* Ordered-list enumeration types (1. is the default / no class). */
+    ol.rt-ol-lower-alpha {
+        list-style-type: lower-alpha;
+    }
+    ol.rt-ol-upper-alpha {
+        list-style-type: upper-alpha;
+    }
+    ol.rt-ol-lower-roman {
+        list-style-type: lower-roman;
+    }
+    ol.rt-ol-upper-roman {
+        list-style-type: upper-roman;
+    }
+
+    /* Tables — signature grids + side-by-side content. */
+    table.rt-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 0.6em 0;
+        table-layout: fixed;
+    }
+    table.rt-table td,
+    table.rt-table th {
+        border: 1px solid #cbd5e1; /* slate-300 */
+        padding: 0.4em 0.6em;
+        vertical-align: top;
+        text-align: left;
+    }
+    table.rt-table th {
+        background: #f8fafc; /* slate-50 */
+        font-weight: 600;
+    }
+    /* Editor affordances — usable cell size + visible cell selection. */
+    .ProseMirror table.rt-table td,
+    .ProseMirror table.rt-table th {
+        min-width: 3rem;
+        position: relative;
+    }
+    .ProseMirror .selectedCell::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(59, 130, 246, 0.12);
+        pointer-events: none;
+    }
+
     /* Off-screen render skipping for long article lists.
        ``content-visibility: auto`` lets the browser skip layout +
        paint for rows that aren't near the viewport, so mounting a
