@@ -136,12 +136,16 @@ export function StickyReaderBar({
         {toolbar && (
           <div
             className={cn(
-              'flex items-center justify-start text-left',
+              'flex items-center',
               'border-t border-slate-200 pt-2 pb-2',
               'overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
             )}
           >
-            {toolbar}
+            {/* ml-auto right-aligns the actions when they fit; when they
+                overflow (narrow screens) it collapses to 0 so the strip
+                still scrolls from the start rather than clipping the
+                left-most chips (the justify-end + overflow pitfall). */}
+            <div className="ml-auto flex items-center">{toolbar}</div>
           </div>
         )}
       </div>
