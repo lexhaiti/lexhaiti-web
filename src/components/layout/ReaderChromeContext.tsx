@@ -4,9 +4,8 @@
  * Shared "reader chrome" state for the document-reading experience.
  *
  * When the law-detail page is scrolled into its body, it flips
- * ``stickyActive`` on. Three surfaces react to that single flag:
+ * ``stickyActive`` on. Two surfaces react to that single flag:
  *   - the global Header slides up out of the way (more reading room),
- *   - the law page pins its own compact tools bar to the top,
  *   - the floating "back to top" button appears.
  *
  * Default ``stickyActive = false`` and only the law page ever sets it,

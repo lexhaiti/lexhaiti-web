@@ -60,10 +60,6 @@ interface DocumentToolbarProps {
    *  Both callbacks must be provided to render the pair. */
   onCollapseAll?: () => void
   onExpandAll?: () => void
-  /** Compact mode for the pinned sticky bar — drops the vertical
-   *  margins + own overflow/wrap so the chips sit in a single row
-   *  and the parent bar owns the horizontal scroll. */
-  compact?: boolean
 }
 
 export function DocumentToolbar({
@@ -76,7 +72,6 @@ export function DocumentToolbar({
   onToggleHideAbrogated,
   onCollapseAll,
   onExpandAll,
-  compact = false,
 }: DocumentToolbarProps) {
   const { toast } = useToast()
   const isFr = lang === 'fr'
@@ -126,19 +121,14 @@ export function DocumentToolbar({
     'bg-primary text-white border-primary hover:bg-primary/90'
 
   return (
-    // Mobile: horizontal scroll strip so the sticky bar stays short
-    // and the chrono panel + article content underneath aren't
-    // buried beneath a 7-row button stack. Desktop/tablet: wrap to
-    // the existing 1–2 row layout. Scrollbar hidden so the chip
-    // strip reads cleanly without an underline.
-    // Compact (sticky bar): single nowrap row, no margins, no own
-    // overflow — the pinned bar provides the horizontal scroll.
+    // Mobile: horizontal scroll strip so the chrono panel + article
+    // content underneath aren't buried beneath a 7-row button stack.
+    // Desktop/tablet: wrap to the existing 1–2 row layout. Scrollbar
+    // hidden so the chip strip reads cleanly without an underline.
     <div
       className={cn(
         'flex items-center gap-2 text-[12px]',
-        compact
-          ? 'flex-nowrap'
-          : 'flex-nowrap sm:flex-wrap mt-3 mb-5 overflow-x-auto sm:overflow-visible -mx-2 px-2 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+        'flex-nowrap sm:flex-wrap mt-3 mb-5 overflow-x-auto sm:overflow-visible -mx-2 px-2 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
       )}
     >
       {showViewAsOf && (

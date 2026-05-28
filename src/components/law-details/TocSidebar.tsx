@@ -65,9 +65,9 @@ export function TocSidebar({
   onAddHeading,
   refetch,
 }: TocSidebarProps) {
-  // When the reader's compact tools bar is pinned, the sticky sidebar
-  // must drop below it (the bar is taller than the global header), so
-  // the « Sommaire » header never tucks under the bar.
+  // Once the reader scrolls into the body the global header slides
+  // away; the sticky sidebar then rises toward the top to use the
+  // freed space (see the wrapper's stickyActive-driven top below).
   const { stickyActive } = useReaderChrome()
 
   // Shared TOC props
@@ -212,11 +212,13 @@ export function TocSidebar({
           >
             <div
               className={cn(
-                'h-[calc(100vh-12rem)] lg:sticky lg:transition-[top] lg:duration-300 lg:ease-out',
-                // Clear the global header (~80px) normally; clear the
-                // taller pinned tools bar (~102px) with a comfortable gap
-                // once it's active.
-                stickyActive ? 'lg:top-32' : 'lg:top-24',
+                'lg:sticky lg:transition-[top] lg:duration-300 lg:ease-out',
+                // Sit below the global header normally; once it slides
+                // away on scroll, rise toward the top to use the freed
+                // reading space (and grow to fill it).
+                stickyActive
+                  ? 'lg:top-6 h-[calc(100vh-5rem)]'
+                  : 'lg:top-24 h-[calc(100vh-12rem)]',
               )}
             >
               <TableOfContents
