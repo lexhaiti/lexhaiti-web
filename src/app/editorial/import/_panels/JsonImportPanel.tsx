@@ -68,6 +68,7 @@ const EXAMPLE_LEGAL_TEXT = `{
   "status": "in_force",
   "editorial_status": "draft",
   "preamble_fr": "<p>Préambule…</p>",
+  "intro_fr": "<p>Vu la Constitution ;</p><p>Considérant que… ;</p><p>La Chambre des Députés et le Sénat ont voté la loi suivante :</p>",
   "headings": [
     {
       "key": "titre-i",
@@ -394,6 +395,11 @@ export default function JsonImportPanel() {
               {isFr
                 ? 'Les deux formes acceptent ``signers`` à la fin (texte légal : au top-level ; Moniteur : dans chaque entry.content).'
                 : "De fòm yo aksepte ``signers`` nan fen an (tèks legal: nan top-level; Moniteur: nan chak entry.content)."}
+            </li>
+            <li>
+              {isFr
+                ? 'Partie introductive : un seul champ ``intro_fr`` (visas + considérants + formule d’adoption réunis). Les anciennes clés (visas_fr, considerants_fr, enacting_formula_fr…) restent acceptées et sont fusionnées automatiquement dans ``intro_fr``.'
+                : "Pati entwodiktif : yon sèl chan ``intro_fr`` (viza + konsideran + fòmil adopsyon ansanm). Ansyen kle yo (visas_fr, considerants_fr, enacting_formula_fr…) toujou aksepte epi yo rasanble otomatikman nan ``intro_fr``."}
             </li>
             <li>
               {isFr
