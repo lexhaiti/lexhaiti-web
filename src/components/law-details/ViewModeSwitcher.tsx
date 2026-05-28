@@ -52,7 +52,7 @@ export function ViewModeSwitcher({
         lang === 'fr' ? 'Mode de lecture' : 'Mòd lekti'
       }
       className={cn(
-        'inline-flex items-center rounded-full border border-slate-200 bg-white/80 p-1 backdrop-blur-sm shadow-[0_1px_2px_rgba(15,23,42,0.04)]',
+        'inline-flex items-center h-9 rounded-full border border-slate-200 bg-white/80 p-1 backdrop-blur-sm shadow-[0_1px_2px_rgba(15,23,42,0.04)]',
         className,
       )}
     >

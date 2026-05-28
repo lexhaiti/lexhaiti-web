@@ -184,7 +184,11 @@ export function FormalBlocksSection({
   )
 
   return (
-    <div className="mb-8 space-y-3">
+    // ``mb-4`` + ``space-y-4`` so the préambule / visas-considérants
+    // blocks sit at the SAME 16px rhythm as the TITRE accordions below
+    // — the formal blocks read as part of the same stack rather than a
+    // detached header with an oversized gap.
+    <div className="mb-4 space-y-4">
       {PreambleBlock}
       {/* Introductory part: editors of migrated texts get the ordered-
           block editor; public readers (today view) get the continuous

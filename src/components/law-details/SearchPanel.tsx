@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { PanelLeft, PanelLeftClose, RotateCcw, Search } from 'lucide-react'
+import { PanelLeft, RotateCcw, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface SearchPanelProps {
@@ -80,29 +80,23 @@ export function SearchPanel({
             <div className="ml-auto hidden lg:flex items-center gap-3">
               {rightControls}
               {showSidebarToggle && (
+                // Static label + icon — the button toggles the sommaire
+                // but doesn't swap its glyph/text on open/close (kept
+                // simple at the user's request). ``h-9`` + ``text-[12px]``
+                // match the ViewModeSwitcher pill so the two read as a set.
                 <button
                   type="button"
                   onClick={onToggleSidebar}
                   aria-pressed={!!isSidebarOpen}
                   className={cn(
-                    'inline-flex items-center gap-2 rounded-full',
-                    'border border-slate-200 bg-white px-3.5 py-1.5',
-                    'text-xs font-semibold text-slate-600',
+                    'inline-flex items-center gap-2 rounded-full h-9',
+                    'border border-slate-200 bg-white px-3.5',
+                    'text-[12px] font-semibold text-slate-600',
                     'hover:border-primary hover:text-primary transition-colors',
                   )}
                 >
-                  {isSidebarOpen ? (
-                    <PanelLeftClose className="w-3.5 h-3.5" />
-                  ) : (
-                    <PanelLeft className="w-3.5 h-3.5" />
-                  )}
-                  {currentLang === 'fr'
-                    ? isSidebarOpen
-                      ? 'Masquer le sommaire'
-                      : 'Voir le sommaire'
-                    : isSidebarOpen
-                      ? 'Kache somè a'
-                      : 'Wè somè a'}
+                  <PanelLeft className="w-3.5 h-3.5" />
+                  {currentLang === 'fr' ? 'Voir le sommaire' : 'Wè somè'}
                 </button>
               )}
             </div>
