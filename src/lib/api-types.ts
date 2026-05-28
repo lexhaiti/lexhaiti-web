@@ -3902,6 +3902,21 @@ export interface components {
          * LegalTextRead
          * @description Full shape with timestamps. Children loaded on demand via includes.
          */
+        /** IntroBlockRead — one typed row of a legal text's ordered
+         *  introductory part (visa / considérant / mention / etc.). */
+        IntroBlockRead: {
+            /** Id */
+            id: number;
+            /** Position */
+            position: number;
+            kind: components["schemas"]["IntroBlockKind"];
+            /** Text Fr */
+            text_fr?: string | null;
+            /** Text Ht */
+            text_ht?: string | null;
+        };
+        /** IntroBlockKind */
+        IntroBlockKind: "sovereignty_formula" | "author" | "report_mention" | "visa" | "considerant" | "procedural_mention" | "enacting_formula";
         LegalTextRead: {
             /** Slug */
             slug: string;
@@ -4023,6 +4038,11 @@ export interface components {
              * @default []
              */
             signers: components["schemas"]["LegalSignerRead"][];
+            /**
+             * Intro Blocks
+             * @default []
+             */
+            intro_blocks: components["schemas"]["IntroBlockRead"][];
             /**
              * Theme Tags
              * @default []

@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { EditableFormalBlock } from './EditableFormalBlock'
+import { IntroductoryPart } from './IntroductoryPart'
 import { updateLegalTextMetadata } from '@/lib/api/endpoints'
 import type { BilingualDisplay } from './_helpers/lawDetailTypes'
 import type { components } from '@/lib/api-types'
@@ -64,6 +65,18 @@ export function FormalBlocksSection({
   // on LegalText. The two blocks below are rendered as inline JSX
   // constants then placed in the right order in the JSX tree.
   const mpFirst = !!(law as any).mentions_procedurales_before_considerants
+
+  // Ordered introductory part (visas / considérants / mentions as
+  // typed rows). When present we render ONE continuous "partie
+  // introductive" for public readers — matching Légifrance, which
+  // doesn't visually separate the three. We keep the legacy per-kind
+  // editable cards for (a) editors, until the dedicated intro-block
+  // editor lands, and (b) initial-version mode, where the flat
+  // blocks' version chain still drives the V1 swap. Préambule +
+  // formule d'adoption always render on their own, outside this.
+  const introBlocks = (law as any).intro_blocks ?? []
+  const showContinuousIntro =
+    introBlocks.length > 0 && !isEditor && !showInitialVersion
 
   const PreambleBlock = (
     <div ref={preambleRef} className="scroll-mt-24">
@@ -169,18 +182,28 @@ export function FormalBlocksSection({
   return (
     <div className="mb-8 space-y-3">
       {PreambleBlock}
-      {VisasBlock}
-      {/* Order flipped when the law sets
-          mentions_procedurales_before_considerants = true. */}
-      {mpFirst ? (
-        <>
-          {MentionsBlock}
-          {ConsiderantsBlock}
-        </>
+      {/* Continuous "partie introductive" for public readers when the
+          text has ordered intro blocks; otherwise the legacy per-kind
+          editable cards (editors + initial-version mode + un-migrated
+          texts). */}
+      {showContinuousIntro ? (
+        <IntroductoryPart blocks={introBlocks} lang={currentLang} />
       ) : (
         <>
-          {ConsiderantsBlock}
-          {MentionsBlock}
+          {VisasBlock}
+          {/* Order flipped when the law sets
+              mentions_procedurales_before_considerants = true. */}
+          {mpFirst ? (
+            <>
+              {MentionsBlock}
+              {ConsiderantsBlock}
+            </>
+          ) : (
+            <>
+              {ConsiderantsBlock}
+              {MentionsBlock}
+            </>
+          )}
         </>
       )}
 
