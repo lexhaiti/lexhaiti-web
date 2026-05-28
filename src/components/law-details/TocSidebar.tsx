@@ -56,11 +56,10 @@ export function TocSidebar({
   pageSearchQuery,
   articleBreadcrumb,
   preambleRef,
+  // visasRef doubles as the scroll anchor for the combined
+  // "Partie introductive" block.
   visasRef,
-  considerantsRef,
   setPreambleExpanded,
-  setVisasExpanded,
-  setConsiderantsExpanded,
   onArticleSelect,
   onHeadingNavigate,
   onAddHeading,
@@ -84,8 +83,16 @@ export function TocSidebar({
     selectedArticle: selectedArticle?.number,
     externalQuery: pageSearchScope === 'sommaire' ? pageSearchQuery : '',
     hasPreamble: !!law.preamble_fr,
-    hasVisas: !!law.visas_fr,
-    hasConsiderants: !!law.considerants_fr,
+    // Single "Partie introductive" entry — true when the text has any
+    // introductory content (the combined intro_fr field, or the legacy
+    // flat columns as a fallback).
+    hasIntro: !!(
+      (law as any).intro_fr ||
+      (law as any).intro_ht ||
+      law.visas_fr ||
+      law.considerants_fr ||
+      law.enacting_formula_fr
+    ),
     isEditor,
     activeHeadingIds: articleBreadcrumb.map((h: any) => h.id),
     onHeadingTitleSave: async (id: number, field: string, next: string) => {
@@ -171,21 +178,10 @@ export function TocSidebar({
                       })
                     }, 100)
                   }}
-                  onVisasClick={() => {
-                    setVisasExpanded(true)
+                  onIntroClick={() => {
                     setIsSidebarOpen(false)
                     setTimeout(() => {
                       visasRef.current?.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start',
-                      })
-                    }, 100)
-                  }}
-                  onConsiderantsClick={() => {
-                    setConsiderantsExpanded(true)
-                    setIsSidebarOpen(false)
-                    setTimeout(() => {
-                      considerantsRef.current?.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start',
                       })
@@ -268,19 +264,9 @@ export function TocSidebar({
                     })
                   }, 100)
                 }}
-                onVisasClick={() => {
-                  setVisasExpanded(true)
+                onIntroClick={() => {
                   setTimeout(() => {
                     visasRef.current?.scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'start',
-                    })
-                  }, 100)
-                }}
-                onConsiderantsClick={() => {
-                  setConsiderantsExpanded(true)
-                  setTimeout(() => {
-                    considerantsRef.current?.scrollIntoView({
                       behavior: 'smooth',
                       block: 'start',
                     })

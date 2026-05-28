@@ -73,6 +73,9 @@ interface Props {
    *  delete) succeeds, so the parent can refetch the law and the
    *  list re-renders. */
   onArticleChanged?: () => void
+  /** Editor-only: focus + open an article's editor in the
+   *  single-article view (edit-from-any-view). */
+  onEditArticle?: (article: any) => void
   /** Search filter — when populated, the list shows only articles
    *  matching the query under the selected scope. ``sommaire`` is
    *  the default; matches against article number + ancestor heading
@@ -134,6 +137,7 @@ export function ArticleListView({
   lawId,
   lawPublicationDate,
   onArticleChanged,
+  onEditArticle,
   searchQuery,
   searchScope = 'sommaire',
   hideAbrogated = false,
@@ -357,6 +361,7 @@ export function ArticleListView({
                 lawId={lawId ?? null}
                 siblingArticles={siblingArticles}
                 onArticleChanged={onArticleChanged}
+                onEditArticle={onEditArticle}
                 showInitialVersion={showInitialVersion}
                 initialV1={
                   showInitialVersion && a.id != null
@@ -505,6 +510,9 @@ interface ArticleCardProps {
   lawId: number | null
   siblingArticles: Array<{ id: number; number: string; slug: string }>
   onArticleChanged?: () => void
+  /** Editor-only: focus + open this article's editor in the
+   *  single-article view (edit-from-any-view). */
+  onEditArticle?: (article: any) => void
   /** When true, the card swaps content + title to the V1 body. */
   showInitialVersion?: boolean
   /** V1 body for an amended article — null on V1-only articles
@@ -531,6 +539,7 @@ const ArticleCard = memo(function ArticleCard({
   lawId,
   siblingArticles,
   onArticleChanged,
+  onEditArticle,
   showInitialVersion = false,
   initialV1,
 }: ArticleCardProps) {
@@ -726,6 +735,7 @@ const ArticleCard = memo(function ArticleCard({
           isEditor={isEditor}
           currentLang={lang}
           onArticleChanged={onArticleChanged}
+          onEdit={onEditArticle ? () => onEditArticle(a) : undefined}
         />
       )}
     </article>

@@ -49,6 +49,7 @@ import {
   GitCompare,
   Layers,
   Loader2,
+  Pencil,
   Plus,
   Trash2,
 } from 'lucide-react'
@@ -126,6 +127,10 @@ interface Props {
   /** Called after Add-Version / Add-Article / Delete succeeds so the
    *  parent can refetch the law and re-render rows. */
   onArticleChanged?: () => void
+  /** Editor-only: focus this article in the single-article view and
+   *  open its editor (edit-from-any-view). When omitted the "Modifier"
+   *  chip is hidden. */
+  onEdit?: () => void
 }
 
 export function ArticleAccordions({
@@ -147,6 +152,7 @@ export function ArticleAccordions({
   isEditor = false,
   currentLang,
   onArticleChanged,
+  onEdit,
 }: Props) {
   const isFr = currentLang === 'fr'
   const { toast } = useToast()
@@ -377,6 +383,14 @@ export function ArticleAccordions({
   return (
     <div className="mt-5 pt-4 border-t border-slate-100">
       <div className="flex items-center gap-2 flex-wrap">
+        {isEditor && onEdit && (
+          <PillTrigger
+            icon={Pencil}
+            label={isFr ? 'Modifier' : 'Modifye'}
+            open={false}
+            onClick={onEdit}
+          />
+        )}
         {showLinks && (
           <PillTrigger
             icon={Layers}

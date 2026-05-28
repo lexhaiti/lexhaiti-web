@@ -152,7 +152,9 @@ export function FormalBlocksSection({
       {isEditor ? (
         IntroEditorBlock
       ) : (
-        <IntroductoryPart parts={introParts} lang={currentLang} />
+        <div ref={visasRef} className="scroll-mt-24">
+          <IntroductoryPart parts={introParts} lang={currentLang} />
+        </div>
       )}
     </div>
   )

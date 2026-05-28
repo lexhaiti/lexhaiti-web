@@ -4038,11 +4038,10 @@ export interface components {
              * @default []
              */
             signers: components["schemas"]["LegalSignerRead"][];
-            /**
-             * Intro Blocks
-             * @default []
-             */
-            intro_blocks: components["schemas"]["IntroBlockRead"][];
+            /** Intro Fr */
+            intro_fr?: string | null;
+            /** Intro Ht */
+            intro_ht?: string | null;
             /**
              * Theme Tags
              * @default []

@@ -75,6 +75,10 @@ export default function LawDetail() {
 
   const [selectedArticle, setSelectedArticle] =
     useState<SelectedArticle | null>(null)
+  // One-shot signal: when an editor clicks "Modifier" on an article in
+  // a list view, we focus that article in the single-article view and
+  // ask the viewer to open its editor (edit-from-any-view).
+  const [autoEditId, setAutoEditId] = useState<number | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   // Hide articles whose status === 'abrogated'. Controlled by the
   // DocumentToolbar above the article list.
@@ -562,6 +566,24 @@ export default function LawDetail() {
     }, 100)
   }
 
+  // Editor "Modifier" from a list view (Tous / Par titre): focus the
+  // article in the single-article view AND open its inline editor there
+  // — so editing is reachable from any view, in one click.
+  const handleEditArticle = (article: any) => {
+    setSelectedArticle(article)
+    setViewMode('article')
+    setAutoEditId(article.id)
+    const params = new URLSearchParams(searchParams?.toString() ?? '')
+    params.set('article', String(article.number))
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+    setTimeout(() => {
+      articleViewerRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    }, 100)
+  }
+
   // Sommaire → body navigation. Clicking a heading (Titre / Chapitre /
   // Section) in the sommaire jumps the body to that chapter and opens
   // it: we find the first article anywhere under the heading and
@@ -862,6 +884,8 @@ export default function LawDetail() {
                       onCopyLink={handleCopyLink}
                       onEmptyAddArticle={() => setEmptyAddArticleOpen(true)}
                       refetch={refetch}
+                      autoEditId={autoEditId}
+                      onAutoEditHandled={() => setAutoEditId(null)}
                     />
                   )
                 }
@@ -893,6 +917,8 @@ export default function LawDetail() {
                           setEmptyAddArticleOpen(true)
                         }
                         refetch={refetch}
+                        autoEditId={autoEditId}
+                        onAutoEditHandled={() => setAutoEditId(null)}
                       />
                     )
                   }
@@ -907,6 +933,7 @@ export default function LawDetail() {
                       isEditor={isEditor}
                       lawId={law.id}
                       onArticleChanged={refetch}
+                      onEditArticle={handleEditArticle}
                       searchQuery={pageSearchQuery}
                       searchScope={pageSearchScope}
                       hideAbrogated={hideAbrogated}
@@ -934,6 +961,8 @@ export default function LawDetail() {
                       onCopyLink={handleCopyLink}
                       onEmptyAddArticle={() => setEmptyAddArticleOpen(true)}
                       refetch={refetch}
+                      autoEditId={autoEditId}
+                      onAutoEditHandled={() => setAutoEditId(null)}
                     />
                   )
                 }
@@ -966,6 +995,7 @@ export default function LawDetail() {
                         null
                       }
                       onArticleChanged={refetch}
+                      onEditArticle={handleEditArticle}
                       searchQuery={pageSearchQuery}
                       searchScope={pageSearchScope}
                       hideAbrogated={hideAbrogated}

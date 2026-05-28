@@ -30,6 +30,10 @@ interface ArticleSectionProps {
   onCopyLink: () => void
   onEmptyAddArticle: () => void
   refetch: () => void
+  /** Forwarded to ArticleViewer: auto-open the editor for this article
+   *  id when the reader was sent here by a list-view "Modifier" click. */
+  autoEditId?: number | null
+  onAutoEditHandled?: () => void
 }
 
 /**
@@ -56,6 +60,8 @@ export function ArticleSection({
   onCopyLink,
   onEmptyAddArticle,
   refetch,
+  autoEditId,
+  onAutoEditHandled,
 }: ArticleSectionProps) {
   if (isDocumentMode) {
     return (
@@ -104,6 +110,8 @@ export function ArticleSection({
         defaultStatus={mapTextStatusToArticleStatus(law.status)}
         isEditor={isEditor}
         onArticleSaved={refetch}
+        autoEditId={autoEditId}
+        onAutoEditHandled={onAutoEditHandled}
         siblingArticles={law.articles as any}
         lawSlug={law.slug}
         lawId={law.id}

@@ -80,10 +80,10 @@ interface TableOfContentsProps {
   externalQuery?: string
   hasPreamble?: boolean
   onPreambleClick?: () => void
-  hasVisas?: boolean
-  onVisasClick?: () => void
-  hasConsiderants?: boolean
-  onConsiderantsClick?: () => void
+  /** Single combined "Partie introductive" entry (visas + considérants
+   *  + mentions + enacting formula). */
+  hasIntro?: boolean
+  onIntroClick?: () => void
   /** Editor mode toggles inline heading-title editing. Public viewers
    *  see the same TOC with no edit affordances. */
   isEditor?: boolean
@@ -353,10 +353,8 @@ export default function TableOfContents({
   externalQuery,
   hasPreamble,
   onPreambleClick,
-  hasVisas,
-  onVisasClick,
-  hasConsiderants,
-  onConsiderantsClick,
+  hasIntro,
+  onIntroClick,
   isEditor = false,
   onHeadingTitleSave,
   onHeadingDelete,
@@ -1309,24 +1307,17 @@ export default function TableOfContents({
               <span>{currentLang === 'fr' ? 'Préambule' : 'Premye koze'}</span>
             </button>
           )}
-          {hasVisas && onVisasClick && (
+          {hasIntro && onIntroClick && (
             <button
-              onClick={onVisasClick}
+              onClick={onIntroClick}
               className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-slate-600 hover:text-red-600 transition-colors mb-1 ml-3"
             >
               <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
-              {/* Kreyòl uses "Viza" (z, not s) — matches the
-                  Konstitisyon's own orthography. */}
-              <span>{currentLang === 'fr' ? 'Visas' : 'Viza'}</span>
-            </button>
-          )}
-          {hasConsiderants && onConsiderantsClick && (
-            <button
-              onClick={onConsiderantsClick}
-              className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-slate-600 hover:text-red-600 transition-colors mb-1 ml-3"
-            >
-              <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
-              <span>{currentLang === 'fr' ? 'Considérants' : 'Konsideran'}</span>
+              <span>
+                {currentLang === 'fr'
+                  ? 'Partie introductive'
+                  : 'Pati entwodiktif'}
+              </span>
             </button>
           )}
           {/* Orphan articles — sit at the top of the TOC scroll area,

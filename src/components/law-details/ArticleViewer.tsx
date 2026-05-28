@@ -318,6 +318,13 @@ interface ArticleViewerProps {
   isEditor?: boolean
   /** Called after a successful save so the parent can refetch the law. */
   onArticleSaved?: () => void
+  /** When this equals the focused article's id, the viewer auto-enters
+   *  inline edit mode — used by the list views' per-row "Modifier"
+   *  affordance so an editor can edit from ANY view (the click focuses
+   *  the article here and opens its editor in one step). Cleared via
+   *  ``onAutoEditHandled``. */
+  autoEditId?: number | null
+  onAutoEditHandled?: () => void
   /** All articles in the parent text — used to resolve same-text citation
    *  targets (article id → "Article N" label + permalink). Pass null to
    *  fall back to generic "Article #id" labels. */
@@ -356,6 +363,8 @@ export default function ArticleViewer({
   defaultStatus,
   isEditor = false,
   onArticleSaved,
+  autoEditId,
+  onAutoEditHandled,
   siblingArticles,
   lawSlug,
   lawId,
@@ -720,6 +729,16 @@ export default function ArticleViewer({
       bodyHtDraft: article.content_ht ?? '',
     })
   }
+  // Auto-open the editor when the parent navigated here via a list-view
+  // "Modifier" click (edit-from-any-view). Fires once per focus, then
+  // clears the signal so re-renders don't re-trigger it.
+  useEffect(() => {
+    if (isEditor && autoEditId != null && article?.id === autoEditId && !editing) {
+      startEdit('mono')
+      onAutoEditHandled?.()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoEditId, article?.id, isEditor])
   const cancelEdit = () => {
     setEditing(null)
   }
