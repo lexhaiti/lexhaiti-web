@@ -27,6 +27,10 @@ interface Props {
   visibleCount?: number
   /** ``fr`` / ``ht`` — labels translate. */
   lang: 'fr' | 'ht'
+  /** Override for the "Par chapitre" segment label, derived from the
+   *  law's highest heading level (e.g. "Par titre", "Par livre"). When
+   *  omitted, falls back to the generic "Par chapitre". */
+  chapitreLabel?: { fr: string; ht: string }
   className?: string
 }
 
@@ -42,6 +46,7 @@ export function ViewModeSwitcher({
   onChange,
   visibleCount,
   lang,
+  chapitreLabel,
   className,
 }: Props) {
   if (available.length < 2) return null
@@ -58,7 +63,12 @@ export function ViewModeSwitcher({
     >
       {available.map((m) => {
         const { fr, ht, Icon } = LABELS[m]
-        const label = lang === 'fr' ? fr : ht
+        // The chapitre segment label follows the law's highest heading
+        // level ("Par titre" / "Par livre" / …) when the parent passes
+        // an override; otherwise the generic "Par chapitre".
+        const segFr = m === 'chapitre' && chapitreLabel ? chapitreLabel.fr : fr
+        const segHt = m === 'chapitre' && chapitreLabel ? chapitreLabel.ht : ht
+        const label = lang === 'fr' ? segFr : segHt
         const isActive = m === mode
         return (
           <button

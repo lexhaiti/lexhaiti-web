@@ -327,6 +327,31 @@ export default function LawDetail() {
     return chapters.findIndex((c) => c.headingId === topId)
   }, [chapters, selectedArticle?.heading_id, topAncestorById])
 
+  // Dynamic label for the "Par chapitre" switcher segment — follows the
+  // law's HIGHEST heading level (the level of the root headings). A
+  // Titre-rooted text reads "Par titre", a Livre-rooted one "Par livre",
+  // etc. Falls back to "Par chapitre" when there are no headings or the
+  // level is unknown. The « N° » suffix on the Code-civil "Loi N°"
+  // override is stripped so it reads "Par loi".
+  const chapitreLabel = useMemo(() => {
+    const codeSubcategory = law?.code_subcategory ?? null
+    const tops = (law?.headings ?? []).filter((h) => h.parent_id == null)
+    const level = tops[0]?.level
+    const clean = (s: string | null) =>
+      s
+        ? s
+            .replace(/\s*N[°o]\b.*$/i, '')
+            .trim()
+            .toLowerCase()
+        : null
+    const fr = clean(getLevelLabel(level, 'fr', codeSubcategory))
+    const ht = clean(getLevelLabel(level, 'ht', codeSubcategory))
+    return {
+      fr: fr ? `Par ${fr}` : 'Par chapitre',
+      ht: ht ? `Pa ${ht}` : 'Pa chapit',
+    }
+  }, [law?.headings, law?.code_subcategory])
+
   // Auto-select an article whenever the ``?article=N`` URL param
   // changes (initial load, deep-link from search, or in-page Link
   // navigation like the list-view "Vue article unique" row). The
@@ -652,13 +677,23 @@ export default function LawDetail() {
                       mode={viewMode}
                       available={availableModes}
                       onChange={setViewMode}
+                      chapitreLabel={chapitreLabel}
                       visibleCount={(() => {
                         if (viewMode === 'article')
                           return selectedArticle ? 1 : 0
-                        if (viewMode === 'chapitre' && selectedArticle) {
+                        if (
+                          viewMode === 'chapitre' &&
+                          selectedArticle?.heading_id != null
+                        ) {
+                          // Count the whole top-level division (matches
+                          // what the chapter view now renders).
+                          const top = topAncestorById.get(
+                            selectedArticle.heading_id,
+                          )
                           return (law.articles ?? []).filter(
                             (a: any) =>
-                              a.heading_id === selectedArticle.heading_id,
+                              a.heading_id != null &&
+                              topAncestorById.get(a.heading_id) === top,
                           ).length
                         }
                         return law.articles?.length ?? 0
