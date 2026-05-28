@@ -20,7 +20,14 @@ interface FormalBlocksSectionProps {
   enactingDisplay: BilingualDisplay
   preambleRef: React.RefObject<HTMLDivElement | null>
   visasRef: React.RefObject<HTMLDivElement | null>
-  considerantsRef: React.RefObject<HTMLDivElement | null>
+  /** Controlled expand of the Préambule block — synced with the
+   *  sommaire's "Préambule" entry (open in one place opens both). */
+  preambleExpanded: boolean
+  onPreambleExpandedChange: (next: boolean) => void
+  /** Controlled expand of the combined "Partie introductive" block —
+   *  synced with the sommaire's "Partie introductive" entry. */
+  introExpanded: boolean
+  onIntroExpandedChange: (next: boolean) => void
   showInitialVersion?: boolean
   refetch: () => void
 }
@@ -44,6 +51,10 @@ export function FormalBlocksSection({
   enactingDisplay,
   preambleRef,
   visasRef,
+  preambleExpanded,
+  onPreambleExpandedChange,
+  introExpanded,
+  onIntroExpandedChange,
   showInitialVersion = false,
   refetch,
 }: FormalBlocksSectionProps) {
@@ -99,6 +110,8 @@ export function FormalBlocksSection({
         isFr={currentLang === 'fr'}
         isEditor={isEditor}
         title={currentLang === 'fr' ? 'Préambule' : 'Premye koze'}
+        expanded={preambleExpanded}
+        onExpandedChange={onPreambleExpandedChange}
         value={preambleDisplay.value}
         valueHt={law.preamble_ht ?? null}
         fallbackToFr={preambleDisplay.fallback}
@@ -123,6 +136,8 @@ export function FormalBlocksSection({
       <EditableFormalBlock
         isFr={currentLang === 'fr'}
         isEditor={isEditor}
+        expanded={introExpanded}
+        onExpandedChange={onIntroExpandedChange}
         title={
           currentLang === 'fr' ? 'Partie introductive' : 'Pati entwodiktif'
         }
@@ -153,7 +168,12 @@ export function FormalBlocksSection({
         IntroEditorBlock
       ) : (
         <div ref={visasRef} className="scroll-mt-24">
-          <IntroductoryPart parts={introParts} lang={currentLang} />
+          <IntroductoryPart
+            parts={introParts}
+            lang={currentLang}
+            expanded={introExpanded}
+            onExpandedChange={onIntroExpandedChange}
+          />
         </div>
       )}
     </div>

@@ -92,8 +92,14 @@ export interface EditableFormalBlockProps {
   variant?: 'collapsible' | 'compact'
   /** Side-of-header hint text shown in slate-400. */
   hint?: string
-  /** Initially expanded (collapsible variant only). Default: false. */
+  /** Initially expanded (collapsible variant only). Default: false.
+   *  Only used in uncontrolled mode (when ``expanded`` is undefined). */
   defaultExpanded?: boolean
+  /** Controlled expand state (collapsible variant only). When provided
+   *  with ``onExpandedChange``, the parent owns open/close so the
+   *  sommaire entry and this block stay in sync. Omit to self-manage. */
+  expanded?: boolean
+  onExpandedChange?: (next: boolean) => void
   /** Save handler — receives the new value (or null when cleared).
    *  Throws to surface an error to the user. */
   onSave: (newValue: string | null) => Promise<void>
@@ -153,6 +159,8 @@ export function EditableFormalBlock({
   variant = 'collapsible',
   hint,
   defaultExpanded = false,
+  expanded: controlledExpanded,
+  onExpandedChange,
   onSave,
   isFr,
   lawSlug,
@@ -164,7 +172,19 @@ export function EditableFormalBlock({
   onAlignChange,
   showInitialVersion = false,
 }: EditableFormalBlockProps) {
-  const [expanded, setExpanded] = useState(defaultExpanded)
+  // Expand state — controlled by the parent when ``controlledExpanded``
+  // is passed (keeps the sommaire entry and this block in lockstep),
+  // otherwise self-managed. ``setExpanded`` accepts the same
+  // value-or-updater shape as a ``useState`` setter so existing call
+  // sites (``setExpanded((v) => !v)``) keep working in both modes.
+  const isExpandControlled = controlledExpanded !== undefined
+  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded)
+  const expanded = isExpandControlled ? controlledExpanded : internalExpanded
+  const setExpanded = (next: boolean | ((prev: boolean) => boolean)) => {
+    const resolved = typeof next === 'function' ? next(expanded) : next
+    if (isExpandControlled) onExpandedChange?.(resolved)
+    else setInternalExpanded(resolved)
+  }
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<string>(value ?? '')
   const [saving, setSaving] = useState(false)

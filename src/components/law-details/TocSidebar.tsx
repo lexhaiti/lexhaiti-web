@@ -28,10 +28,13 @@ interface TocSidebarProps {
   articleBreadcrumb: any[]
   preambleRef: React.RefObject<HTMLDivElement | null>
   visasRef: React.RefObject<HTMLDivElement | null>
-  considerantsRef: React.RefObject<HTMLDivElement | null>
+  /** Controlled expand of the Préambule / Partie introductive body
+   *  blocks. The sommaire entries mirror these (chevron) and clicking a
+   *  row toggles open/close — body and sommaire stay in lockstep. */
+  preambleExpanded: boolean
   setPreambleExpanded: (expanded: boolean) => void
-  setVisasExpanded: (expanded: boolean) => void
-  setConsiderantsExpanded: (expanded: boolean) => void
+  introExpanded: boolean
+  setIntroExpanded: (expanded: boolean) => void
   onArticleSelect: (article: any) => void
   /** Fired when a heading row is clicked in the sommaire — the parent
    *  jumps the body to that chapter and opens it. */
@@ -59,7 +62,10 @@ export function TocSidebar({
   // visasRef doubles as the scroll anchor for the combined
   // "Partie introductive" block.
   visasRef,
+  preambleExpanded,
   setPreambleExpanded,
+  introExpanded,
+  setIntroExpanded,
   onArticleSelect,
   onHeadingNavigate,
   onAddHeading,
@@ -83,6 +89,9 @@ export function TocSidebar({
     selectedArticle: selectedArticle?.number,
     externalQuery: pageSearchScope === 'sommaire' ? pageSearchQuery : '',
     hasPreamble: !!law.preamble_fr,
+    // Sommaire-entry chevrons mirror the body blocks' open/closed state.
+    preambleExpanded,
+    introExpanded,
     // Single "Partie introductive" entry — true when the text has any
     // introductory content (the combined intro_fr field, or the legacy
     // flat columns as a fallback).
@@ -169,23 +178,30 @@ export function TocSidebar({
                       : undefined
                   }
                   onPreambleClick={() => {
-                    setPreambleExpanded(true)
+                    const willOpen = !preambleExpanded
+                    setPreambleExpanded(willOpen)
                     setIsSidebarOpen(false)
-                    setTimeout(() => {
-                      preambleRef.current?.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start',
-                      })
-                    }, 100)
+                    if (willOpen) {
+                      setTimeout(() => {
+                        preambleRef.current?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'start',
+                        })
+                      }, 100)
+                    }
                   }}
                   onIntroClick={() => {
+                    const willOpen = !introExpanded
+                    setIntroExpanded(willOpen)
                     setIsSidebarOpen(false)
-                    setTimeout(() => {
-                      visasRef.current?.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start',
-                      })
-                    }, 100)
+                    if (willOpen) {
+                      setTimeout(() => {
+                        visasRef.current?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'start',
+                        })
+                      }, 100)
+                    }
                   }}
                 />
               </div>
@@ -256,21 +272,28 @@ export function TocSidebar({
                 onArticleSelect={onArticleSelect}
                 onHeadingNavigate={onHeadingNavigate}
                 onPreambleClick={() => {
-                  setPreambleExpanded(true)
-                  setTimeout(() => {
-                    preambleRef.current?.scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'start',
-                    })
-                  }, 100)
+                  const willOpen = !preambleExpanded
+                  setPreambleExpanded(willOpen)
+                  if (willOpen) {
+                    setTimeout(() => {
+                      preambleRef.current?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start',
+                      })
+                    }, 100)
+                  }
                 }}
                 onIntroClick={() => {
-                  setTimeout(() => {
-                    visasRef.current?.scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'start',
-                    })
-                  }, 100)
+                  const willOpen = !introExpanded
+                  setIntroExpanded(willOpen)
+                  if (willOpen) {
+                    setTimeout(() => {
+                      visasRef.current?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start',
+                      })
+                    }, 100)
+                  }
                 }}
               />
             </div>

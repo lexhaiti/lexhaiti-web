@@ -489,11 +489,14 @@ export default function LawDetail() {
     }
   }, [setStickyActive])
   const preambleRef = React.useRef<HTMLDivElement>(null)
+  // visasRef doubles as the scroll anchor for the combined "Partie
+  // introductive" block.
   const visasRef = React.useRef<HTMLDivElement>(null)
-  const considerantsRef = React.useRef<HTMLDivElement>(null)
+  // Préambule + Partie introductive open/close state — lifted here so
+  // the sommaire entries and the body blocks stay in sync (clicking the
+  // sommaire entry toggles the body block, and vice versa).
   const [preambleExpanded, setPreambleExpanded] = useState(false)
-  const [visasExpanded, setVisasExpanded] = useState(false)
-  const [considerantsExpanded, setConsiderantsExpanded] = useState(false)
+  const [introExpanded, setIntroExpanded] = useState(false)
 
   if (isLoading) {
     return (
@@ -703,10 +706,10 @@ export default function LawDetail() {
               articleBreadcrumb={articleBreadcrumb}
               preambleRef={preambleRef}
               visasRef={visasRef}
-              considerantsRef={considerantsRef}
+              preambleExpanded={preambleExpanded}
               setPreambleExpanded={setPreambleExpanded}
-              setVisasExpanded={setVisasExpanded}
-              setConsiderantsExpanded={setConsiderantsExpanded}
+              introExpanded={introExpanded}
+              setIntroExpanded={setIntroExpanded}
               onArticleSelect={handleArticleSelect}
               onHeadingNavigate={handleHeadingNavigate}
               onAddHeading={setAddHeadingAnchor}
@@ -823,7 +826,10 @@ export default function LawDetail() {
               enactingDisplay={enactingDisplay}
               preambleRef={preambleRef}
               visasRef={visasRef}
-              considerantsRef={considerantsRef}
+              preambleExpanded={preambleExpanded}
+              onPreambleExpandedChange={setPreambleExpanded}
+              introExpanded={introExpanded}
+              onIntroExpandedChange={setIntroExpanded}
               showInitialVersion={viewAsOfDate === 'initial'}
               refetch={refetch}
             />

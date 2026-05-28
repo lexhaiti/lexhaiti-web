@@ -112,9 +112,11 @@ export function DocumentToolbar({
     }
   }
 
-  // Plain text + outline button — uniform across the row.
+  // Plain text + outline button — uniform across the row. Pill radius
+  // (rounded-full) matches the article-viewer navigation / share
+  // buttons so the whole reader chrome reads as one button family.
   const baseChip =
-    'inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-medium transition-colors whitespace-nowrap shrink-0'
+    'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-medium transition-colors whitespace-nowrap shrink-0'
   const idleChip =
     'border-slate-200 bg-white text-slate-700 hover:border-primary hover:text-primary'
   const activeChip =

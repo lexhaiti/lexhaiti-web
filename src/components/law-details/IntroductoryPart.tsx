@@ -24,8 +24,15 @@ interface Props {
   parts: (string | null | undefined)[]
   lang: 'fr' | 'ht'
   /** Expanded on first render. Default false to match the other
-   *  pre-article blocks (keeps the article list prominent). */
+   *  pre-article blocks (keeps the article list prominent). Only used
+   *  in uncontrolled mode (when ``expanded`` is undefined). */
   defaultExpanded?: boolean
+  /** Controlled expand state. When provided (paired with
+   *  ``onExpandedChange``), the parent owns open/close so the sommaire's
+   *  "Partie introductive" entry and this block stay in sync — clicking
+   *  the chevron in either place toggles both. Omit for standalone use. */
+  expanded?: boolean
+  onExpandedChange?: (next: boolean) => void
 }
 
 /** Plain-text preview for the collapsed header — strips tags from the
@@ -41,8 +48,24 @@ function previewSnippet(raw: string, limit = 90): string {
   return plain.length <= limit ? plain : plain.slice(0, limit).trimEnd() + '…'
 }
 
-export function IntroductoryPart({ parts, lang, defaultExpanded = false }: Props) {
-  const [expanded, setExpanded] = useState(defaultExpanded)
+export function IntroductoryPart({
+  parts,
+  lang,
+  defaultExpanded = false,
+  expanded: controlledExpanded,
+  onExpandedChange,
+}: Props) {
+  // Controlled when the parent passes ``expanded`` — then open/close is
+  // owned upstream so the sommaire entry and this card stay in lockstep.
+  // Otherwise we keep our own state (standalone use).
+  const isControlled = controlledExpanded !== undefined
+  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded)
+  const expanded = isControlled ? controlledExpanded : internalExpanded
+  const toggle = () => {
+    const next = !expanded
+    if (isControlled) onExpandedChange?.(next)
+    else setInternalExpanded(next)
+  }
   const isFr = lang === 'fr'
 
   const visible = parts
@@ -64,7 +87,7 @@ export function IntroductoryPart({ parts, lang, defaultExpanded = false }: Props
     >
       <button
         type="button"
-        onClick={() => setExpanded((v) => !v)}
+        onClick={toggle}
         aria-expanded={expanded}
         className={cn(
           'relative w-full flex items-center gap-3 px-4 py-3 text-left transition-colors',

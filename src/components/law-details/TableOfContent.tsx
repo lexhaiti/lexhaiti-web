@@ -80,10 +80,16 @@ interface TableOfContentsProps {
   externalQuery?: string
   hasPreamble?: boolean
   onPreambleClick?: () => void
+  /** Open/closed state of the Préambule body block, so the sommaire
+   *  entry's chevron mirrors it (down = open, right = closed). */
+  preambleExpanded?: boolean
   /** Single combined "Partie introductive" entry (visas + considérants
    *  + mentions + enacting formula). */
   hasIntro?: boolean
   onIntroClick?: () => void
+  /** Open/closed state of the Partie introductive body block — the
+   *  sommaire chevron mirrors it and clicking the row toggles both. */
+  introExpanded?: boolean
   /** Editor mode toggles inline heading-title editing. Public viewers
    *  see the same TOC with no edit affordances. */
   isEditor?: boolean
@@ -353,8 +359,10 @@ export default function TableOfContents({
   externalQuery,
   hasPreamble,
   onPreambleClick,
+  preambleExpanded,
   hasIntro,
   onIntroClick,
+  introExpanded,
   isEditor = false,
   onHeadingTitleSave,
   onHeadingDelete,
@@ -1294,12 +1302,23 @@ export default function TableOfContents({
       {/* Tree */}
       <ScrollArea className="flex-1">
         <div className="pt-3">
+          {/* Préambule + Partie introductive — the two pre-article
+              blocks. Bold and flush-left at ``px-3`` so they sit on the
+              SAME indent rail as the highest-level heading rows below
+              (renderNode depth-0). The chevron mirrors the body block's
+              open/closed state; clicking the row toggles both (the body
+              accordion and this entry stay in lockstep). */}
           {hasPreamble && onPreambleClick && (
             <button
               onClick={onPreambleClick}
-              className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:text-red-600 transition-colors mb-1"
+              aria-expanded={!!preambleExpanded}
+              className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm font-bold text-slate-700 hover:text-red-600 transition-colors mb-1"
             >
-              <ChevronRight className="w-4 h-4 text-red-600 flex-shrink-0" />
+              {preambleExpanded ? (
+                <ChevronDown className="w-4 h-4 text-red-600 flex-shrink-0" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-red-600 flex-shrink-0" />
+              )}
               {/* Kreyòl: "Premye koze" is the canonical translation
                   used in N° 36-A — keep them aligned. The previous
                   "Preanmbil" was a literal anglicisation that doesn't
@@ -1310,9 +1329,14 @@ export default function TableOfContents({
           {hasIntro && onIntroClick && (
             <button
               onClick={onIntroClick}
-              className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-slate-600 hover:text-red-600 transition-colors mb-1 ml-3"
+              aria-expanded={!!introExpanded}
+              className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm font-bold text-slate-700 hover:text-red-600 transition-colors mb-1"
             >
-              <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              {introExpanded ? (
+                <ChevronDown className="w-4 h-4 text-red-600 flex-shrink-0" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-red-600 flex-shrink-0" />
+              )}
               <span>
                 {currentLang === 'fr'
                   ? 'Partie introductive'
