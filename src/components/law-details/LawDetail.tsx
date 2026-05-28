@@ -261,40 +261,71 @@ export default function LawDetail() {
     }
   }, [law?.articles, law?.headings, law?.code_subcategory, currentArticleIndex, selectedArticle?.heading_id, currentLang, headingsById])
 
-  // Ordered "chapters" for the Par-chapitre prev/next nav: the
-  // distinct direct-heading ids that actually carry articles, in
-  // document (article-position) order. Each entry gets a display
-  // label ("Titre IX — …") and its first article so prev/next can
-  // re-select the chapter.
+  // Map every heading id → its TOP-LEVEL ancestor id (the root of its
+  // branch, parent_id === null). The "Par chapitre" nav steps between
+  // these top-level divisions (e.g. Titres), not their child
+  // chapters/sections, so prev/next means "previous / next Titre".
+  const topAncestorById = useMemo(() => {
+    const m = new Map<number, number>()
+    const resolve = (id: number): number => {
+      const cached = m.get(id)
+      if (cached != null) return cached
+      const h = headingsById.get(id)
+      if (!h || h.parent_id == null) {
+        m.set(id, id)
+        return id
+      }
+      const top = resolve(h.parent_id)
+      m.set(id, top)
+      return top
+    }
+    for (const h of law?.headings ?? []) resolve(h.id)
+    return m
+  }, [law?.headings, headingsById])
+
+  // Ordered top-level divisions that carry articles (directly or via
+  // descendants), in document (position) order. Each gets a display
+  // label ("Titre IX — …") and the first article under it so prev/next
+  // can re-select the division.
   const chapters = useMemo(() => {
-    const articles = law?.articles ?? []
     const codeSubcategory = law?.code_subcategory ?? null
-    const seen = new Set<number>()
+    const firstArticleByTop = new Map<number, ArticleEmbed>()
+    for (const a of law?.articles ?? []) {
+      const hid = (a as any).heading_id as number | null | undefined
+      if (hid == null) continue
+      const topId = topAncestorById.get(hid)
+      if (topId != null && !firstArticleByTop.has(topId)) {
+        firstArticleByTop.set(topId, a)
+      }
+    }
+    const tops = (law?.headings ?? [])
+      .filter((h) => h.parent_id == null)
+      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
     const out: Array<{
       headingId: number
       label: string
       firstArticle: ArticleEmbed
     }> = []
-    for (const a of articles) {
-      const hid = (a as any).heading_id as number | null | undefined
-      if (hid == null || seen.has(hid)) continue
-      seen.add(hid)
-      const h = headingsById.get(hid)
-      const lvl = h
-        ? (getLevelLabel(h.level, currentLang, codeSubcategory) ?? h.level)
-        : ''
-      const num = h?.number ? ` ${h.number}` : ''
-      const title = h ? (currentLang === 'ht' && (h as any).title_ht ? (h as any).title_ht : h.title_fr) : null
+    for (const h of tops) {
+      const first = firstArticleByTop.get(h.id)
+      if (!first) continue
+      const lvl = getLevelLabel(h.level, currentLang, codeSubcategory) ?? h.level
+      const num = h.number ? ` ${h.number}` : ''
+      const title =
+        currentLang === 'ht' && (h as any).title_ht
+          ? (h as any).title_ht
+          : h.title_fr
       const label = `${lvl}${num}${title ? ` — ${title}` : ''}`.trim()
-      out.push({ headingId: hid, label, firstArticle: a })
+      out.push({ headingId: h.id, label, firstArticle: first })
     }
     return out
-  }, [law?.articles, law?.code_subcategory, headingsById, currentLang])
+  }, [law?.headings, law?.articles, law?.code_subcategory, currentLang, topAncestorById])
 
   const currentChapterIdx = useMemo(() => {
     if (!selectedArticle?.heading_id) return -1
-    return chapters.findIndex((c) => c.headingId === selectedArticle.heading_id)
-  }, [chapters, selectedArticle?.heading_id])
+    const topId = topAncestorById.get(selectedArticle.heading_id)
+    return chapters.findIndex((c) => c.headingId === topId)
+  }, [chapters, selectedArticle?.heading_id, topAncestorById])
 
   // Auto-select an article whenever the ``?article=N`` URL param
   // changes (initial load, deep-link from search, or in-page Link
@@ -867,7 +898,12 @@ export default function LawDetail() {
                         viewMode === 'chapitre' && selectedArticle
                           ? (law.articles ?? []).filter(
                               (a: any) =>
-                                a.heading_id === selectedArticle.heading_id,
+                                a.heading_id != null &&
+                                selectedArticle.heading_id != null &&
+                                topAncestorById.get(a.heading_id) ===
+                                  topAncestorById.get(
+                                    selectedArticle.heading_id,
+                                  ),
                             )
                           : (law.articles ?? [])
                       }
@@ -899,38 +935,6 @@ export default function LawDetail() {
                           : undefined
                       }
                     />
-                    {/* Bottom strip too, so a long chapter doesn't
-                        force a scroll back up to advance. */}
-                    {viewMode === 'chapitre' &&
-                      currentChapterIdx >= 0 &&
-                      chapters.length > 1 && (
-                        <div className="mt-6">
-                          <ChapterNav
-                            lang={currentLang}
-                            currentLabel={
-                              chapters[currentChapterIdx]?.label ?? ''
-                            }
-                            prevLabel={
-                              chapters[currentChapterIdx - 1]?.label ?? null
-                            }
-                            nextLabel={
-                              chapters[currentChapterIdx + 1]?.label ?? null
-                            }
-                            index={currentChapterIdx}
-                            total={chapters.length}
-                            onPrev={() => {
-                              const prev = chapters[currentChapterIdx - 1]
-                              if (prev)
-                                handleArticleSelect(prev.firstArticle)
-                            }}
-                            onNext={() => {
-                              const next = chapters[currentChapterIdx + 1]
-                              if (next)
-                                handleArticleSelect(next.firstArticle)
-                            }}
-                          />
-                        </div>
-                      )}
                   </>
                 )
               })()}
