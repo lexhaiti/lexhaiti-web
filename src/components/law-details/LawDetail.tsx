@@ -706,6 +706,7 @@ export default function LawDetail() {
               <StickyReaderBar
                 active={stickyActive}
                 lang={currentLang}
+                title={title}
                 isSidebarOpen={isSidebarOpen}
                 onToggleSidebar={() => handleSidebarToggle(!isSidebarOpen)}
                 switcher={
