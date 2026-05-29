@@ -31,7 +31,14 @@
  *     memoized so its identity stays stable across re-renders.
  */
 
-import { memo, useDeferredValue, useMemo } from 'react'
+import {
+  memo,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import Link from 'next/link'
 import { ArrowUpRight, ChevronDown, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -82,6 +89,13 @@ interface Props {
    *  titles. ``code`` adds the article body to the haystack. */
   searchQuery?: string
   searchScope?: 'sommaire' | 'code'
+  /** Article number the page is deep-linking / scrolling to (the
+   *  ``?article=N`` URL param). When set, the render window expands
+   *  to include that article's row BEFORE the parent's scroll fires,
+   *  so the ``id="article-N"`` target exists in the DOM even when it
+   *  sits past the current window. No-op when search is active (the
+   *  full filtered set is rendered then) or the number isn't found. */
+  jumpToArticleNumber?: string | null
   /** When true, articles with status === 'abrogated' are hidden
    *  (and heading rows whose subtree has nothing else visible
    *  collapse too). Controlled by the DocumentToolbar above. */
@@ -140,6 +154,7 @@ export function ArticleListView({
   onEditArticle,
   searchQuery,
   searchScope = 'sommaire',
+  jumpToArticleNumber = null,
   hideAbrogated = false,
   collapsed,
   onToggleCollapsed,
@@ -238,6 +253,86 @@ export function ArticleListView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [articles, q, searchScope, lang, pathByHeadingId, hideAbrogated])
 
+  // ─── Render windowing ────────────────────────────────────────────
+  // Even with ``content-visibility:auto`` skipping off-screen *paint*,
+  // mounting ~2 000 ArticleCard subtrees (each with its breadcrumb,
+  // explainer box, and lazy accordions) at once blows up the initial
+  // render / TTI on Code-scale corpora. So we mount only the first
+  // ``renderCount`` rows and grow the window as a sentinel near the
+  // tail approaches the viewport.
+  //
+  // Search is exempt: when a query is active the filtered set is small
+  // (a handful of matches) AND the matches can sit anywhere in the
+  // corpus, so we render ALL of them — windowing there would hide
+  // results behind the tail.
+  const INITIAL_RENDER = 70
+  const RENDER_CHUNK = 60
+  const isSearching = q.length > 0
+  const total = filteredArticles.length
+
+  // Row index of the deep-linked article within the *current* filtered
+  // set (or -1). Drives the window's lower bound so the target is
+  // always mounted — both on first paint and after a filter/collapse
+  // reset. Recomputed only when the target number or the set changes.
+  const jumpIndex = useMemo(() => {
+    if (!jumpToArticleNumber || isSearching) return -1
+    return filteredArticles.findIndex(
+      (a) => String(a.number ?? '') === jumpToArticleNumber,
+    )
+  }, [jumpToArticleNumber, filteredArticles, isSearching])
+
+  // Baseline window size for a fresh view: the initial chunk, OR — when
+  // a deep-link target sits past it — just enough to include that row
+  // (+1 for the row itself, + a chunk of cushion so the sentinel
+  // doesn't instantly re-fire). The reset effect below snaps back to
+  // THIS, not a blind INITIAL_RENDER, so deep-links survive the reset.
+  const baseRenderCount =
+    jumpIndex >= 0
+      ? Math.max(INITIAL_RENDER, jumpIndex + 1 + RENDER_CHUNK)
+      : INITIAL_RENDER
+
+  const [renderCount, setRenderCount] = useState(baseRenderCount)
+
+  // Reset the window whenever the *inputs that reorder / refilter the
+  // visible set* change — a new search query, a collapse toggle, the
+  // abrogated filter, the as-of version, or the article set itself.
+  // Resets to ``baseRenderCount`` (jump-aware) so a stale large window
+  // can't hide fresh matches AND a deep-link target stays mounted.
+  useEffect(() => {
+    setRenderCount(baseRenderCount)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, collapsed, hideAbrogated, articles, showInitialVersion, baseRenderCount])
+
+  // The number of rows actually rendered this pass. When searching we
+  // render everything; otherwise we clamp to the growing window, but
+  // never below the jump baseline (covers the first paint before the
+  // reset effect has committed, so the deep-link node exists for the
+  // parent's scroll).
+  const windowCount = Math.max(renderCount, baseRenderCount)
+  const visibleCount = isSearching ? total : Math.min(windowCount, total)
+
+  // IntersectionObserver sentinel — when it scrolls within ~600px of
+  // the viewport, bump the window by one chunk. Re-created whenever
+  // the rendered slice can still grow (visibleCount < total) so the
+  // observer always watches a freshly-positioned sentinel.
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const canGrow = !isSearching && visibleCount < total
+  useEffect(() => {
+    if (!canGrow) return
+    const node = sentinelRef.current
+    if (!node) return
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setRenderCount((prev) => prev + RENDER_CHUNK)
+        }
+      },
+      { rootMargin: '600px 0px' },
+    )
+    io.observe(node)
+    return () => io.disconnect()
+  }, [canGrow, visibleCount])
+
   // ─── Empty state ─────────────────────────────────────────────────
   if (filteredArticles.length === 0) {
     return (
@@ -260,9 +355,15 @@ export function ArticleListView({
   let lastHeadingId: number | null = -1
   let lastPath: HeadingRead[] = []
 
+  // Render only the windowed slice. ``lastHeadingId`` / ``lastPath``
+  // are recomputed from the slice start every pass, so slicing the
+  // array (vs. slicing rendered JSX) keeps the heading-break sequence
+  // identical to the un-windowed output for the rows we DO show.
+  const rowsToRender = filteredArticles.slice(0, visibleCount)
+
   return (
     <div className="space-y-4">
-      {filteredArticles.map((a) => {
+      {rowsToRender.map((a) => {
         const headingId = a.heading_id ?? null
         const showBreak = headingId !== lastHeadingId
         lastHeadingId = headingId
@@ -373,6 +474,19 @@ export function ArticleListView({
           </div>
         )
       })}
+
+      {/* Render-window sentinel. Sits just below the last mounted row;
+          when it scrolls within ~600px of the viewport the observer
+          grows the window by one chunk. Only present while more rows
+          remain, so a fully-rendered list has no trailing element. */}
+      {canGrow && (
+        <div
+          ref={sentinelRef}
+          aria-hidden
+          className="h-px w-full"
+          data-testid="article-window-sentinel"
+        />
+      )}
     </div>
   )
 }

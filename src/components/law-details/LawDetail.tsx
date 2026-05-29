@@ -971,6 +971,7 @@ export default function LawDetail() {
                       onEditArticle={handleEditArticle}
                       searchQuery={pageSearchQuery}
                       searchScope={pageSearchScope}
+                      jumpToArticleNumber={requestedArticleParam}
                       hideAbrogated={hideAbrogated}
                       collapsed={headingCollapse.collapsed}
                       onToggleCollapsed={headingCollapse.toggle}
@@ -1033,6 +1034,7 @@ export default function LawDetail() {
                       onEditArticle={handleEditArticle}
                       searchQuery={pageSearchQuery}
                       searchScope={pageSearchScope}
+                      jumpToArticleNumber={requestedArticleParam}
                       hideAbrogated={hideAbrogated}
                       collapsed={headingCollapse.collapsed}
                       onToggleCollapsed={headingCollapse.toggle}
