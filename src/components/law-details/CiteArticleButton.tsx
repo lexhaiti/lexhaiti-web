@@ -144,7 +144,7 @@ export function CiteArticleButton({
             aria-label={isFr ? 'Citer cet article' : 'Site atik sa a'}
             className={cn(
               'inline-flex items-center gap-1 rounded-md px-2 py-1',
-              'text-[11px] font-semibold text-slate-500 hover:text-primary hover:bg-slate-100',
+              'text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800',
               'transition-colors',
             )}
           >
@@ -164,7 +164,7 @@ export function CiteArticleButton({
           role="menu"
           className={cn(
             'absolute z-20 top-full right-0 mt-1',
-            'w-72 rounded-lg border border-slate-200 bg-white shadow-lg',
+            'w-72 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg',
             'overflow-hidden',
           )}
         >
@@ -172,13 +172,13 @@ export function CiteArticleButton({
             type="button"
             role="menuitem"
             onClick={() => handleCopy('short')}
-            className="w-full text-left px-3 py-2.5 hover:bg-slate-50 flex items-start justify-between gap-3 group"
+            className="w-full text-left px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-start justify-between gap-3 group"
           >
             <div className="min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">
                 {isFr ? 'Citation courte' : 'Sitasyon kout'}
               </p>
-              <p className="text-xs text-slate-700 font-mono truncate">
+              <p className="text-xs text-slate-700 dark:text-slate-200 font-mono truncate">
                 {formatShort(articleNumber, lawShortTitle)}
               </p>
             </div>
@@ -192,13 +192,13 @@ export function CiteArticleButton({
             type="button"
             role="menuitem"
             onClick={() => handleCopy('long')}
-            className="w-full text-left px-3 py-2.5 hover:bg-slate-50 flex items-start justify-between gap-3 border-t border-slate-100 group"
+            className="w-full text-left px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-start justify-between gap-3 border-t border-slate-100 dark:border-slate-700 group"
           >
             <div className="min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">
                 {isFr ? 'Citation longue' : 'Sitasyon long'}
               </p>
-              <p className="text-xs text-slate-700 font-mono break-all">
+              <p className="text-xs text-slate-700 dark:text-slate-200 font-mono break-all">
                 {formatLong(articleNumber, lawShortTitle, versionDate, url)}
               </p>
             </div>

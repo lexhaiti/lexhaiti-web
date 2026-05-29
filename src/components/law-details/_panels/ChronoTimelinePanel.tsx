@@ -351,11 +351,11 @@ export function ChronoTimelinePanel({
       aria-label={
         isFr ? 'Versions dans le temps' : 'Vèsyon yo nan tan'
       }
-      className="mb-6 rounded-xl border border-slate-200 bg-slate-50/40 p-5 scroll-mt-[15rem] sm:scroll-mt-[10rem]"
+      className="mb-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/40 dark:bg-slate-900/40 p-5 scroll-mt-[15rem] sm:scroll-mt-[10rem]"
     >
       <header className="flex items-center gap-2 mb-4">
         <CalendarClock className="w-4 h-4 text-primary" aria-hidden />
-        <h2 className="text-sm font-bold uppercase tracking-widest text-slate-700">
+        <h2 className="text-sm font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300">
           {isFr
             ? 'Les différentes versions dans le temps'
             : 'Diferan vèsyon yo nan tan'}
@@ -363,7 +363,7 @@ export function ChronoTimelinePanel({
       </header>
 
       {loading && (
-        <div className="flex items-center gap-2 text-xs text-slate-500 py-4">
+        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 py-4">
           <Loader2 className="w-4 h-4 animate-spin" />
           {isFr ? 'Chargement de l’historique…' : 'Chajman istwa…'}
         </div>
@@ -374,7 +374,7 @@ export function ChronoTimelinePanel({
       )}
 
       {loaded && !loading && events.length === 0 && (
-        <p className="text-sm italic text-slate-500 py-2">
+        <p className="text-sm italic text-slate-500 dark:text-slate-400 py-2">
           {isFr
             ? 'Aucune modification recensée pour ce texte.'
             : 'Pa gen modifikasyon pou tèks sa a.'}
@@ -424,7 +424,7 @@ export function ChronoTimelinePanel({
                 <span
                   aria-hidden
                   className={cn(
-                    'absolute left-3 -translate-x-1/2 mt-3 w-3 h-3 rounded-full bg-white border-[3px] z-10',
+                    'absolute left-3 -translate-x-1/2 mt-3 w-3 h-3 rounded-full bg-white dark:bg-slate-900 border-[3px] z-10',
                     isInitialYear ? 'border-emerald-500' : 'border-primary',
                   )}
                 />
@@ -443,11 +443,11 @@ export function ChronoTimelinePanel({
                     type="button"
                     onClick={() => toggleYear(yg.year)}
                     aria-expanded={yearOpen}
-                    className="w-full flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left hover:bg-white transition-colors"
+                    className="w-full flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left hover:bg-white dark:hover:bg-slate-800 transition-colors"
                   >
                     <span className="text-sm font-bold text-primary">
                       {yg.year}{' '}
-                      <span className="font-medium text-slate-500">
+                      <span className="font-medium text-slate-500 dark:text-slate-400">
                         — {amendmentCount}{' '}
                         {amendmentCount > 1
                           ? isFr
@@ -480,7 +480,7 @@ export function ChronoTimelinePanel({
                             type="button"
                             onClick={() => toggleDate(dg.date)}
                             aria-expanded={dateOpen}
-                            className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-white transition-colors"
+                            className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-white dark:hover:bg-slate-800 transition-colors"
                           >
                             <ChevronRight
                               aria-hidden
@@ -489,12 +489,12 @@ export function ChronoTimelinePanel({
                                 dateOpen && 'rotate-90',
                               )}
                             />
-                            <span className="text-sm font-semibold text-slate-800">
+                            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                               {formatDateLong(dg.date, lang)}
                             </span>
                           </button>
                           {dateOpen && (
-                            <ul className="mt-1 ml-6 space-y-3 text-[13px] text-slate-700">
+                            <ul className="mt-1 ml-6 space-y-3 text-[13px] text-slate-700 dark:text-slate-300">
                               {amendGroups
                                 .filter((g) => !g.isCreation)
                                 .map((g, idx) => {
@@ -548,13 +548,13 @@ export function ChronoTimelinePanel({
                                               : ''}
                                           </Link>
                                         ) : (
-                                          <span className="italic text-slate-500">
+                                          <span className="italic text-slate-500 dark:text-slate-400">
                                             {isFr
                                               ? 'Texte modificateur inconnu'
                                               : 'Tèks modifikatè enkoni'}
                                           </span>
                                         )}{' '}
-                                        <span className="font-semibold text-slate-700">
+                                        <span className="font-semibold text-slate-700 dark:text-slate-300">
                                           {isFr ? 'a modifié :' : 'modifye :'}
                                         </span>
                                       </p>
@@ -589,7 +589,7 @@ export function ChronoTimelinePanel({
                                               key={bIdx}
                                               className="leading-snug"
                                             >
-                                              <span className="text-slate-500 mr-1">
+                                              <span className="text-slate-500 dark:text-slate-400 mr-1">
                                                 {b.numbers.length > 1
                                                   ? isFr
                                                     ? 'Articles'
@@ -608,7 +608,7 @@ export function ChronoTimelinePanel({
                                                 </Link>
                                               ))}
                                               {headingLabel && (
-                                                <span className="text-slate-500">
+                                                <span className="text-slate-500 dark:text-slate-400">
                                                   — {headingLabel}
                                                 </span>
                                               )}

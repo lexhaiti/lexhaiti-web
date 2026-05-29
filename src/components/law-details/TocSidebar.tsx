@@ -136,13 +136,13 @@ export function TocSidebar({
       <div className="block lg:hidden w-full mt-6 lg:mt-0 mb-4">
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="w-full flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all group"
+          className="w-full flex items-center justify-between p-4 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all group"
         >
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-50 rounded-lg">
-              <PanelLeft className="w-5 h-5 text-red-600" />
+            <div className="p-2 bg-red-50 dark:bg-red-950/40 rounded-lg">
+              <PanelLeft className="w-5 h-5 text-red-600 dark:text-red-400" />
             </div>
-            <span className="font-bold uppercase tracking-widest text-xs text-slate-700">
+            <span className="font-bold uppercase tracking-widest text-xs text-slate-700 dark:text-slate-300">
               {currentLang === 'fr' ? 'Sommaire' : 'Somè'}
             </span>
           </div>
@@ -237,8 +237,8 @@ export function TocSidebar({
           'hidden lg:inline-flex items-center justify-center',
           'fixed z-40 right-6 sm:right-8 bottom-20 sm:bottom-24',
           'h-11 w-11 rounded-full',
-          'bg-white text-slate-700 border border-slate-200 shadow-lg',
-          'hover:border-primary hover:text-primary',
+          'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-lg',
+          'hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2',
           // Only opacity transitions — the footer-avoidance transform is
           // applied imperatively and must track scroll instantly.
@@ -263,7 +263,7 @@ export function TocSidebar({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className={
-              "hidden lg:block lg:flex-shrink-0 lg:w-[25%] lg:bg-slate-50/70 lg:border-r lg:border-gray-200 lg:pr-6 lg:py-8 lg:relative lg:before:content-[''] lg:before:absolute lg:before:inset-y-0 lg:before:right-full lg:before:w-screen lg:before:bg-slate-50/70 lg:before:pointer-events-none"
+              "hidden lg:block lg:flex-shrink-0 lg:w-[25%] lg:bg-slate-50/70 dark:lg:bg-slate-900/70 lg:border-r lg:border-gray-200 dark:lg:border-slate-800 lg:pr-6 lg:py-8 lg:relative lg:before:content-[''] lg:before:absolute lg:before:inset-y-0 lg:before:right-full lg:before:w-screen lg:before:bg-slate-50/70 dark:lg:before:bg-slate-900/70 lg:before:pointer-events-none"
             }
           >
             <div className="lg:sticky lg:top-24 h-[calc(100vh-12rem)]">

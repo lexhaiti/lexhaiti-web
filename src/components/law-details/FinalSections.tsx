@@ -48,7 +48,7 @@ const RichArticleEditor = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full min-h-[140px] rounded-md border border-slate-200 bg-slate-50/60 animate-pulse" />
+      <div className="w-full min-h-[140px] rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 animate-pulse" />
     ),
   },
 )

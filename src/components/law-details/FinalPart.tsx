@@ -41,7 +41,7 @@ export function FinalPart({
   if (!value && !isEditor) return null
 
   return (
-    <div className="mt-12 pt-8 pb-6 border-t border-slate-200 scroll-mt-24">
+    <div className="mt-12 pt-8 pb-6 border-t border-slate-200 dark:border-slate-700 scroll-mt-24">
       <EditableFormalBlock
         isFr={currentLang === 'fr'}
         isEditor={isEditor}

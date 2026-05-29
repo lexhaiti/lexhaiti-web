@@ -74,7 +74,7 @@ const RichArticleEditor = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full min-h-[120px] rounded-md border border-slate-200 bg-slate-50/60 animate-pulse" />
+      <div className="w-full min-h-[120px] rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 animate-pulse" />
     ),
   },
 )
@@ -323,7 +323,7 @@ export function EditableFormalBlock({
           {looksLikeHtml(displayValue) ? (
             <div
               className={cn(
-                'flex-1 text-sm font-semibold italic text-slate-500 tracking-wide leading-relaxed formal-block-html',
+                'flex-1 text-sm font-semibold italic text-slate-500 dark:text-slate-400 tracking-wide leading-relaxed formal-block-html',
                 align === 'center' ? 'text-center' : 'text-left',
               )}
               dangerouslySetInnerHTML={{ __html: displayValue }}
@@ -331,7 +331,7 @@ export function EditableFormalBlock({
           ) : (
             <p
               className={cn(
-                'flex-1 text-sm font-semibold italic text-slate-500 tracking-wide whitespace-pre-line leading-relaxed',
+                'flex-1 text-sm font-semibold italic text-slate-500 dark:text-slate-400 tracking-wide whitespace-pre-line leading-relaxed',
                 align === 'center' ? 'text-center' : 'text-left',
               )}
             >
@@ -400,10 +400,10 @@ export function EditableFormalBlock({
   const renderCollapsible = () => (
     <div
       className={cn(
-        'group rounded-xl border bg-white transition-all duration-200 overflow-hidden',
+        'group rounded-xl border bg-white dark:bg-slate-900 transition-all duration-200 overflow-hidden',
         expanded
-          ? 'border-slate-200 shadow-sm'
-          : 'border-slate-200/80 hover:border-slate-300 hover:shadow-sm',
+          ? 'border-slate-200 dark:border-slate-700 shadow-sm'
+          : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm',
       )}
     >
       {/* Header row — the whole bar is the toggle target. Flex layout:
@@ -416,8 +416,8 @@ export function EditableFormalBlock({
           'relative w-full flex items-center gap-3 px-4 py-3 text-left',
           'transition-colors',
           expanded
-            ? 'bg-gradient-to-r from-primary/5 via-white to-white'
-            : 'bg-white hover:bg-slate-50/60',
+            ? 'bg-gradient-to-r from-primary/5 via-white to-white dark:from-slate-800/60 dark:via-slate-900 dark:to-slate-900'
+            : 'bg-white dark:bg-slate-900 hover:bg-slate-50/60 dark:hover:bg-slate-800/60',
         )}
       >
         {/* Left accent rail — animates in when expanded. */}
@@ -425,7 +425,7 @@ export function EditableFormalBlock({
           aria-hidden="true"
           className={cn(
             'absolute left-0 top-0 bottom-0 w-[3px] transition-colors',
-            expanded ? 'bg-primary' : 'bg-transparent group-hover:bg-slate-200',
+            expanded ? 'bg-primary' : 'bg-transparent group-hover:bg-slate-200 dark:group-hover:bg-slate-700',
           )}
         />
         <ChevronDown
@@ -434,7 +434,7 @@ export function EditableFormalBlock({
             expanded ? 'rotate-0 text-primary' : '-rotate-90',
           )}
         />
-        <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700 flex-shrink-0">
+        <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700 dark:text-slate-300 flex-shrink-0">
           {title}
         </span>
         {/* "Pa tradwi" pill — shown when the page is in Kreyòl but
@@ -459,12 +459,12 @@ export function EditableFormalBlock({
             and we're not currently expanded. Helps the reader scan the
             page without expanding each block individually. */}
         {!expanded && hasContent && (
-          <span className="text-sm text-slate-500 italic truncate min-w-0 flex-1">
+          <span className="text-sm text-slate-500 dark:text-slate-400 italic truncate min-w-0 flex-1">
             {snippet}
           </span>
         )}
         {!expanded && !hasContent && hint && (
-          <span className="text-xs text-slate-400 italic flex-shrink truncate">
+          <span className="text-xs text-slate-400 dark:text-slate-500 italic flex-shrink truncate">
             {hint}
           </span>
         )}
@@ -513,7 +513,7 @@ export function EditableFormalBlock({
                   whenever the live version was introduced by an
                   amending law. Matches the article-viewer pattern. */}
               {!editing && !showingInitial && liveVersion?.source_amendment_slug && (
-                <p className="mb-3 text-xs text-slate-500 flex items-center gap-2 flex-wrap">
+                <p className="mb-3 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 flex-wrap">
                   <span>
                     {isFr ? 'Modifié par ' : 'Modifye pa '}
                     <a
@@ -526,7 +526,7 @@ export function EditableFormalBlock({
                   </span>
                   {liveVersion.effective_from && (
                     <>
-                      <span className="text-slate-300">·</span>
+                      <span className="text-slate-300 dark:text-slate-600">·</span>
                       <span className="italic">
                         {isFr ? 'En vigueur depuis le ' : 'An vigè depi '}
                         {liveVersion.effective_from}
@@ -557,7 +557,7 @@ export function EditableFormalBlock({
                             'text-[10px] font-bold px-1 rounded',
                             versionsExpanded
                               ? 'bg-white/20 text-white'
-                              : 'bg-slate-100 text-slate-500',
+                              : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300',
                           )}
                         >
                           {versions.length}
@@ -656,11 +656,11 @@ export function EditableFormalBlock({
                 // content reads as the primary body of the block.
                 looksLikeHtml(displayValue) ? (
                   <div
-                    className="text-sm text-slate-700 leading-relaxed formal-block-html"
+                    className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed formal-block-html"
                     dangerouslySetInnerHTML={{ __html: displayValue ?? '' }}
                   />
                 ) : (
-                  <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                  <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
                     {displayValue}
                   </div>
                 )
@@ -749,15 +749,15 @@ export function EditableFormalBlock({
 
 const actionChipCls = cn(
   'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px]',
-  'font-semibold border bg-white text-slate-700 border-slate-200',
-  'hover:border-primary hover:text-primary transition-colors',
+  'font-semibold border bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700',
+  'hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors',
 )
 const actionChipActiveCls = cn(
   'bg-primary text-white border-primary hover:text-white hover:border-primary',
 )
 const actionChipDisabledCls = cn(
-  'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed',
-  'hover:border-slate-200 hover:text-slate-400',
+  'bg-slate-50 dark:bg-slate-900 text-slate-400 dark:text-slate-600 border-slate-200 dark:border-slate-800 cursor-not-allowed',
+  'hover:border-slate-200 dark:hover:border-slate-800 hover:text-slate-400 dark:hover:text-slate-600',
 )
 const addVersionChipCls = cn(
   'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px]',
@@ -766,14 +766,14 @@ const addVersionChipCls = cn(
 )
 const editChipCls = cn(
   'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px]',
-  'font-semibold bg-white text-slate-500 border border-slate-200',
-  'hover:text-primary hover:border-primary transition-colors',
+  'font-semibold bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-700',
+  'hover:text-primary hover:border-primary dark:hover:text-primary dark:hover:border-primary transition-colors',
 )
 
 const cancelBtnCls = cn(
-  'inline-flex items-center gap-1.5 rounded-md border border-slate-300',
-  'bg-white px-3 py-1.5 text-xs font-semibold text-slate-600',
-  'hover:border-slate-400 disabled:opacity-50',
+  'inline-flex items-center gap-1.5 rounded-md border border-slate-300 dark:border-slate-700',
+  'bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300',
+  'hover:border-slate-400 dark:hover:border-slate-600 disabled:opacity-50',
 )
 
 const saveBtnCls = cn(
@@ -796,7 +796,7 @@ function BlockVersionsTimeline({
 }) {
   if (versions.length === 0) {
     return (
-      <p className="mt-3 px-5 py-3 text-xs text-slate-500 italic">
+      <p className="mt-3 px-5 py-3 text-xs text-slate-500 dark:text-slate-400 italic">
         {isFr
           ? "Aucune version enregistrée pour ce bloc."
           : 'Pa gen vèsyon anrejistre pou blòk sa a.'}
@@ -809,8 +809,8 @@ function BlockVersionsTimeline({
   const liveId = (currentIdx >= 0 ? versions[currentIdx] : versions[0]).id
 
   return (
-    <ol className="relative pl-7 mt-4 pt-4 border-t border-slate-100">
-      <div className="absolute left-6 top-5 bottom-5 w-px bg-slate-200" />
+    <ol className="relative pl-7 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+      <div className="absolute left-6 top-5 bottom-5 w-px bg-slate-200 dark:bg-slate-700" />
       {versions.map((v, idx) => {
         const isCurrent = v.id === liveId
         const isLast = idx === versions.length - 1
@@ -822,14 +822,14 @@ function BlockVersionsTimeline({
           <li key={v.id} className={isLast ? '' : 'pb-3'}>
             <span
               className={cn(
-                'absolute -left-[0.4rem] w-3 h-3 rounded-full border-[2.5px] flex items-center justify-center bg-white',
-                isCurrent ? 'border-emerald-500' : 'border-slate-300',
+                'absolute -left-[0.4rem] w-3 h-3 rounded-full border-[2.5px] flex items-center justify-center bg-white dark:bg-slate-900',
+                isCurrent ? 'border-emerald-500' : 'border-slate-300 dark:border-slate-600',
               )}
             >
               <span
                 className={cn(
                   'w-1 h-1 rounded-full',
-                  isCurrent ? 'bg-emerald-500' : 'bg-slate-300',
+                  isCurrent ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600',
                 )}
               />
             </span>
@@ -837,12 +837,12 @@ function BlockVersionsTimeline({
               <span
                 className={cn(
                   'text-[10px] font-bold uppercase tracking-widest',
-                  isCurrent ? 'text-emerald-700' : 'text-slate-400',
+                  isCurrent ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500',
                 )}
               >
                 v{v.version_number}
               </span>
-              <span className="text-xs font-semibold text-slate-700">
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
                 {to
                   ? isFr ? `Du ${from} au ${to}` : `${from} – ${to}`
                   : isFr ? `Depuis le ${from}` : `Depi ${from}`}

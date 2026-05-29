@@ -696,26 +696,26 @@ export default function TableOfContents({
         }}
         className={`w-full flex items-center gap-2.5 px-3 py-1.5 text-left text-sm transition-colors group/item cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-sm ${
           isSelected
-            ? 'text-red-600 font-semibold'
-            : 'text-gray-600 hover:text-red-600'
+            ? 'text-red-600 dark:text-red-400 font-semibold'
+            : 'text-gray-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400'
         }`}
       >
         <FileText
           className={`w-3.5 h-3.5 flex-shrink-0 ${
             isSelected
-              ? 'text-red-600'
-              : 'text-gray-400 group-hover/item:text-red-600 transition-colors'
+              ? 'text-red-600 dark:text-red-400'
+              : 'text-gray-400 dark:text-slate-500 group-hover/item:text-red-600 dark:group-hover/item:text-red-400 transition-colors'
           }`}
         />
         <span
           className={`flex-shrink-0 tabular-nums ${
-            isSelected ? '' : 'text-gray-900'
+            isSelected ? '' : 'text-gray-900 dark:text-slate-200'
           }`}
         >
           {formatArticleNumber(article.number, currentLang)}
         </span>
         {title && (
-          <span className="text-xs text-gray-500 truncate min-w-0">
+          <span className="text-xs text-gray-500 dark:text-slate-400 truncate min-w-0">
             — {title}
           </span>
         )}
@@ -883,7 +883,7 @@ export default function TableOfContents({
                       cancelEditNumber()
                     }}
                     disabled={numberSaving}
-                    className="text-slate-400 hover:text-slate-600 disabled:opacity-50"
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-50"
                     aria-label={currentLang === 'fr' ? 'Annuler' : 'Anile'}
                   >
                     <X className="w-3.5 h-3.5" />
@@ -895,8 +895,8 @@ export default function TableOfContents({
                     isTopLevel ? 'text-xs' : 'text-[10px]'
                   } ${
                     isOnActivePath
-                      ? 'text-red-600'
-                      : 'text-gray-900 group-hover:text-red-600'
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-gray-900 dark:text-slate-200 group-hover:text-red-600 dark:group-hover:text-red-400'
                   }`}
                 >
                   {heading.number ? (
@@ -1050,8 +1050,8 @@ export default function TableOfContents({
                     <span
                       className={`text-sm font-semibold transition-colors line-clamp-2 min-w-0 ${
                         isOnActivePath
-                          ? 'text-red-600'
-                          : 'text-gray-700 group-hover:text-red-600'
+                          ? 'text-red-600 dark:text-red-400'
+                          : 'text-gray-700 dark:text-slate-300 group-hover:text-red-600 dark:group-hover:text-red-400'
                       }`}
                     >
                       {headingLabel}
@@ -1213,7 +1213,7 @@ export default function TableOfContents({
           )}
 
           {headingContent && isExpanded && (
-            <p className="ml-6 text-[11px] text-gray-500 line-clamp-2 leading-relaxed">
+            <p className="ml-6 text-[11px] text-gray-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
               {headingContent}
             </p>
           )}
@@ -1253,9 +1253,9 @@ export default function TableOfContents({
   return (
     <div className="h-full flex flex-col max-w-full">
       {/* Header */}
-      <div className="pb-3 border-b border-gray-200">
+      <div className="pb-3 border-b border-gray-200 dark:border-slate-800">
         <div className="flex items-center justify-between mb-4">
-          <div className="text-xs font-bold uppercase tracking-widest text-slate-500">
+          <div className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
             {currentLang === 'fr' ? 'Sommaire' : 'Somè'}
           </div>
           <div className="flex items-center gap-2">
@@ -1282,17 +1282,17 @@ export default function TableOfContents({
             )}
             <button
               onClick={expandAll}
-              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
               title={currentLang === 'fr' ? 'Tout ouvrir' : 'Ouvri tout'}
             >
-              <Maximize2 className="w-3 h-3 text-gray-500" />
+              <Maximize2 className="w-3 h-3 text-gray-500 dark:text-slate-400" />
             </button>
             <button
               onClick={collapseAll}
-              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
               title={currentLang === 'fr' ? 'Tout fermer' : 'Fèmen tout'}
             >
-              <Minimize2 className="w-3 h-3 text-gray-500" />
+              <Minimize2 className="w-3 h-3 text-gray-500 dark:text-slate-400" />
             </button>
           </div>
         </div>
@@ -1312,7 +1312,7 @@ export default function TableOfContents({
             <button
               onClick={onPreambleClick}
               aria-expanded={!!preambleExpanded}
-              className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm font-bold text-slate-700 hover:text-red-600 transition-colors mb-1"
+              className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 transition-colors mb-1"
             >
               {preambleExpanded ? (
                 <ChevronDown className="w-4 h-4 text-red-600 flex-shrink-0" />
@@ -1330,7 +1330,7 @@ export default function TableOfContents({
             <button
               onClick={onIntroClick}
               aria-expanded={!!introExpanded}
-              className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm font-bold text-slate-700 hover:text-red-600 transition-colors mb-1"
+              className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 transition-colors mb-1"
             >
               {introExpanded ? (
                 <ChevronDown className="w-4 h-4 text-red-600 flex-shrink-0" />

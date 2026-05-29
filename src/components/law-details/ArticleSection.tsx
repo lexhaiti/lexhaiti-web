@@ -129,12 +129,12 @@ export function ArticleSection({
     return (
       <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50/40 p-10 text-center">
         <FileText className="w-10 h-10 text-amber-500 mx-auto mb-3" />
-        <h3 className="text-lg font-bold text-slate-900 mb-2">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">
           {currentLang === 'fr'
             ? 'Aucun article détecté'
             : 'Pa gen atik detekte'}
         </h3>
-        <p className="text-sm text-slate-600 mb-5 max-w-md mx-auto leading-relaxed">
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-5 max-w-md mx-auto leading-relaxed">
           {currentLang === 'fr'
             ? "Le parser n'a pas extrait d'articles pour ce texte. Vous pouvez les saisir manuellement."
             : "Pasè a pa ekstrè atik pou tèks sa. Ou ka antre yo manyèlman."}

@@ -46,9 +46,9 @@ export function ChapterNav({
   const btn =
     'inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-[13px] font-semibold transition-colors min-w-0'
   const enabled =
-    'border-slate-200 bg-white text-slate-700 hover:border-primary hover:text-primary'
+    'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary'
   const disabled =
-    'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'
+    'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-300 dark:text-slate-600 cursor-not-allowed'
 
   return (
     <nav

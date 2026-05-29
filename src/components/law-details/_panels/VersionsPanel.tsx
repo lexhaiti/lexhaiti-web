@@ -86,10 +86,10 @@ const STATUS_META: Record<
   },
   obsolete: {
     label: { fr: 'Obsolète', ht: 'Demode' },
-    pill: 'bg-slate-200 text-slate-600',
-    dotBorder: 'border-slate-400',
-    dotCenter: 'bg-slate-400',
-    versionText: 'text-slate-500',
+    pill: 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300',
+    dotBorder: 'border-slate-400 dark:border-slate-500',
+    dotCenter: 'bg-slate-400 dark:bg-slate-500',
+    versionText: 'text-slate-500 dark:text-slate-400',
   },
 }
 
@@ -134,7 +134,7 @@ export function VersionsPanel({
 
   return (
     <div className="pt-6">
-      <p className="text-xs text-slate-500 mb-5">
+      <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">
         {isFr
           ? 'Historique des versions de cet article — du plus récent au plus ancien.'
           : 'Istwa vèsyon atik sa a — pi resan an pi vye.'}
@@ -143,7 +143,7 @@ export function VersionsPanel({
       {/* Vertical timeline */}
       <ol className="relative pl-7">
         {/* Continuous line behind dots */}
-        <div className="absolute left-2 top-2 bottom-2 w-px bg-gray-200" />
+        <div className="absolute left-2 top-2 bottom-2 w-px bg-gray-200 dark:bg-slate-700" />
 
         {versions.map((v, idx) => {
           const meta = STATUS_META[v.status]
@@ -189,7 +189,7 @@ export function VersionsPanel({
             // newer one's date). Fall back to plain "En vigueur" so
             // we don't render a misleading green "depuis le" pill.
             pillLabel = isFr ? 'En vigueur' : 'An vigè'
-            pillCls = 'bg-slate-100 text-slate-700 border-slate-200'
+            pillCls = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
           } else {
             pillLabel = isFr ? meta.label.fr : meta.label.ht
             pillCls = meta.pill
@@ -202,7 +202,7 @@ export function VersionsPanel({
             >
               {/* Dot on the timeline */}
               <span
-                className={`absolute -left-[1.65rem] top-1.5 w-4 h-4 rounded-full border-[3px] flex items-center justify-center bg-white ${meta.dotBorder}`}
+                className={`absolute -left-[1.65rem] top-1.5 w-4 h-4 rounded-full border-[3px] flex items-center justify-center bg-white dark:bg-slate-900 ${meta.dotBorder}`}
               >
                 <span
                   className={`w-1.5 h-1.5 rounded-full ${meta.dotCenter}`}
@@ -239,7 +239,7 @@ export function VersionsPanel({
               </div>
 
               {v.amended_by && (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {isFr ? 'Modifié par' : 'Modifye pa'}{' '}
                   <a
                     href={v.href ?? '#'}
@@ -276,7 +276,7 @@ export function VersionsPanel({
           pendingDelete ? (
             <span>
               {isFr ? 'La version ' : 'Vèsyon '}
-              <span className="font-semibold text-slate-900">
+              <span className="font-semibold text-slate-900 dark:text-slate-100">
                 v{pendingDelete.version}
               </span>{' '}
               {isFr

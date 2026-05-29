@@ -241,7 +241,7 @@ export function ArticleListView({
   // ─── Empty state ─────────────────────────────────────────────────
   if (filteredArticles.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/40 p-10 text-center text-sm text-slate-500">
+      <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/40 dark:bg-slate-900/40 p-10 text-center text-sm text-slate-500 dark:text-slate-400">
         {q
           ? isFr
             ? `Aucun article ne correspond à « ${searchQuery} ».`
@@ -399,8 +399,8 @@ const HeadingBanner = memo(function HeadingBanner({
       className={cn(
         'group/heading w-full text-left flex items-start gap-3 transition-colors',
         'mt-10 mb-4 first:mt-0',
-        'rounded-xl border border-primary/20 bg-gradient-to-r from-primary/[0.05] to-transparent',
-        'px-4 py-3 hover:border-primary/40',
+        'rounded-xl border border-primary/20 dark:border-slate-700 bg-gradient-to-r from-primary/[0.05] to-transparent dark:from-slate-800/60 dark:to-transparent',
+        'px-4 py-3 hover:border-primary/40 dark:hover:border-slate-600',
       )}
     >
       <ChevronDown
@@ -419,7 +419,7 @@ const HeadingBanner = memo(function HeadingBanner({
           {numberLabel}
         </span>
         {title && (
-          <span className="leading-snug text-base font-semibold text-slate-800">
+          <span className="leading-snug text-base font-semibold text-slate-800 dark:text-slate-100">
             <span className="hidden sm:inline">— </span>
             {title}
           </span>
@@ -461,7 +461,7 @@ const HeadingChip = memo(function HeadingChip({
         aria-expanded={!collapsed}
         className={cn(
           'inline-flex items-start gap-2 px-3 py-1.5 rounded-md max-w-full',
-          'text-slate-700 hover:text-primary hover:bg-slate-100 transition-colors',
+          'text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors',
         )}
       >
         <ChevronDown
@@ -478,7 +478,7 @@ const HeadingChip = memo(function HeadingChip({
             {numberLabel}
           </span>
           {title && (
-            <span className="text-[13px] font-medium text-slate-700">
+            <span className="text-[13px] font-medium text-slate-700 dark:text-slate-300">
               <span className="hidden sm:inline">— </span>
               {title}
             </span>
@@ -598,7 +598,7 @@ const ArticleCard = memo(function ArticleCard({
         // not the list wrapper — so a collapsed heading (card not
         // rendered) reserves zero space instead of an intrinsic-size
         // placeholder, which was leaving big gaps between headings.
-        'article-cv group rounded-xl border border-slate-200/80 bg-white p-5 sm:p-6',
+        'article-cv group rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6',
         'transition-shadow hover:shadow-[0_2px_12px_-4px_rgba(15,23,42,0.08)]',
         isAbrogated && 'opacity-70',
       )}
@@ -645,12 +645,12 @@ const ArticleCard = memo(function ArticleCard({
           {(isAbrogated || title) && (
             <div className="mt-1.5 flex items-center gap-2 flex-wrap">
               {isAbrogated && (
-                <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-700 border border-red-200">
+                <span className="inline-flex items-center rounded-full bg-red-50 dark:bg-red-950/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900">
                   {isFr ? 'Abrogé' : 'Abwoje'}
                 </span>
               )}
               {title && (
-                <h3 className="text-sm font-semibold text-slate-700 truncate">
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">
                   {title}
                 </h3>
               )}
@@ -669,7 +669,7 @@ const ArticleCard = memo(function ArticleCard({
           )}
           <Link
             href={`/loi/${lawSlug}?view=article&article=${encodeURIComponent(numStr)}`}
-            className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-primary px-2 py-1 hover:bg-slate-100 rounded-md transition-colors"
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
             aria-label={
               isFr
                 ? `Vue article unique — ${numStr}`
@@ -689,11 +689,11 @@ const ArticleCard = memo(function ArticleCard({
 
       {body ? (
         <div
-          className="prose prose-sm prose-slate max-w-none prose-p:leading-relaxed prose-p:text-slate-800 prose-strong:text-slate-900 article-html"
+          className="prose prose-sm prose-slate dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:text-slate-800 dark:prose-p:text-slate-200 prose-strong:text-slate-900 dark:prose-strong:text-slate-100 article-html"
           dangerouslySetInnerHTML={{ __html: body }}
         />
       ) : (
-        <p className="text-sm italic text-slate-400">
+        <p className="text-sm italic text-slate-400 dark:text-slate-500">
           {isFr ? 'Texte indisponible.' : 'Tèks pa disponib.'}
         </p>
       )}

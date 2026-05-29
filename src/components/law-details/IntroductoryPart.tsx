@@ -79,10 +79,10 @@ export function IntroductoryPart({
   return (
     <div
       className={cn(
-        'group rounded-xl border bg-white transition-all duration-200 overflow-hidden',
+        'group rounded-xl border bg-white dark:bg-slate-900 transition-all duration-200 overflow-hidden',
         expanded
-          ? 'border-slate-200 shadow-sm'
-          : 'border-slate-200/80 hover:border-slate-300 hover:shadow-sm',
+          ? 'border-slate-200 dark:border-slate-700 shadow-sm'
+          : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm',
       )}
     >
       <button
@@ -92,15 +92,15 @@ export function IntroductoryPart({
         className={cn(
           'relative w-full flex items-center gap-3 px-4 py-3 text-left transition-colors',
           expanded
-            ? 'bg-gradient-to-r from-primary/5 via-white to-white'
-            : 'bg-white hover:bg-slate-50/60',
+            ? 'bg-gradient-to-r from-primary/5 via-white to-white dark:from-slate-800/60 dark:via-slate-900 dark:to-slate-900'
+            : 'bg-white dark:bg-slate-900 hover:bg-slate-50/60 dark:hover:bg-slate-800/60',
         )}
       >
         <span
           aria-hidden="true"
           className={cn(
             'absolute left-0 top-0 bottom-0 w-[3px] transition-colors',
-            expanded ? 'bg-primary' : 'bg-transparent group-hover:bg-slate-200',
+            expanded ? 'bg-primary' : 'bg-transparent group-hover:bg-slate-200 dark:group-hover:bg-slate-700',
           )}
         />
         <ChevronDown
@@ -109,11 +109,11 @@ export function IntroductoryPart({
             expanded ? 'rotate-0 text-primary' : '-rotate-90',
           )}
         />
-        <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700 flex-shrink-0">
+        <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700 dark:text-slate-300 flex-shrink-0">
           {title}
         </span>
         {!expanded && (
-          <span className="text-sm text-slate-500 italic truncate min-w-0 flex-1">
+          <span className="text-sm text-slate-500 dark:text-slate-400 italic truncate min-w-0 flex-1">
             {snippet}
           </span>
         )}
@@ -124,7 +124,7 @@ export function IntroductoryPart({
           {/* Continuous flow — each part in reading order, no per-kind
               labels (we don't visually separate
               visas / considérants / mentions / formule). */}
-          <div className="space-y-3 text-sm text-slate-700 leading-relaxed">
+          <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
             {visible.map((text, i) =>
               looksLikeHtml(text) ? (
                 <div

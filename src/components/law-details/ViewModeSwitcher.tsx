@@ -52,7 +52,7 @@ export function ViewModeSwitcher({
         lang === 'fr' ? 'Mode de lecture' : 'Mòd lekti'
       }
       className={cn(
-        'inline-flex items-center h-9 rounded-full border border-slate-200 bg-white/80 p-1 backdrop-blur-sm shadow-[0_1px_2px_rgba(15,23,42,0.04)]',
+        'inline-flex items-center h-9 rounded-full border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 p-1 backdrop-blur-sm shadow-[0_1px_2px_rgba(15,23,42,0.04)]',
         className,
       )}
     >
@@ -76,7 +76,7 @@ export function ViewModeSwitcher({
               'group inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-all',
               isActive
                 ? 'bg-primary text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100',
             )}
           >
             <Icon className="w-3.5 h-3.5" aria-hidden />

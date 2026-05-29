@@ -97,7 +97,7 @@ import { isHtmlEffectivelyEmpty, looksLikeHtml } from './_editor/utils'
 // dimensions of the real editor so the layout doesn't jump.
 function EditorLoadingShim() {
   return (
-    <div className="w-full min-h-[160px] rounded-md border border-slate-200 bg-slate-50/60 animate-pulse" />
+    <div className="w-full min-h-[160px] rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 animate-pulse" />
   )
 }
 
@@ -161,7 +161,7 @@ const STATUS_PILL: Record<
   },
   obsolete: {
     label: { fr: 'Obsolète', ht: 'Demode' },
-    cls: 'bg-slate-100 text-slate-600 border-slate-200',
+    cls: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700',
   },
 }
 
@@ -271,7 +271,7 @@ function renderArticleBody(content: string, currentLang: 'fr' | 'ht') {
         {blocks.map((block, bIdx) =>
           block.isEnum ? (
             <div key={bIdx} className="flex gap-3 mt-2 first:mt-0">
-              <span className="font-semibold text-slate-800 tabular-nums flex-shrink-0 select-none">
+              <span className="font-semibold text-slate-800 dark:text-slate-200 tabular-nums flex-shrink-0 select-none">
                 {block.marker}
               </span>
               <span className="flex-1">{block.text}</span>
@@ -891,7 +891,7 @@ export default function ArticleViewer({
                 ? 'Chemin dans le texte'
                 : 'Chemen nan tèks la'
             }
-            className="flex items-center gap-1.5 text-sm font-medium text-gray-500 min-w-0 flex-1"
+            className="flex items-center gap-1.5 text-sm font-medium text-gray-500 dark:text-slate-400 min-w-0 flex-1"
           >
             {/* Ancestors as ONE truncating string — shows leading text +
                 ellipsis on narrow screens instead of collapsing each label
@@ -1027,7 +1027,7 @@ export default function ArticleViewer({
                         type="button"
                         onClick={a.onClick}
                         aria-label={a.label}
-                        className="w-11 h-11 sm:w-9 sm:h-9 inline-flex items-center justify-center rounded-full text-slate-500 hover:text-primary hover:bg-slate-100 transition-colors"
+                        className="w-11 h-11 sm:w-9 sm:h-9 inline-flex items-center justify-center rounded-full text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                       >
                         <a.icon className="w-4 h-4" />
                       </button>
@@ -1058,12 +1058,12 @@ export default function ArticleViewer({
             return null
           }
           return (
-            <p className="text-xs text-slate-500 mb-3 flex items-center gap-2 flex-wrap">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-2 flex-wrap">
               {showEffective && <span>{effectiveSince}</span>}
               {showVersionBadge && (
                 <>
-                  {showEffective && <span className="text-slate-300">·</span>}
-                  <span className="font-medium text-slate-500">
+                  {showEffective && <span className="text-slate-300 dark:text-slate-600">·</span>}
+                  <span className="font-medium text-slate-500 dark:text-slate-400">
                     v{article.version_number}
                   </span>
                 </>
@@ -1093,9 +1093,9 @@ export default function ArticleViewer({
                   return (
                     <>
                       {needsSep && (
-                        <span className="text-slate-300">·</span>
+                        <span className="text-slate-300 dark:text-slate-600">·</span>
                       )}
-                      <span className="text-slate-500">
+                      <span className="text-slate-500 dark:text-slate-400">
                         {currentLang === 'fr' ? verbFr : verbHt}
                         <a
                           href={`/loi/${article.source_amendment_slug}`}
@@ -1133,7 +1133,7 @@ export default function ArticleViewer({
                 }
                 placeholder="Titre (FR) — facultatif"
                 aria-label="Titre français"
-                className="w-full text-xl lg:text-2xl font-bold text-gray-900 leading-tight tracking-tight border-0 border-b-2 border-amber-300 focus:border-amber-500 focus:ring-0 outline-none px-0 py-1 bg-transparent placeholder:text-slate-300 placeholder:font-normal placeholder:italic"
+                className="w-full text-xl lg:text-2xl font-bold text-gray-900 dark:text-slate-100 leading-tight tracking-tight border-0 border-b-2 border-amber-300 focus:border-amber-500 focus:ring-0 outline-none px-0 py-1 bg-transparent placeholder:text-slate-300 dark:placeholder:text-slate-600 placeholder:font-normal placeholder:italic"
               />
               <input
                 type="text"
@@ -1145,7 +1145,7 @@ export default function ArticleViewer({
                 }
                 placeholder="Tit (HT) — opsyonèl"
                 aria-label="Tit kreyòl"
-                className="w-full text-xl lg:text-2xl font-bold text-gray-900 leading-tight tracking-tight border-0 border-b-2 border-blue-300 focus:border-blue-500 focus:ring-0 outline-none px-0 py-1 bg-transparent placeholder:text-slate-300 placeholder:font-normal placeholder:italic"
+                className="w-full text-xl lg:text-2xl font-bold text-gray-900 dark:text-slate-100 leading-tight tracking-tight border-0 border-b-2 border-blue-300 focus:border-blue-500 focus:ring-0 outline-none px-0 py-1 bg-transparent placeholder:text-slate-300 dark:placeholder:text-slate-600 placeholder:font-normal placeholder:italic"
               />
             </div>
           ) : (
@@ -1169,7 +1169,7 @@ export default function ArticleViewer({
                   ? `Titre (${currentLang.toUpperCase()}) — facultatif`
                   : `Tit (${currentLang.toUpperCase()}) — opsyonèl`
               }
-              className="w-full text-2xl lg:text-3xl font-bold text-gray-900 mb-3 leading-tight tracking-tight border-0 border-b-2 border-amber-300 focus:border-amber-500 focus:ring-0 outline-none px-0 py-1 bg-transparent placeholder:text-slate-300 placeholder:font-normal placeholder:italic"
+              className="w-full text-2xl lg:text-3xl font-bold text-gray-900 dark:text-slate-100 mb-3 leading-tight tracking-tight border-0 border-b-2 border-amber-300 focus:border-amber-500 focus:ring-0 outline-none px-0 py-1 bg-transparent placeholder:text-slate-300 dark:placeholder:text-slate-600 placeholder:font-normal placeholder:italic"
             />
           )
         ) : (
@@ -1179,7 +1179,7 @@ export default function ArticleViewer({
                 'text-2xl lg:text-3xl font-bold mb-3 leading-tight tracking-tight',
                 strikeThrough
                   ? 'text-slate-400 line-through decoration-slate-400/70'
-                  : 'text-gray-900',
+                  : 'text-gray-900 dark:text-slate-100',
               )}
             >
               {title}
@@ -1312,7 +1312,7 @@ export default function ArticleViewer({
                   'max-w-none text-base lg:text-lg leading-relaxed legal-article',
                   strikeThrough
                     ? 'text-slate-400 line-through decoration-slate-400/70'
-                    : 'text-gray-800',
+                    : 'text-gray-800 dark:text-slate-200',
                 )}
               >
                 {renderArticleBody(content || '', displayLang)}
@@ -1351,7 +1351,7 @@ export default function ArticleViewer({
               <button
                 type="button"
                 onClick={() => setLangOverride(null)}
-                className="mt-3 ml-3 text-xs italic text-slate-500 hover:text-primary border border-slate-200 rounded-md px-3 py-1.5 inline-flex items-center gap-1.5 transition-colors"
+                className="mt-3 ml-3 text-xs italic text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary border border-slate-200 dark:border-slate-700 rounded-md px-3 py-1.5 inline-flex items-center gap-1.5 transition-colors"
               >
                 <Languages className="w-3.5 h-3.5" />
                 {currentLang === 'fr'
@@ -1480,7 +1480,7 @@ export default function ArticleViewer({
                   setAddArticleMode('correction')
                   setAddArticleOpen(true)
                 }}
-                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm bg-white text-slate-700 border border-slate-200 hover:border-slate-400 hover:text-slate-900 transition-colors"
+                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
                 title={
                   currentLang === 'fr'
                     ? 'Le parser a oublié un article du texte original ? Ajoutez-le ici.'
@@ -1501,7 +1501,7 @@ export default function ArticleViewer({
               <button
                 type="button"
                 onClick={() => setDeleteOpen(true)}
-                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm bg-white text-red-700 border border-red-200 hover:bg-red-50 hover:border-red-300 transition-colors"
+                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm bg-white dark:bg-slate-800 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300 dark:hover:border-red-800 transition-colors"
                 title={
                   currentLang === 'fr'
                     ? "Supprimer cet article du texte (parser-cleanup)"
@@ -1624,22 +1624,22 @@ export default function ArticleViewer({
           labels overflow the narrow content column.
           Center number is bilingual — "Article 1" in fr, "Atik 1" in
           ht — and tolerates inputs that already carry the prefix. */}
-      <div className="border-t border-gray-200 mt-6 pt-5">
+      <div className="border-t border-gray-200 dark:border-slate-800 mt-6 pt-5">
         <div className="flex items-center justify-between gap-3">
           <Button
             variant="ghost"
             onClick={onPrevious}
             disabled={!hasPrevious}
             aria-label={currentLang === 'fr' ? 'Article précédent' : 'Atik anvan'}
-            className="h-auto py-2 px-3 sm:px-4 text-gray-600 hover:text-primary hover:bg-gray-100 group disabled:opacity-40 disabled:cursor-not-allowed rounded-2xl"
+            className="h-auto py-2 px-3 sm:px-4 text-gray-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-slate-800 group disabled:opacity-40 disabled:cursor-not-allowed rounded-2xl"
           >
             <ChevronLeft className="w-4 h-4 sm:mr-2 group-hover:-translate-x-1 transition-transform" />
-            <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest text-gray-500">
+            <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-slate-400">
               {currentLang === 'fr' ? 'Article précédent' : 'Atik anvan'}
             </span>
           </Button>
 
-          <span className="text-sm font-semibold text-slate-700 tabular-nums">
+          <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 tabular-nums">
             {(() => {
               // Strip any leading "Article" / "Atik" so we can re-prefix
               // consistently in the active language.
@@ -1656,9 +1656,9 @@ export default function ArticleViewer({
             onClick={onNext}
             disabled={!hasNext}
             aria-label={currentLang === 'fr' ? 'Article suivant' : 'Atik apre'}
-            className="h-auto py-2 px-3 sm:px-4 text-gray-600 hover:text-primary hover:bg-gray-100 group disabled:opacity-40 disabled:cursor-not-allowed rounded-2xl"
+            className="h-auto py-2 px-3 sm:px-4 text-gray-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-slate-800 group disabled:opacity-40 disabled:cursor-not-allowed rounded-2xl"
           >
-            <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest text-gray-500">
+            <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-slate-400">
               {currentLang === 'fr' ? 'Article suivant' : 'Atik apre'}
             </span>
             <ChevronRight className="w-4 h-4 sm:ml-2 group-hover:translate-x-1 transition-transform" />
@@ -1750,7 +1750,7 @@ export default function ArticleViewer({
                   ? 'Cette suppression est irréversible. Elle retire :'
                   : 'Efaze sa pa ka anile. Li retire :'}
               </p>
-              <ul className="list-disc pl-5 space-y-0.5 text-slate-600">
+              <ul className="list-disc pl-5 space-y-0.5 text-slate-600 dark:text-slate-300">
                 <li>
                   {versions.length || 1}{' '}
                   {currentLang === 'fr'
@@ -1814,10 +1814,10 @@ function AccordionTrigger({
       title={disabled ? disabledTitle : undefined}
       className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all border ${
         disabled
-          ? 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed'
+          ? 'bg-slate-50 dark:bg-slate-900 text-slate-400 dark:text-slate-600 border-slate-200 dark:border-slate-800 cursor-not-allowed'
           : open
             ? 'bg-primary text-white border-primary'
-            : 'bg-white text-slate-700 border-gray-200 hover:border-primary hover:text-primary'
+            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary'
       }`}
     >
       <Icon className="w-4 h-4" />
@@ -1825,7 +1825,7 @@ function AccordionTrigger({
       {typeof count === 'number' && count > 0 && (
         <span
           className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-            open ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+            open ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300'
           }`}
         >
           {count}

@@ -40,7 +40,7 @@ export function SearchPanel({
   return (
     <div className="mb-6">
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-6 text-sm text-slate-700 flex-wrap">
+        <div className="flex items-center gap-6 text-sm text-slate-700 dark:text-slate-300 flex-wrap">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"
@@ -90,9 +90,9 @@ export function SearchPanel({
                   aria-pressed={!!isSidebarOpen}
                   className={cn(
                     'inline-flex items-center gap-2 rounded-full h-9',
-                    'border border-slate-200 bg-white px-3.5',
-                    'text-[12px] font-semibold text-slate-600',
-                    'hover:border-primary hover:text-primary transition-colors',
+                    'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5',
+                    'text-[12px] font-semibold text-slate-600 dark:text-slate-300',
+                    'hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors',
                   )}
                 >
                   {isSidebarOpen ? (
@@ -114,8 +114,8 @@ export function SearchPanel({
             onChange={(e) => onQueryChange(e.target.value)}
             placeholder={currentLang === 'fr' ? 'Rechercher' : 'Chèche'}
             className={cn(
-              'w-full h-11 pl-4 rounded-lg border border-gray-300 bg-gray-50 text-sm text-slate-800',
-              'placeholder:text-slate-400 focus:outline-none focus:border-primary focus:bg-white transition-colors',
+              'w-full h-11 pl-4 rounded-lg border border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-100',
+              'placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-primary focus:bg-white dark:focus:bg-slate-900 transition-colors',
               // Right padding grows when the Réinitialiser pill is
               // visible so the pill never overlaps user text.
               pageSearchQuery ? 'pr-[10.5rem]' : 'pr-12',

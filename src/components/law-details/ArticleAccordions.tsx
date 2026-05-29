@@ -383,7 +383,7 @@ export function ArticleAccordions({
       : 'atik sa a'
 
   return (
-    <div className="mt-5 pt-4 border-t border-slate-100">
+    <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
       <div className="flex items-center gap-2 flex-wrap">
         {isEditor && onEdit && (
           <PillTrigger
@@ -479,7 +479,7 @@ export function ArticleAccordions({
               setAddArticleMode('correction')
               setAddArticleOpen(true)
             }}
-            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm bg-white text-slate-700 border border-slate-200 hover:border-slate-400 hover:text-slate-900 transition-colors"
+            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
             title={
               isFr
                 ? 'Le parser a oublié un article du texte original ? Ajoutez-le ici.'
@@ -496,7 +496,7 @@ export function ArticleAccordions({
           <button
             type="button"
             onClick={() => setDeleteOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm bg-white text-red-700 border border-red-200 hover:bg-red-50 hover:border-red-300 transition-colors"
+            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm bg-white dark:bg-slate-800 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300 dark:hover:border-red-800 transition-colors"
             title={
               isFr
                 ? 'Supprimer cet article du texte (parser-cleanup)'
@@ -675,7 +675,7 @@ export function ArticleAccordions({
                 : 'Atik la ak tout vèsyon li yo ap efase. Aksyon sa pa ka anile.'}
               <br />
               <br />
-              <span className="font-semibold text-slate-900">
+              <span className="font-semibold text-slate-900 dark:text-slate-100">
                 {articleLabel}
               </span>
             </>
@@ -719,10 +719,10 @@ function PillTrigger({
       className={cn(
         'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all border',
         disabled
-          ? 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed'
+          ? 'bg-slate-50 dark:bg-slate-900 text-slate-400 dark:text-slate-600 border-slate-200 dark:border-slate-800 cursor-not-allowed'
           : open
             ? 'bg-primary text-white border-primary'
-            : 'bg-white text-slate-700 border-gray-200 hover:border-primary hover:text-primary',
+            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary',
       )}
     >
       <Icon className="w-4 h-4" />
@@ -731,7 +731,7 @@ function PillTrigger({
         <span
           className={cn(
             'text-[10px] font-bold px-1.5 py-0.5 rounded-full',
-            open ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500',
+            open ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300',
           )}
         >
           {count}
@@ -749,7 +749,7 @@ function PillTrigger({
 
 function PanelSpinner({ lang }: { lang: 'fr' | 'ht' }) {
   return (
-    <div className="flex items-center gap-2 text-xs text-slate-500 py-3">
+    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 py-3">
       <Loader2 className="w-3.5 h-3.5 animate-spin" />
       {lang === 'fr' ? 'Chargement…' : 'Chajman…'}
     </div>
@@ -829,7 +829,7 @@ function ModifiedByLine({
             : `An vigè depi ${formattedDate}`}
         </span>
       )}
-      <p className="text-[11px] text-slate-500 truncate max-w-full">
+      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-full">
         {isFr ? 'Modifié par' : 'Modifye pa'}{' '}
         {href ? (
           <a
@@ -844,7 +844,7 @@ function ModifiedByLine({
               : ''}
           </a>
         ) : (
-          <span className="font-medium text-slate-700">{title}</span>
+          <span className="font-medium text-slate-700 dark:text-slate-300">{title}</span>
         )}
       </p>
     </div>

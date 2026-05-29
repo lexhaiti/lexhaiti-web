@@ -693,7 +693,7 @@ export default function LawDetail() {
   return (
     <TooltipProvider delayDuration={150}>
     <div
-      className={`min-h-screen bg-white ${isFullscreen ? 'fixed inset-0 z-50 bg-white' : ''}`}
+      className={`min-h-screen bg-white dark:bg-slate-950 ${isFullscreen ? 'fixed inset-0 z-50 bg-white dark:bg-slate-950' : ''}`}
     >
       {actuallyIsEditor && (
         <EditorPreviewBanner

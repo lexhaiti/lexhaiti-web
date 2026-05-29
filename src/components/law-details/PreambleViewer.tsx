@@ -25,9 +25,9 @@ export default function PreambleViewer({
 }: PreambleViewerProps) {
   if (!text) {
     return (
-      <div className="animate-in fade-in duration-500 bg-white rounded-2xl border border-gray-100 p-12 text-center">
-        <FileText className="w-16 h-16 mx-auto text-gray-200 mb-4" />
-        <h3 className="text-lg font-semibold text-gray-400">
+      <div className="animate-in fade-in duration-500 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-12 text-center">
+        <FileText className="w-16 h-16 mx-auto text-gray-200 dark:text-slate-700 mb-4" />
+        <h3 className="text-lg font-semibold text-gray-400 dark:text-slate-500">
           {currentLang === 'fr'
             ? 'Aucun contenu disponible'
             : 'Pa gen kontni disponib'}
@@ -48,12 +48,12 @@ export default function PreambleViewer({
   const readingTime = Math.max(1, Math.ceil(wordCount / 220))
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden">
-      <div className="border-b border-gray-100 p-6 lg:p-8 bg-gradient-to-r from-gray-50/50 to-white">
-        <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3 leading-tight tracking-tight">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden">
+      <div className="border-b border-gray-100 dark:border-slate-800 p-6 lg:p-8 bg-gradient-to-r from-gray-50/50 to-white dark:from-slate-800/50 dark:to-slate-900">
+        <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-slate-100 mb-3 leading-tight tracking-tight">
           {title}
         </h2>
-        <div className="flex items-center gap-4 text-xs font-medium text-gray-400 uppercase tracking-widest">
+        <div className="flex items-center gap-4 text-xs font-medium text-gray-400 dark:text-slate-500 uppercase tracking-widest">
           <div className="flex items-center gap-1.5">
             <BookOpen className="w-3.5 h-3.5" />
             <span>
@@ -79,11 +79,11 @@ export default function PreambleViewer({
               // inject. Same allowlist as article bodies (bold,
               // italic, lists, alignment).
               <div
-                className="ml-6 text-gray-700 leading-relaxed text-base lg:text-lg formal-block-html"
+                className="ml-6 text-gray-700 dark:text-slate-300 leading-relaxed text-base lg:text-lg formal-block-html"
                 dangerouslySetInnerHTML={{ __html: text }}
               />
             ) : (
-              <div className="ml-6 space-y-5 text-gray-700 leading-relaxed text-base lg:text-lg">
+              <div className="ml-6 space-y-5 text-gray-700 dark:text-slate-300 leading-relaxed text-base lg:text-lg">
                 {paragraphs.map((p, i) => (
                   <p
                     key={i}

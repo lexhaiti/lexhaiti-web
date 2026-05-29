@@ -28,7 +28,7 @@ const RichArticleEditor = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full min-h-[200px] rounded-md border border-slate-200 bg-slate-50/60 animate-pulse" />
+      <div className="w-full min-h-[200px] rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 animate-pulse" />
     ),
   },
 )
@@ -103,7 +103,7 @@ export function DocumentBody({
             type="button"
             onClick={cancel}
             disabled={saving}
-            className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-400 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-slate-400 dark:hover:border-slate-600 disabled:opacity-50"
           >
             <X className="w-3.5 h-3.5" />
             {lang === 'fr' ? 'Annuler' : 'Anile'}
@@ -163,9 +163,9 @@ export function DocumentBody({
           className={cn(
             'absolute -top-1 -right-1 opacity-0 group-hover/doc:opacity-100 transition-opacity',
             'inline-flex items-center justify-center w-8 h-8 rounded-full',
-            'bg-white border border-slate-200 shadow-sm',
-            'hover:bg-slate-50 hover:border-primary',
-            'text-slate-500 hover:text-primary',
+            'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm',
+            'hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-primary dark:hover:border-primary',
+            'text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary',
           )}
         >
           <PenLine className="w-4 h-4" />
@@ -178,9 +178,9 @@ export function DocumentBody({
             // ``prose-slate`` matches the page's body color.
             // ``max-w-none`` overrides prose's default narrow column
             // so the document flows across the available width.
-            'prose prose-slate max-w-none',
-            'prose-p:leading-relaxed prose-p:text-slate-800',
-            'prose-strong:text-slate-900 prose-em:text-slate-700',
+            'prose prose-slate dark:prose-invert max-w-none',
+            'prose-p:leading-relaxed prose-p:text-slate-800 dark:prose-p:text-slate-200',
+            'prose-strong:text-slate-900 dark:prose-strong:text-slate-100 prose-em:text-slate-700 dark:prose-em:text-slate-300',
             // Empty paragraphs (``<p></p>``, ``<p><br></p>``) lose
             // their height in the normal flow because there's no
             // content to stretch the line-box. The editor uses them
@@ -195,7 +195,7 @@ export function DocumentBody({
         />
       ) : (
         // Plain-text fallback — preserve line breaks, no markup.
-        <div className="prose prose-slate max-w-none whitespace-pre-wrap text-slate-800 leading-relaxed">
+        <div className="prose prose-slate dark:prose-invert max-w-none whitespace-pre-wrap text-slate-800 dark:text-slate-200 leading-relaxed">
           {value}
         </div>
       )}

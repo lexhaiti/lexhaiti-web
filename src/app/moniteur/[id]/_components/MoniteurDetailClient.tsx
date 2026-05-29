@@ -169,7 +169,7 @@ const CATEGORY_META: Record<
   circulaire: {
     label: 'Circulaire',
     plural: 'Circulaires',
-    badge: 'bg-slate-50 text-slate-700 border-slate-200',
+    badge: 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700',
     bar: 'bg-slate-400',
     icon: 'text-slate-500',
   },
@@ -204,7 +204,7 @@ const CATEGORY_META: Record<
   promulgation: {
     label: 'Promulgation',
     plural: 'Promulgations',
-    badge: 'bg-gray-50 text-gray-600 border-gray-200',
+    badge: 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-700',
     bar: 'bg-gray-400',
     icon: 'text-gray-500',
   },
@@ -250,7 +250,7 @@ const CATEGORY_META: Record<
   autre: {
     label: 'Autre',
     plural: 'Autres',
-    badge: 'bg-slate-50 text-slate-600 border-slate-200',
+    badge: 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700',
     bar: 'bg-slate-400',
     icon: 'text-slate-500',
   },
@@ -299,7 +299,7 @@ function SommaireCard({
   if (isPromulgation) {
     return (
       <div
-        className="animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both rounded-lg border border-slate-200/60 bg-slate-50/40 px-3 py-1"
+        className="animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both rounded-lg border border-slate-200/60 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/40 px-3 py-1"
         style={{ animationDelay: `${index * 40}ms` }}
       >
         <CompanionRow
@@ -318,9 +318,9 @@ function SommaireCard({
       style={{ animationDelay: `${index * 40}ms` }}
       className={cn(
         'animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-both',
-        'group rounded-2xl border bg-white overflow-hidden transition-all duration-300',
-        'hover:border-slate-300 hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.12)]',
-        'border-slate-200/80',
+        'group rounded-2xl border bg-white dark:bg-slate-900 overflow-hidden transition-all duration-300',
+        'hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.12)]',
+        'border-slate-200/80 dark:border-slate-800',
       )}
     >
       <div className="flex">
@@ -370,7 +370,7 @@ function SommaireCard({
                     ? `/loi/${candidate.promoted_legal_text_slug}?lang=ht`
                     : `/loi/${candidate.promoted_legal_text_slug}`
                 }
-                className="block text-base sm:text-lg font-bold text-slate-900 hover:text-primary transition-colors leading-snug"
+                className="block text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 hover:text-primary dark:hover:text-primary transition-colors leading-snug"
               >
                 {title}
               </Link>
@@ -387,12 +387,12 @@ function SommaireCard({
                 >
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </span>
-                <span className="font-bold leading-snug hover:text-primary transition-colors text-base sm:text-lg text-slate-900">
+                <span className="font-bold leading-snug hover:text-primary dark:hover:text-primary transition-colors text-base sm:text-lg text-slate-900 dark:text-slate-100">
                   {title}
                 </span>
               </button>
             ) : (
-              <p className="font-bold leading-snug text-base sm:text-lg text-slate-900">
+              <p className="font-bold leading-snug text-base sm:text-lg text-slate-900 dark:text-slate-100">
                 {title}
               </p>
             )}
@@ -406,13 +406,13 @@ function SommaireCard({
                 )}
               >
                 {candidate.detected_date && (
-                  <span className="inline-flex items-center gap-1.5 text-slate-500">
-                    <Calendar className="w-3 h-3 text-slate-400" />
+                  <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                    <Calendar className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                     Promulguée le {formatLongDate(candidate.detected_date)}
                   </span>
                 )}
                 {candidate.detected_number && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-mono text-[11px]">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono text-[11px]">
                     N° {candidate.detected_number}
                   </span>
                 )}
@@ -444,7 +444,7 @@ function SommaireCard({
                   transition={{ duration: 0.25 }}
                   className="overflow-hidden"
                 >
-                  <div className="mt-4 ml-6 bg-slate-50 rounded-lg p-5 text-sm text-slate-700 leading-relaxed whitespace-pre-wrap border border-slate-100">
+                  <div className="mt-4 ml-6 bg-slate-50 dark:bg-slate-800/60 rounded-lg p-5 text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap border border-slate-100 dark:border-slate-700">
                     {candidate.raw_text}
                   </div>
                 </motion.div>
@@ -460,7 +460,7 @@ function SommaireCard({
           the parent card (no nested rounded-2xl border, no second
           chevron) instead of full SommaireCard chrome. */}
       {childCandidates.length > 0 && (
-        <div className="px-5 sm:px-6 pb-5 border-t border-slate-100 pt-3">
+        <div className="px-5 sm:px-6 pb-5 border-t border-slate-100 dark:border-slate-800 pt-3">
           {childCandidates.map((child) => (
             <CompanionRow
               key={child.id}
@@ -531,7 +531,7 @@ function CompanionRow({
         className={cn(
           'flex-1 flex items-start justify-between gap-3 px-2 py-2 text-left rounded-md',
           hasRawText
-            ? 'hover:bg-slate-50 cursor-pointer'
+            ? 'hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer'
             : 'cursor-default',
         )}
       >
@@ -555,13 +555,13 @@ function CompanionRow({
                 {label}
               </span>
               {candidate.detected_number && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-mono text-[10px]">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono text-[10px]">
                   N° {candidate.detected_number}
                 </span>
               )}
             </span>
             {subtitle && (
-              <span className="text-sm font-medium text-slate-700 leading-snug">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug">
                 {subtitle}
               </span>
             )}
@@ -604,7 +604,7 @@ function CompanionRow({
           >
             {/* Inline text — no inner card chrome, just indented prose
                 under the row's label. */}
-            <div className="mt-2 ml-6 pr-2 text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+            <div className="mt-2 ml-6 pr-2 text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
               {candidate.raw_text}
             </div>
           </motion.div>
@@ -757,9 +757,9 @@ export default function MoniteurDetailClient() {
 
   if (error || !issue) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-slate-500 text-lg">{error ?? 'Erreur de chargement'}</p>
+          <p className="text-slate-500 dark:text-slate-400 text-lg">{error ?? 'Erreur de chargement'}</p>
           <Link href="/moniteur" className="text-primary hover:underline mt-4 inline-block">
             ← Retour au Moniteur
           </Link>
@@ -775,11 +775,11 @@ export default function MoniteurDetailClient() {
   )
 
   return (
-    <div className="min-h-screen bg-slate-50/40">
+    <div className="min-h-screen bg-slate-50/40 dark:bg-slate-950">
       {/* ------------------------------------------------------------------- */}
       {/* Newspaper masthead header                                          */}
       {/* ------------------------------------------------------------------- */}
-      <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
+      <div className="relative bg-primary dark:bg-slate-900 text-white overflow-hidden border-b border-white/5 dark:border-slate-800">
         {/* Background decorative elements */}
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
@@ -957,7 +957,7 @@ export default function MoniteurDetailClient() {
         {/* Category breakdown chips */}
         {sortedCategoryEntries.length > 0 && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 mb-10 flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mr-2">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mr-2">
               Composition
             </span>
             {sortedCategoryEntries.map(([cat, n]) => {
@@ -986,7 +986,7 @@ export default function MoniteurDetailClient() {
         {/* Sommaire */}
         <section className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-75 fill-mode-both">
           <div className="flex items-baseline justify-between mb-6">
-            <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">
+            <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">
               Sommaire
             </h2>
           </div>
@@ -1023,10 +1023,10 @@ export default function MoniteurDetailClient() {
         </section>
 
         {/* Footer back-link */}
-        <div className="mt-16 pt-8 border-t border-slate-200">
+        <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800">
           <Link
             href="/moniteur"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-primary transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Retour aux numéros du Moniteur

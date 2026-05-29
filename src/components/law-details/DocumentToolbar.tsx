@@ -118,7 +118,7 @@ export function DocumentToolbar({
   const baseChip =
     'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-medium transition-colors whitespace-nowrap shrink-0'
   const idleChip =
-    'border-slate-200 bg-white text-slate-700 hover:border-primary hover:text-primary'
+    'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary'
   const activeChip =
     'bg-primary text-white border-primary hover:bg-primary/90'
 

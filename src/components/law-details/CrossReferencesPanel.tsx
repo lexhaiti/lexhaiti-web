@@ -138,7 +138,7 @@ export function CrossReferencesPanel({
           aria-expanded={open}
           className={cn(
             'inline-flex items-center gap-2 rounded-md px-2 py-1 text-[12px] font-semibold transition-colors',
-            'text-slate-600 hover:text-primary hover:bg-slate-100',
+            'text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800',
           )}
         >
           <LinkIcon className="w-3.5 h-3.5" aria-hidden />
@@ -152,7 +152,7 @@ export function CrossReferencesPanel({
           />
         </button>
         {open && loading && (
-          <div className="flex items-center gap-2 text-xs text-slate-500 py-3 px-2">
+          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 py-3 px-2">
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
             {isFr ? 'Chargement…' : 'Chajman…'}
           </div>
@@ -206,7 +206,7 @@ function renderBody({
   return (
     <section
       className={cn(
-        'mt-3 rounded-xl border border-slate-200 bg-slate-50/40 p-4 sm:p-5',
+        'mt-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/40 dark:bg-slate-900/40 p-4 sm:p-5',
         className,
       )}
       aria-label={isFr ? 'Références croisées' : 'Referans kwaze'}
@@ -214,7 +214,7 @@ function renderBody({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
         {hasCitedBy && (
           <div>
-            <h4 className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 mb-2">
+            <h4 className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400 mb-2">
               {isFr ? 'Cité par' : 'Site pa'}
             </h4>
             <ul className="space-y-1.5">
@@ -224,7 +224,7 @@ function renderBody({
                   <li key={`cb-${i}`}>
                     <Link
                       href={ref.href}
-                      className="group inline-flex items-start gap-1.5 text-[13px] text-slate-700 hover:text-primary"
+                      className="group inline-flex items-start gap-1.5 text-[13px] text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-primary"
                     >
                       <Icon
                         className="w-3.5 h-3.5 text-slate-400 group-hover:text-primary flex-shrink-0 mt-0.5"
@@ -234,7 +234,7 @@ function renderBody({
                         {ref.title}
                       </span>
                       {ref.note && (
-                        <span className="ml-1 text-[11px] italic text-slate-500">
+                        <span className="ml-1 text-[11px] italic text-slate-500 dark:text-slate-400">
                           {ref.note}
                         </span>
                       )}
@@ -248,7 +248,7 @@ function renderBody({
 
         {hasCites && (
           <div>
-            <h4 className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 mb-2">
+            <h4 className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400 mb-2">
               {isFr ? 'Cite' : 'Site'}
             </h4>
             <ul className="space-y-1.5">
@@ -258,7 +258,7 @@ function renderBody({
                   <li key={`ct-${i}`}>
                     <Link
                       href={ref.href}
-                      className="group inline-flex items-start gap-1.5 text-[13px] text-slate-700 hover:text-primary"
+                      className="group inline-flex items-start gap-1.5 text-[13px] text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-primary"
                     >
                       <Icon
                         className="w-3.5 h-3.5 text-slate-400 group-hover:text-primary flex-shrink-0 mt-0.5"

@@ -48,7 +48,7 @@ export function PlainExplainerBox({
   return (
     <aside
       className={cn(
-        'mt-5 relative rounded-r-lg border-l-[3px] border-l-amber-400 bg-amber-50/50 p-5',
+        'mt-5 relative rounded-r-lg border-l-[3px] border-l-amber-400 dark:border-l-amber-500/70 bg-amber-50/50 dark:bg-amber-950/20 p-5',
         'before:absolute before:inset-y-0 before:left-0 before:w-px before:bg-amber-300/60',
         className,
       )}
@@ -59,13 +59,13 @@ export function PlainExplainerBox({
           className="w-4 h-4 text-amber-600 flex-shrink-0"
           aria-hidden
         />
-        <h4 className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-800">
+        <h4 className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-800 dark:text-amber-300">
           {isFr ? 'En clair' : 'Sa li vle di'}
         </h4>
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-700/70">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-700/70 dark:text-amber-400/70">
           ·
         </span>
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-700/70">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-700/70 dark:text-amber-400/70">
           {isFr ? 'Note de la rédaction' : 'Nòt redaksyon an'}
         </span>
       </header>
@@ -75,12 +75,12 @@ export function PlainExplainerBox({
           language goes first, the other second (smaller, italic). */}
       <div className="space-y-3">
         {(isFr ? hasFr : hasHt) && (
-          <p className="text-sm leading-relaxed text-slate-800">
+          <p className="text-sm leading-relaxed text-slate-800 dark:text-slate-200">
             {isFr ? explainerFr : explainerHt}
           </p>
         )}
         {(isFr ? hasHt : hasFr) && (
-          <p className="text-[13px] leading-relaxed italic text-slate-600">
+          <p className="text-[13px] leading-relaxed italic text-slate-600 dark:text-slate-400">
             {isFr ? explainerHt : explainerFr}
           </p>
         )}
