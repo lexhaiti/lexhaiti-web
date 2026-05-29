@@ -18,7 +18,7 @@ const RELATION_META: Record<
 > = {
   vise: {
     label: { fr: 'vise', ht: 'vize' },
-    cls: 'bg-slate-100 text-slate-700',
+    cls: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200',
   },
   modifie: {
     label: { fr: 'modifie', ht: 'modifye' },
@@ -86,7 +86,7 @@ export function CitationColumn({
       <div className="flex items-baseline justify-between mb-3">
         <div className="flex items-center gap-2">
           {arrowIcon}
-          <h4 className="text-sm font-bold text-slate-800 tracking-tight">
+          <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 tracking-tight">
             {title}
           </h4>
           <span className="text-xs font-medium text-slate-400">
@@ -128,7 +128,7 @@ export function CitationColumn({
                         {c.target_label}
                       </a>
                     ) : (
-                      <span className="font-medium text-slate-800">
+                      <span className="font-medium text-slate-800 dark:text-slate-200">
                         {c.target_label}
                       </span>
                     )}
