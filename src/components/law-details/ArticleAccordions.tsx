@@ -721,7 +721,7 @@ function PillTrigger({
         disabled
           ? 'bg-slate-50 dark:bg-slate-900 text-slate-400 dark:text-slate-600 border-slate-200 dark:border-slate-800 cursor-not-allowed'
           : open
-            ? 'bg-primary text-white border-primary'
+            ? 'bg-primary dark:bg-slate-700 text-white border-primary dark:border-slate-600'
             : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary',
       )}
     >

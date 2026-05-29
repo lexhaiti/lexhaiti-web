@@ -251,7 +251,7 @@ export default function JurisprudenceListClient() {
           <button
             type="button"
             aria-label={t('jurisprudence.searchButton')}
-            className="inline-flex items-center gap-2 px-5 sm:px-7 bg-primary text-white text-sm font-semibold hover:bg-primary/90 active:scale-[0.99] transition-all"
+            className="inline-flex items-center gap-2 px-5 sm:px-7 bg-primary dark:bg-slate-800 text-white text-sm font-semibold hover:bg-primary/90 dark:hover:bg-slate-700 active:scale-[0.99] transition-all"
           >
             <Search className="w-4 h-4" aria-hidden />
             <span className="hidden sm:inline">
@@ -281,7 +281,7 @@ export default function JurisprudenceListClient() {
                   className={cn(
                     'inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
                     active
-                      ? 'bg-primary text-white'
+                      ? 'bg-primary dark:bg-slate-700 text-white'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700',
                   )}
                 >

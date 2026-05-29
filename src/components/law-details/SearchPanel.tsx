@@ -142,7 +142,7 @@ export function SearchPanel({
           <button
             type="button"
             aria-label={currentLang === 'fr' ? 'Rechercher' : 'Chèche'}
-            className="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 inline-flex items-center justify-center rounded-md bg-primary text-white hover:bg-primary/90"
+            className="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 inline-flex items-center justify-center rounded-md bg-primary dark:bg-slate-700 text-white hover:bg-primary/90 dark:hover:bg-slate-600"
           >
             <Search className="w-4 h-4" />
           </button>

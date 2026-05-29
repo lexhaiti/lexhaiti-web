@@ -120,7 +120,7 @@ export function DocumentToolbar({
   const idleChip =
     'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary'
   const activeChip =
-    'bg-primary text-white border-primary hover:bg-primary/90'
+    'bg-primary dark:bg-slate-700 text-white border-primary dark:border-slate-600 hover:bg-primary/90 dark:hover:bg-slate-600'
 
   return (
     // Mobile: horizontal scroll strip so the chrono panel + article

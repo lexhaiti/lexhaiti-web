@@ -2,7 +2,7 @@ export default function Loading() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Hero skeleton */}
-      <div className="bg-primary pt-28 pb-10 lg:pb-14 lg:pt-36">
+      <div className="bg-primary dark:bg-slate-900 pt-28 pb-10 lg:pb-14 lg:pt-36">
         <div className="container">
           <div className="h-10 w-72 bg-white/10 rounded-lg animate-pulse mb-3" />
           <div className="h-5 w-96 max-w-full bg-white/5 rounded animate-pulse" />

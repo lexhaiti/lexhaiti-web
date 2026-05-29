@@ -30,7 +30,7 @@ export default async function AppelContribution() {
               <Link href="/contact" className="w-full sm:w-auto">
                 <Button
                   size="lg"
-                  className="w-full sm:w-auto h-12 rounded-full bg-white text-primary hover:bg-slate-100 px-7 font-semibold transition-colors"
+                  className="w-full sm:w-auto h-12 rounded-full bg-white dark:bg-slate-800 text-primary dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700 px-7 font-semibold transition-colors"
                 >
                   <MailIcon className="mr-2 w-4 h-4" />
                   {t('home.appelContribution.contact')}

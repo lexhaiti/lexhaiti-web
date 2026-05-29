@@ -264,7 +264,7 @@ export default async function Page() {
             <div className="mt-10 flex justify-center">
               <Link
                 href="/lois"
-                className="inline-flex items-center gap-2 bg-white hover:bg-slate-100 text-primary px-6 py-3 rounded-md font-semibold transition-all active:scale-[0.99] shadow-sm hover:shadow-md"
+                className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-primary dark:text-white px-6 py-3 rounded-md font-semibold transition-all active:scale-[0.99] shadow-sm hover:shadow-md"
               >
                 <BookOpen className="w-4 h-4" />
                 {isFr ? 'Explorer le corpus' : 'Eksplore kòpis la'}
