@@ -259,6 +259,19 @@ button:focus-visible {
         list-style: decimal;
     }
 
+    /* Inline article-reference links — emitted by the backend
+       linkifier (services/text/linkify.py) wherever "article 295" /
+       "articles 9 à 12" / "art. 1382" appears in body text.
+       Hover-only underline keeps body prose calm; the underline
+       offset matches the prose body's line-height so the link
+       baseline doesn't drift. The class lives outside ``.article-html``
+       so the same rule fires inside formal-block HTML (préambule /
+       visas / considérants / closing) too — references show up
+       there as often as in article bodies. */
+    .rt-art-ref {
+        @apply text-primary underline decoration-primary/30 underline-offset-2 hover:decoration-primary cursor-pointer;
+    }
+
     /* Formal-block HTML (préambule / visas / considérants / enacting).
        Visas are the dense case: a long run of "Vu le … ;" lines that,
        without breathing room, collapse into an unreadable wall (see

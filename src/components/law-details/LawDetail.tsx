@@ -438,21 +438,36 @@ export default function LawDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [law?.articles, requestedArticleParam])
 
-  // When the URL drives a navigation TO focused-article mode, scroll
-  // the article into the middle of the viewport so the reader doesn't
-  // have to hunt for it. Only fires when ``view=article`` is the
-  // active mode (otherwise the list-view shows everything inline
-  // and a scroll-jump would feel jarring).
+  // When the URL drives a navigation TO an article — scroll it into
+  // view. Two cases:
+  //   - ``view=article`` (focused single-article mode) → scroll the
+  //     focused viewer to the middle of the viewport.
+  //   - any other view (Tous / Par chapitre / Document) → the article
+  //     is already rendered inline with id="article-{number}" by
+  //     ArticleListView; scroll *that* card into view instead.
+  // This covers both deep-links from outside (search results, shared
+  // URLs) AND the inline ``rt-art-ref`` clicks from the body text —
+  // both end up driving the URL ``?article=`` param, which is the
+  // single source of truth.
   useEffect(() => {
     if (!requestedArticleParam) return
-    if (searchParams?.get('view') !== 'article') return
-    // Defer to next paint so the focused viewer has a chance to
-    // render before we measure + scroll.
+    const isFocused = searchParams?.get('view') === 'article'
+    // Defer to next paint so the freshly-mounted target has a chance
+    // to land in the DOM (the article-list windowing extends to
+    // include the requested article on the same tick the URL param
+    // changes, but the layout pass hasn't run yet).
     const id = window.setTimeout(() => {
-      articleViewerRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      })
+      if (isFocused) {
+        articleViewerRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        })
+        return
+      }
+      const card = document.getElementById(`article-${requestedArticleParam}`)
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
     }, 50)
     return () => window.clearTimeout(id)
   }, [requestedArticleParam, searchParams])
@@ -502,6 +517,67 @@ export default function LawDetail() {
   }, [])
 
   const articleViewerRef = React.useRef<HTMLDivElement>(null)
+  // Container ref for the article-reference link delegation handler
+  // below. The backend linkifier stamps every inline "article 295"
+  // mention as ``<a class="rt-art-ref" href="?article=295">``; we
+  // intercept clicks on those anchors here so the URL update is
+  // shallow (no Next.js full-route nav) and the existing
+  // ``requestedArticleParam`` effect picks up the change and scrolls
+  // the matching article into view.
+  const lawDetailRootRef = React.useRef<HTMLDivElement>(null)
+
+  // Article-reference link interception.
+  // The backend linkifier (services/text/linkify.py) rewrites every
+  // inline "article 295" / "art. 1382" mention in body text as
+  // ``<a class="rt-art-ref" data-article="N" href="?article=N">``.
+  // The relative ``?article=N`` href would, on a plain click, trigger
+  // a full Next.js navigation that re-fetches the same law. We
+  // intercept it here and call ``router.replace`` so:
+  //   1. the URL ``?article`` param updates without a route change
+  //      (the existing ``requestedArticleParam`` effect above then
+  //      selects + scrolls to the article),
+  //   2. modifier-clicks (cmd/ctrl/shift/middle-click) fall through
+  //      to the browser so "open in new tab" still works.
+  useEffect(() => {
+    const root = lawDetailRootRef.current
+    if (!root) return
+    const onClick = (e: MouseEvent) => {
+      // Let modifier-clicks / middle-clicks through — opens in new tab
+      // is a useful escape hatch when comparing two articles.
+      if (
+        e.defaultPrevented ||
+        e.button !== 0 ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.shiftKey ||
+        e.altKey
+      ) {
+        return
+      }
+      // ``closest`` walks up through inline tags (the linkifier emits
+      // anchors that can sit inside <strong>, <em>, etc.).
+      const target = (e.target as Element | null)?.closest?.(
+        'a.rt-art-ref',
+      ) as HTMLAnchorElement | null
+      if (!target) return
+      // Pull the article number off the data attribute (cheaper than
+      // re-parsing the href). Bail when both are missing — leaves the
+      // browser to handle the click as-is (defensive; the linkifier
+      // always emits both).
+      const num =
+        target.dataset.article ||
+        new URL(target.href, window.location.origin).searchParams.get('article')
+      if (!num) return
+      e.preventDefault()
+      // Build the next query string from the *current* one so other
+      // params (view, lang, theme) survive the shallow nav.
+      const params = new URLSearchParams(searchParams?.toString() ?? '')
+      params.set('article', num)
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+    }
+    root.addEventListener('click', onClick)
+    return () => root.removeEventListener('click', onClick)
+  }, [router, pathname, searchParams])
   // Sentinel placed at the top of the in-flow tools row. Once it
   // scrolls under where the header sits, we flip ``stickyActive`` —
   // the signal that the reader is now in the body, which fades in the
@@ -699,6 +775,7 @@ export default function LawDetail() {
   return (
     <TooltipProvider delayDuration={150}>
     <div
+      ref={lawDetailRootRef}
       className={`min-h-screen bg-white dark:bg-slate-950 ${isFullscreen ? 'fixed inset-0 z-50 bg-white dark:bg-slate-950' : ''}`}
     >
       {actuallyIsEditor && (
