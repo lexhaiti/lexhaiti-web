@@ -201,8 +201,8 @@ export default function HeroSection() {
               className={cn(
                 'inline-flex items-center justify-center gap-2',
                 'h-14 px-7 rounded-full',
-                'bg-primary text-white font-semibold',
-                'hover:bg-primary/90 active:scale-[0.99] transition-all',
+                'bg-primary dark:bg-slate-800 text-white font-semibold',
+                'hover:bg-primary/90 dark:hover:bg-slate-700 active:scale-[0.99] transition-all',
               )}
             >
               {t('home.hero.searchButton')}

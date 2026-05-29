@@ -89,8 +89,8 @@ export function ScrollToTop() {
         'fixed z-40 bottom-6 right-6 sm:bottom-8 sm:right-8',
         'inline-flex items-center justify-center',
         'h-11 w-11 rounded-full',
-        'bg-primary text-white shadow-lg shadow-primary/30',
-        'hover:bg-primary/90 hover:shadow-primary/40',
+        'bg-primary dark:bg-slate-800 text-white shadow-lg shadow-primary/30 dark:shadow-black/40',
+        'hover:bg-primary/90 dark:hover:bg-slate-700 hover:shadow-primary/40',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2',
         // Only opacity transitions — the footer-avoidance transform is
         // applied imperatively and must track scroll instantly.

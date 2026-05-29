@@ -162,7 +162,7 @@ export default async function Page() {
                 </div>
                 <Button
                   disabled
-                  className="w-full rounded-md bg-primary hover:bg-primary/90 text-white h-12 sm:h-14 font-semibold text-base transition-all active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full rounded-md bg-primary dark:bg-slate-800 hover:bg-primary/90 dark:hover:bg-slate-700 text-white h-12 sm:h-14 font-semibold text-base transition-all active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <Send className="w-5 h-5 mr-2" />
                   {isFr ? 'Bientôt disponible' : 'Byento disponib'}
