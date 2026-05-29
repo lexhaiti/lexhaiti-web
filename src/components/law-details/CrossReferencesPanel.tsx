@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Cross-references panel à la Légifrance — two columns:
+ * Cross-references panel — two columns:
  *
  *   Cité par   Decisions, decrees, or other articles that REFERENCE
  *              this article (incoming).

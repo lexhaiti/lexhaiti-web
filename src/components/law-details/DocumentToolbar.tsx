@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Légifrance-style document toolbar — small action strip at the top
+ * Document toolbar — small action strip at the top
  * of the law content area, just under the SearchPanel row.
  *
  * Three actions:

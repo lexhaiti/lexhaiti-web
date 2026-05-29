@@ -616,19 +616,20 @@ const ArticleCard = memo(function ArticleCard({
               aria-label={
                 isFr ? 'Position dans le texte' : 'Pozisyon nan tèks la'
               }
-              className="flex items-center gap-1.5 flex-wrap text-[12px] text-slate-500"
+              className="flex flex-nowrap items-center gap-1.5 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden text-[12px] text-slate-500"
             >
               {breadcrumbCrumbs.map((c, idx) => {
                 const isLast = idx === breadcrumbCrumbs.length - 1
                 return (
                   <span
                     key={c.key}
-                    className="inline-flex items-center gap-1.5"
+                    className="inline-flex items-center gap-1.5 flex-shrink-0"
                   >
                     <span
                       className={cn(
+                        'whitespace-nowrap',
                         isLast
-                          ? 'font-bold uppercase tracking-widest text-primary text-[12px] tabular-nums whitespace-nowrap'
+                          ? 'font-bold uppercase tracking-widest text-primary text-[12px] tabular-nums'
                           : 'font-medium',
                       )}
                     >

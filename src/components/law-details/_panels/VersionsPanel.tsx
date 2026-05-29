@@ -151,8 +151,8 @@ export function VersionsPanel({
           const isCurrent = idx === 0
           const fromDisplay = fmt(v.effective_from)
           // ``versions`` is newest-first. A historical version's
-          // effective_to is rarely set on the row itself — Legifrance
-          // doesn't store it either, it just infers the end-of-period
+          // effective_to is rarely set on the row itself, so we
+          // infer the end-of-period
           // from the NEXT (newer) version's effective_from. We do the
           // same here so V1 of an article that was later amended
           // renders "Du <pub_date> au <V2.effective_from>" instead of
@@ -165,7 +165,7 @@ export function VersionsPanel({
             ? fmt(inferredEffectiveTo)
             : null
 
-          // Build a Légifrance-style status pill:
+          // Build a status pill:
           //   - current in-force version → green "Version en vigueur
           //     depuis le <date>" (no end date).
           //   - historical in-force version → red "Version en vigueur

@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Continuous "partie introductive" — the Légifrance-style rendering of
+ * Continuous "partie introductive" — the continuous rendering of
  * a legal text's introductory part (visas, considérants, mentions
  * procédurales, and the enacting formula) as ONE flowing block rather
  * than separate per-kind cards.
@@ -122,7 +122,7 @@ export function IntroductoryPart({
       {expanded && (
         <div className="px-5 pb-5 pt-1">
           {/* Continuous flow — each part in reading order, no per-kind
-              labels (mirrors Légifrance, which doesn't visually separate
+              labels (we don't visually separate
               visas / considérants / mentions / formule). */}
           <div className="space-y-3 text-sm text-slate-700 leading-relaxed">
             {visible.map((text, i) =>

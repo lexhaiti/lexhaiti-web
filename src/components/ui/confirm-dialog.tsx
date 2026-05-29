@@ -59,6 +59,7 @@ export function ConfirmDialog({
           className={cn(
             'fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2',
             'w-[calc(100vw-2rem)] max-w-md rounded-xl border border-slate-200 bg-white shadow-2xl',
+            'dark:border-slate-700 dark:bg-slate-900',
             'data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
             'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
@@ -75,11 +76,11 @@ export function ConfirmDialog({
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <DialogPrimitive.Title className="text-base font-bold text-slate-900 leading-snug">
+                <DialogPrimitive.Title className="text-base font-bold text-slate-900 dark:text-slate-100 leading-snug">
                   {title}
                 </DialogPrimitive.Title>
                 {description && (
-                  <DialogPrimitive.Description className="mt-2 text-sm text-slate-600 leading-relaxed">
+                  <DialogPrimitive.Description className="mt-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                     {description}
                   </DialogPrimitive.Description>
                 )}
@@ -100,6 +101,7 @@ export function ConfirmDialog({
                   'inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white',
                   'px-4 py-2 text-sm font-semibold text-slate-700',
                   'hover:border-slate-400 hover:bg-slate-50 transition-colors',
+                  'dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
                 )}
               >

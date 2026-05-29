@@ -323,7 +323,7 @@ export default function AdvancedSearchPage() {
         subtitle={t('searchAdvanced.pageSubtitle')}
       />
 
-      {/* Search panel — Légifrance-style inset */}
+      {/* Search panel — inset */}
       <div className="container py-10 lg:py-12">
         <form
           onSubmit={submit}
@@ -524,7 +524,7 @@ export default function AdvancedSearchPage() {
           </div>
         </form>
 
-        {/* Submit area — right-aligned outside the form card (Légifrance pattern) */}
+        {/* Submit area — right-aligned outside the form card */}
         <div className="mt-4 flex justify-end">
           <Button
             type="button"

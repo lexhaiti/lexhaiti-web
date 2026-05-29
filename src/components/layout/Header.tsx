@@ -304,7 +304,7 @@ export default function Header() {
               aria-label={mobileOpen ? t('nav.menuClose') : t('nav.menuOpen')}
               aria-expanded={mobileOpen}
               aria-controls="mobile-nav"
-              className="xl:hidden h-11 w-11 text-slate-900 hover:bg-slate-100 hover:text-red-600"
+              className="xl:hidden h-11 w-11 rounded-xl text-slate-700 hover:bg-slate-100 hover:text-red-600 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-red-400"
               onClick={() => setMobileOpen(true)}
             >
               <AnimatedHamburger isOpen={mobileOpen} />

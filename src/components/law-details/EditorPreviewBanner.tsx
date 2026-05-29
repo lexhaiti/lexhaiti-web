@@ -14,8 +14,10 @@ interface EditorPreviewBannerProps {
 /**
  * Sticky banner for signed-in editors showing current view mode
  * (editor vs public preview). Lets the editor preview the page
- * exactly as anonymous visitors see it by flipping a ``?view=public``
- * URL flag. Bookmarkable + survives refresh.
+ * exactly as anonymous visitors see it by flipping a ``?apercu=1``
+ * URL flag. Kept on its own param (not ``view``, which is the article
+ * view-mode) so toggling preview never disturbs the chosen view-mode
+ * and vice-versa. Bookmarkable + survives refresh.
  */
 export function EditorPreviewBanner({
   isPublicPreview,
@@ -59,13 +61,13 @@ export function EditorPreviewBanner({
                 new URLSearchParams(
                   Object.fromEntries(
                     Array.from(searchParams?.entries() ?? []).filter(
-                      ([k]) => k !== 'view',
+                      ([k]) => k !== 'apercu',
                     ),
                   ),
                 ).toString()
               : `?${new URLSearchParams({
                   ...Object.fromEntries(searchParams?.entries() ?? []),
-                  view: 'public',
+                  apercu: '1',
                 }).toString()}`
           }
           className={cn(

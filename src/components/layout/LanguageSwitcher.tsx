@@ -101,16 +101,21 @@ export function LanguageSwitcher({
       <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="outline"
+            variant={variant === 'responsive' ? 'ghost' : 'outline'}
             size="sm"
             className={cn(
-              'flex items-center gap-2 rounded-full border-gray-200 bg-white hover:bg-slate-50 hover:border-red-200 transition-all shadow-sm',
+              'flex items-center gap-2 transition-all',
+              // Responsive (header): flag-only on mobile = NO circular
+              // pill (clean bare flag); the bordered pill returns at sm+
+              // where the full language name shows alongside it.
+              variant === 'responsive'
+                ? 'rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 sm:rounded-full sm:border sm:border-gray-200 sm:bg-white sm:shadow-sm sm:hover:bg-slate-50 sm:hover:border-red-200 dark:sm:bg-slate-900 dark:sm:border-slate-700'
+                : 'rounded-full border-gray-200 bg-white shadow-sm hover:bg-slate-50 hover:border-red-200 dark:bg-slate-900 dark:border-slate-700 dark:hover:bg-slate-800',
               // Min 44x44 tap target on mobile (Apple/Google a11y guideline);
               // shrink to a tighter pill on sm+ where mouse users dominate.
               'h-11 sm:h-9 min-w-[44px] sm:min-w-0',
               variant === 'wide' && 'w-full justify-between h-12 sm:h-12 text-base',
-              // Tighter padding on mobile when the label is hidden
-              variant === 'responsive' && 'px-3 sm:px-3',
+              variant === 'responsive' ? 'px-2 sm:px-3' : 'px-3',
               triggerClassName,
             )}
             aria-label={`Language: ${current.label}`}
@@ -120,17 +125,17 @@ export function LanguageSwitcher({
                 {current.flag}
               </span>
               {variant === 'wide' && (
-                <span className="text-sm normal-case font-semibold text-slate-600">
+                <span className="text-sm normal-case font-semibold text-slate-600 dark:text-slate-300">
                   {current.label}
                 </span>
               )}
               {variant === 'compact' && (
-                <span className="text-xs uppercase font-semibold text-slate-600">
+                <span className="text-xs uppercase font-semibold text-slate-600 dark:text-slate-300">
                   {current.value.toUpperCase()}
                 </span>
               )}
               {variant === 'responsive' && (
-                <span className="hidden sm:inline text-sm normal-case font-semibold text-slate-600">
+                <span className="hidden sm:inline text-sm normal-case font-semibold text-slate-600 dark:text-slate-300">
                   {current.label}
                 </span>
               )}

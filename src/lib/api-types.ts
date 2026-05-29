@@ -2044,6 +2044,11 @@ export interface paths {
          *     matching Moniteur issues. The frontend renders each list under its
          *     own section so the visitor can pick the right entity directly,
          *     without having to know in advance which kind of result they want.
+         *
+         *     When the query is (or starts with) a bare article number ("1382",
+         *     "article 1382"), the matching Article(s) across all published texts
+         *     are returned in ``articles`` ahead of the full-text hits, so the
+         *     visitor can jump straight to e.g. Article 1382 of the Code civil.
          */
         get: operations["global_search_api_v1_search_get"];
         put?: never;
@@ -2616,6 +2621,51 @@ export interface components {
             domain_tags: string[];
         };
         /**
+         * ArticleNumberHit
+         * @description A single article matched by its number across all published texts.
+         *
+         *     Surfaced when the search query is (or contains) a bare article number
+         *     like ``"1382"`` or ``"article 1382"`` — so a visitor can jump straight
+         *     to e.g. Article 1382 of the Code civil. Each hit carries the parent
+         *     text's slug + title so the frontend can deep-link to
+         *     ``/loi/{text_slug}?view=article&article={number}`` (using ``article_slug``
+         *     as the in-page anchor when an exact number param isn't enough).
+         */
+        ArticleNumberHit: {
+            /** Article Id */
+            article_id: number;
+            /** Legal Text Id */
+            legal_text_id: number;
+            /** Number */
+            number: string;
+            /** Article Slug */
+            article_slug: string;
+            /** Text Slug */
+            text_slug: string;
+            /** Text Title Fr */
+            text_title_fr: string;
+            /** Text Title Ht */
+            text_title_ht?: string | null;
+            /** Category */
+            category: string;
+            /** Code Subcategory */
+            code_subcategory?: string | null;
+            /** Title Fr */
+            title_fr?: string | null;
+            /** Title Ht */
+            title_ht?: string | null;
+            /**
+             * Snippet Fr
+             * @default
+             */
+            snippet_fr: string;
+            /**
+             * Snippet Ht
+             * @default
+             */
+            snippet_ht: string;
+        };
+        /**
          * ArticleRefItem
          * @description One entry in either the ``cited_by`` or ``cites`` list.
          *
@@ -2701,9 +2751,9 @@ export interface components {
          * @description Per-version legal status of a single article.
          *
          *     Distinct from LegalStatus (whole-text) and EditorialStatus (workflow).
-         *     Mirrors Légifrance's per-article state model: a Code may be `in_force`
-         *     overall while one of its articles is `abrogated`, or one article may
-         *     have an `effective_from`/`effective_to` window during which it was active.
+         *     Per-article state model: a Code may be `in_force` overall while one of
+         *     its articles is `abrogated`, or one article may have an
+         *     `effective_from`/`effective_to` window during which it was active.
          * @enum {string}
          */
         ArticleStatus: "in_force" | "abrogated" | "suspended" | "transferred" | "obsolete";
@@ -3520,14 +3570,29 @@ export interface components {
          *     Moniteur issues whose number / edition label / year matched the
          *     query. The frontend renders each list under its own section so the
          *     user can pick the right entity directly.
+         *
+         *     When the query is (or starts with) a bare article number, ``articles``
+         *     is populated with the matching Article(s) across every published text,
+         *     surfaced ahead of the full-text hits so "1382" lands the visitor on
+         *     Article 1382 of the Code civil directly.
          */
         GlobalSearchResponse: {
             /** Query */
             query: string;
+            /**
+             * Articles
+             * @default []
+             */
+            articles: components["schemas"]["ArticleNumberHit"][];
             /** Legal Texts */
             legal_texts: components["schemas"]["SearchHit"][];
             /** Moniteur Issues */
             moniteur_issues: components["schemas"]["MoniteurIssueRead"][];
+            /**
+             * Total Articles
+             * @default 0
+             */
+            total_articles: number;
             /** Total Legal Texts */
             total_legal_texts: number;
             /** Total Moniteur Issues */
@@ -3704,6 +3769,8 @@ export interface components {
             headings?: components["schemas"]["LegalHeadingCreate"][] | null;
             /** Articles */
             articles?: components["schemas"]["ArticleCreate"][] | null;
+            /** Sections */
+            sections?: components["schemas"]["LegalTextSectionCreate"][] | null;
         };
         /** Judge */
         Judge: {
@@ -4064,10 +4131,6 @@ export interface components {
              * @default true
              */
             show_doc_type: boolean;
-            /** Closing Addendum Fr */
-            closing_addendum_fr?: string | null;
-            /** Closing Addendum Ht */
-            closing_addendum_ht?: string | null;
             /**
              * Display Mode
              * @default articles
@@ -4184,10 +4247,6 @@ export interface components {
             show_devise_banner?: boolean | null;
             /** Show Doc Type */
             show_doc_type?: boolean | null;
-            /** Closing Addendum Fr */
-            closing_addendum_fr?: string | null;
-            /** Closing Addendum Ht */
-            closing_addendum_ht?: string | null;
             /** Display Mode */
             display_mode?: string | null;
             /** Document Body Fr */
@@ -4268,10 +4327,6 @@ export interface components {
              * @default true
              */
             show_doc_type: boolean;
-            /** Closing Addendum Fr */
-            closing_addendum_fr?: string | null;
-            /** Closing Addendum Ht */
-            closing_addendum_ht?: string | null;
             /**
              * Display Mode
              * @default articles

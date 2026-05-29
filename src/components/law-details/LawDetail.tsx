@@ -83,7 +83,7 @@ export default function LawDetail() {
   // Hide articles whose status === 'abrogated'. Controlled by the
   // DocumentToolbar above the article list.
   const [hideAbrogated, setHideAbrogated] = useState(false)
-  // Légifrance-style view-as-of-date toggle. 'today' is the current
+  // View-as-of-date toggle. 'today' is the current
   // in-force state of every article (default); 'initial' will
   // eventually render each article's V1 — visual state only for now,
   // backend support pending. The shared toggle paints the active
@@ -110,7 +110,11 @@ export default function LawDetail() {
   const pathname = usePathname()
 
   const { isEditor: actuallyIsEditor, user: editorUser } = useEditorMode()
-  const isPublicPreview = searchParams?.get('view') === 'public'
+  // Public-preview flag lives on its OWN param (``apercu``) — NOT on
+  // ``view``, which is the article view-mode (tous / article / titre /
+  // chapitre). Overloading one param made the two fight each other
+  // (entering preview wiped the mode, switching mode dropped preview).
+  const isPublicPreview = searchParams?.get('apercu') === '1'
   const isEditor = actuallyIsEditor && !isPublicPreview
   const { data: law, isLoading, isError, refetch } = useLawDetail(slug)
 

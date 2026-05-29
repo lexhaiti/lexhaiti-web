@@ -8,6 +8,7 @@ import {
   ArrowRight,
   Calendar,
   FileText,
+  Hash,
   Loader2,
   Newspaper,
   Search,
@@ -136,6 +137,63 @@ function MoniteurCard({
 }
 
 // ---------------------------------------------------------------------------
+// Article hit card — number match, links straight to the focused article
+// ---------------------------------------------------------------------------
+
+function ArticleHitCard({
+  hit,
+  lang,
+}: {
+  hit: GlobalSearchResponse['articles'][number]
+  lang: 'fr' | 'ht'
+}) {
+  const title = lang === 'ht' ? hit.title_ht || hit.title_fr : hit.title_fr
+  const snippet =
+    lang === 'ht' ? hit.snippet_ht || hit.snippet_fr : hit.snippet_fr
+  const textTitle =
+    lang === 'ht'
+      ? hit.text_title_ht || hit.text_title_fr
+      : hit.text_title_fr
+  const num = String(hit.number ?? '')
+  const numLabel = /^\d/.test(num)
+    ? lang === 'fr'
+      ? `Article ${num}`
+      : `Atik ${num}`
+    : num
+  return (
+    <Link
+      href={`/loi/${hit.text_slug}?view=article&article=${encodeURIComponent(num)}`}
+      className="group flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 transition-all hover:border-slate-300 hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.12)] dark:border-slate-700/80 dark:bg-slate-900 dark:hover:border-slate-600"
+    >
+      <div className="flex-shrink-0 p-3 rounded-xl bg-primary/5 border border-primary/10 text-primary dark:bg-primary/10">
+        <Hash className="w-6 h-6" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1 truncate">
+          {textTitle}
+        </div>
+        <div className="text-base font-bold text-slate-900 dark:text-slate-100 truncate">
+          {numLabel}
+          {title && (
+            <span className="font-semibold text-slate-600 dark:text-slate-300">
+              {' '}
+              — {title}
+            </span>
+          )}
+        </div>
+        {snippet && (
+          <div
+            className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 [&_mark]:bg-amber-100 [&_mark]:text-amber-900 dark:[&_mark]:bg-amber-500/30 dark:[&_mark]:text-amber-200"
+            dangerouslySetInnerHTML={{ __html: snippet }}
+          />
+        )}
+      </div>
+      <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+    </Link>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -197,11 +255,13 @@ function SearchPageInner() {
   }
 
   const totals = useMemo(() => {
-    if (!data) return { laws: 0, issues: 0, total: 0 }
+    if (!data) return { articles: 0, laws: 0, issues: 0, total: 0 }
+    const articles = data.total_articles ?? 0
     return {
+      articles,
       laws: data.total_legal_texts,
       issues: data.total_moniteur_issues,
-      total: data.total_legal_texts + data.total_moniteur_issues,
+      total: data.total_legal_texts + data.total_moniteur_issues + articles,
     }
   }, [data])
 
@@ -265,6 +325,25 @@ function SearchPageInner() {
 
         {query && !loading && !error && data && totals.total > 0 && (
           <div className="flex flex-col gap-12">
+            {(data.articles?.length ?? 0) > 0 && (
+              <section aria-labelledby="articles-heading">
+                <SectionHeader
+                  id="articles-heading"
+                  icon={Hash}
+                  label={lang === 'fr' ? 'Articles' : 'Atik yo'}
+                  count={data.total_articles ?? 0}
+                  shownCount={data.articles.length}
+                  seeAllHref={`/lois?q=${encodeURIComponent(query)}`}
+                  lang={lang}
+                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6 mt-6">
+                  {data.articles.map((hit) => (
+                    <ArticleHitCard key={hit.article_id} hit={hit} lang={lang} />
+                  ))}
+                </div>
+              </section>
+            )}
+
             {data.legal_texts.length > 0 && (
               <section aria-labelledby="laws-heading">
                 <SectionHeader

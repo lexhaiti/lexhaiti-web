@@ -1,20 +1,15 @@
 'use client'
 
 /**
- * Sun ↔ Moon toggle for the editorial dark theme.
- *
- * Gated to editorial roles (admin / reviewer / editor) for now —
- * the public site is light-only until the per-component dark
- * variants are fleshed out. Keeping the toggle out of the public
- * navbar avoids shipping a half-finished theme to readers while
- * still letting the editorial team dogfood it.
+ * Sun ↔ Moon toggle for the site-wide dark theme. Available to every
+ * visitor; the theme is persisted by next-themes and follows the OS
+ * preference by default.
  */
 
 import { useEffect, useState } from 'react'
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
-import { useEditorMode } from '@/lib/hooks/useEditorMode'
 
 interface Props {
   className?: string
@@ -22,16 +17,9 @@ interface Props {
 
 export function ThemeToggle({ className }: Props) {
   const { resolvedTheme, setTheme } = useTheme()
-  const { isEditor } = useEditorMode()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => setMounted(true), [])
-
-  // Hide entirely for visitors — only editorial roles see the
-  // affordance for now. ``useSession`` returns 'loading' on first
-  // render; rendering nothing in that window is fine since the
-  // navbar already lays out responsively without the chip.
-  if (!isEditor) return null
 
   const isDark = mounted && resolvedTheme === 'dark'
   const Icon = isDark ? Sun : Moon

@@ -281,7 +281,7 @@ export default function HeroSection() {
             "drawn" feel; italic serif keeps it classical. */}
         <div className="mt-8 sm:mt-10 flex items-center justify-center">
           <p
-            className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold italic tracking-wide text-transparent select-none"
+            className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold italic tracking-wide text-transparent select-none text-center"
             lang="la"
             style={{
               WebkitTextStroke: '1px rgb(148 163 184)',

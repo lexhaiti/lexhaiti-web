@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Légifrance-style "Voir les versions dans le temps" panel.
+ * "Voir les versions dans le temps" panel.
  *
  * Lists every recorded change to the law, grouped by year and by
  * effective date, with the amending-law link and the affected

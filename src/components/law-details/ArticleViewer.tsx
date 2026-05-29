@@ -476,7 +476,7 @@ export default function ArticleViewer({
         if (cancelled) return
         // Newest first — versions come back ordered by version_number
         // ascending, but the timeline reads top-to-bottom newest-to-
-        // oldest, matching the convention on Légifrance / EUR-Lex.
+        // oldest, matching common legal-database convention.
         setVersions([...rows].reverse())
       })
       .catch(() => {
@@ -896,25 +896,28 @@ export default function ArticleViewer({
                 ? 'Chemin dans le texte'
                 : 'Chemen nan tèks la'
             }
-            className="flex items-center gap-1.5 text-sm font-medium text-gray-500 flex-wrap min-w-0"
+            className="flex flex-nowrap items-center gap-1.5 text-sm font-medium text-gray-500 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {breadcrumb.map((node, i) => {
               const label =
                 getLevelLabel(node.level, currentLang, codeSubcategory) ??
                 node.level
               return (
-                <span key={node.id} className="flex items-center gap-1.5">
+                <span
+                  key={node.id}
+                  className="flex items-center gap-1.5 flex-shrink-0"
+                >
                   {i > 0 && <ChevronRight className="w-3 h-3 text-gray-300" />}
-                  <span className="font-medium text-gray-600">
+                  <span className="font-medium text-gray-600 whitespace-nowrap">
                     {label} {node.number}
                   </span>
                 </span>
               )
             })}
             {breadcrumb.length > 0 && (
-              <ChevronRight className="w-3 h-3 text-gray-300" />
+              <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
             )}
-            <h2 className="font-bold text-slate-900 tracking-tight text-sm m-0">
+            <h2 className="font-bold text-slate-900 tracking-tight text-sm m-0 whitespace-nowrap flex-shrink-0">
               {(() => {
                 // Same FR/HT-aware article-number rendering as the TOC:
                 // FR keeps the canonical ``Article premier``; HT renders
@@ -1122,7 +1125,7 @@ export default function ArticleViewer({
             strike-through with muted text so a reader can see at a glance
             that the article is no longer in force without losing access
             to its historical wording. Matches the convention on
-            Légifrance / EUR-Lex. We don't apply this in edit mode so the
+            common legal databases. We don't apply this in edit mode so the
             editor can still see clean text while typing. */}
         {isCurrentEdit ? (
           isBilingualEdit ? (

@@ -22,7 +22,7 @@ interface SearchPanelProps {
 }
 
 /**
- * Top search panel -- Legifrance-style scope radio + input.
+ * Top search panel — scope radio + input.
  * Allows searching within the TOC (sommaire) or the full code.
  */
 export function SearchPanel({
