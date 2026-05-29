@@ -149,7 +149,7 @@ export default function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-slate-800/60 bg-primary">
+      <div className="border-t border-slate-800/60 bg-primary dark:bg-slate-950">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-4">
             {/* Left: Copyright + small editor sign-in */}

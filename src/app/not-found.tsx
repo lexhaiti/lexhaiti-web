@@ -67,7 +67,7 @@ export default async function NotFound() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Spacer for the fixed header — same h-20 used elsewhere on
           dark-band pages. */}
       <div aria-hidden className="h-20" />
@@ -90,7 +90,7 @@ export default async function NotFound() {
 
           <div className="mx-auto h-[3px] w-12 bg-amber-400 mb-6" />
 
-          <p className="text-base lg:text-lg text-slate-600 leading-relaxed max-w-xl mx-auto">
+          <p className="text-base lg:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-xl mx-auto">
             {t('notFound.body')}
           </p>
 
@@ -101,7 +101,7 @@ export default async function NotFound() {
             action="/recherche"
             method="get"
             role="search"
-            className="mt-10 flex items-stretch gap-0 rounded-lg overflow-hidden bg-white border border-slate-200 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.18)] focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary transition-all"
+            className="mt-10 flex items-stretch gap-0 rounded-lg overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.18)] focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary transition-all"
           >
             <div className="relative flex-1 min-w-0">
               <Search
@@ -113,7 +113,7 @@ export default async function NotFound() {
                 name="q"
                 placeholder={t('notFound.searchPlaceholder')}
                 aria-label={t('notFound.searchPlaceholder')}
-                className="w-full h-14 pl-11 pr-4 bg-transparent text-slate-900 placeholder:text-slate-400 placeholder:italic placeholder:text-sm text-base outline-none"
+                className="w-full h-14 pl-11 pr-4 bg-transparent text-slate-900 dark:text-slate-100 placeholder:text-slate-400 placeholder:italic placeholder:text-sm text-base outline-none"
                 style={{ fontSize: '16px' }}
               />
             </div>
@@ -153,12 +153,12 @@ export default async function NotFound() {
               <Link
                 key={href}
                 href={href}
-                className="group flex flex-col items-center gap-3 rounded-xl border border-slate-200 bg-white p-5 hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5 transition-all"
+                className="group flex flex-col items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5 transition-all"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-600 group-hover:bg-primary group-hover:text-white transition-colors">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:bg-primary group-hover:text-white transition-colors">
                   <Icon className="w-4 h-4" />
                 </div>
-                <span className="text-sm font-semibold text-slate-700 text-center group-hover:text-primary transition-colors">
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 text-center group-hover:text-primary transition-colors">
                   {t(labelKey)}
                 </span>
                 <ArrowRight
