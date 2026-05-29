@@ -40,7 +40,7 @@ export default async function ActualitesSection() {
   }
 
   return (
-    <section className="relative w-full bg-slate-50/40 dark:bg-transparent py-16 lg:py-20 border-t border-slate-100 dark:border-slate-800">
+    <section className="relative w-full bg-slate-50/40 dark:bg-slate-950 py-16 lg:py-20 border-t border-slate-100 dark:border-slate-800">
       <div className="container">
         <SectionHeading
           eyebrow={t('home.actualites.eyebrow')}

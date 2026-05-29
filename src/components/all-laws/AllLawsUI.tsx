@@ -256,7 +256,7 @@ export function AllLawsUI({
               e.preventDefault()
               onSearch?.()
             }}
-            className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300 fill-mode-both mt-8 max-w-3xl flex items-stretch gap-0 rounded-lg overflow-hidden bg-white shadow-[0_12px_40px_-12px_rgba(0,0,0,0.5)] ring-1 ring-white/15 focus-within:ring-2 focus-within:ring-amber-300/60 transition-shadow"
+            className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300 fill-mode-both mt-8 max-w-3xl flex items-stretch gap-0 rounded-lg overflow-hidden bg-white dark:bg-slate-900 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.5)] ring-1 ring-white/15 dark:ring-white/10 focus-within:ring-2 focus-within:ring-amber-300/60 transition-shadow"
           >
             <div className="relative flex-1 min-w-0">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -273,7 +273,7 @@ export function AllLawsUI({
                 aria-label={
                   lang === 'fr' ? 'Rechercher un texte' : 'Chèche yon tèks'
                 }
-                className="w-full h-14 pl-11 pr-4 bg-transparent text-slate-900 placeholder:text-slate-400 placeholder:italic placeholder:text-sm text-base outline-none"
+                className="w-full h-14 pl-11 pr-4 bg-transparent text-slate-900 dark:text-slate-100 placeholder:text-slate-400 placeholder:italic placeholder:text-sm text-base outline-none"
                 style={{ fontSize: '16px' }}
               />
             </div>

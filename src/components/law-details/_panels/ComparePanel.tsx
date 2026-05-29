@@ -49,7 +49,7 @@ function renderSide(ops: DiffOp[], side: 'old' | 'new') {
       nodes.push(
         <span
           key={key++}
-          className="bg-red-100/70 line-through decoration-red-400 px-0.5 rounded-sm"
+          className="bg-red-100/70 dark:bg-red-500/20 line-through decoration-red-400 px-0.5 rounded-sm"
         >
           {op.text}
         </span>,
@@ -60,7 +60,7 @@ function renderSide(ops: DiffOp[], side: 'old' | 'new') {
       nodes.push(
         <span
           key={key++}
-          className="bg-emerald-100/70 px-0.5 rounded-sm"
+          className="bg-emerald-100/70 dark:bg-emerald-500/20 px-0.5 rounded-sm"
         >
           {op.text}
         </span>,
@@ -155,25 +155,25 @@ export function ComparePanel({ versions, currentLang }: ComparePanelProps) {
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-xl border border-gray-200 p-4 bg-white">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+          <div className="rounded-xl border border-gray-200 dark:border-slate-700 p-4 bg-white dark:bg-slate-900">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">
               v{fromVersion?.version_number}
               {fromVersion?.effective_from
                 ? ` — ${fromVersion.effective_from}`
                 : ''}
             </div>
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
               {renderSide(ops, 'old')}
             </p>
           </div>
-          <div className="rounded-xl border border-gray-200 p-4 bg-white">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+          <div className="rounded-xl border border-gray-200 dark:border-slate-700 p-4 bg-white dark:bg-slate-900">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">
               v{toVersion?.version_number}
               {toVersion?.effective_from
                 ? ` — ${toVersion.effective_from}`
                 : ''}
             </div>
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
               {renderSide(ops, 'new')}
             </p>
           </div>

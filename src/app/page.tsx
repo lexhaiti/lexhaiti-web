@@ -11,7 +11,7 @@ import { HomePrefetch } from '@/components/home/HomePrefetch'
 
 export default function Page() {
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white dark:bg-slate-950 min-h-screen">
       <HeroSection />
       <ExplorerSection />
       <MoniteurRecentSection />

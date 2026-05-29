@@ -65,27 +65,27 @@ const STATUS_PILL: Record<
 > = {
   in_force: {
     labelKey: 'amendments.statusInForce',
-    cls: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    cls: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30',
     icon: CheckCircle,
   },
   abrogated: {
     labelKey: 'amendments.statusAbrogated',
-    cls: 'bg-red-50 text-red-700 border-red-200',
+    cls: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/30',
     icon: XCircle,
   },
   suspended: {
     labelKey: 'amendments.statusSuspended',
-    cls: 'bg-amber-50 text-amber-800 border-amber-200',
+    cls: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30',
     icon: PauseCircle,
   },
   transferred: {
     labelKey: 'amendments.statusTransferred',
-    cls: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    cls: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/30',
     icon: AlertTriangle,
   },
   obsolete: {
     labelKey: 'amendments.statusObsolete',
-    cls: 'bg-slate-50 text-slate-600 border-slate-200',
+    cls: 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
     icon: Archive,
   },
 }
@@ -194,7 +194,7 @@ function renderInlineDiff(ops: DiffOp[]): React.ReactNode[] {
       nodes.push(
         <span
           key={key++}
-          className="bg-red-100/70 line-through decoration-red-400 px-0.5 rounded-sm"
+          className="bg-red-100/70 dark:bg-red-500/20 line-through decoration-red-400 px-0.5 rounded-sm"
         >
           {op.text}
         </span>,
@@ -202,7 +202,7 @@ function renderInlineDiff(ops: DiffOp[]): React.ReactNode[] {
       continue
     }
     nodes.push(
-      <span key={key++} className="bg-emerald-100/70 px-0.5 rounded-sm">
+      <span key={key++} className="bg-emerald-100/70 dark:bg-emerald-500/20 px-0.5 rounded-sm">
         {op.text}
       </span>,
     )
@@ -215,13 +215,13 @@ function VersionBody({ text }: { text: string | null | undefined }) {
   if (looksLikeHtml(text)) {
     return (
       <div
-        className="article-html text-sm text-slate-700 leading-relaxed"
+        className="article-html text-sm text-slate-700 dark:text-slate-300 leading-relaxed"
         dangerouslySetInnerHTML={{ __html: text }}
       />
     )
   }
   return (
-    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
       {text}
     </p>
   )
@@ -308,7 +308,7 @@ export default function AmendementsPage() {
   )
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Hero band — same navy treatment used across the law-detail
           pages. Full-width so the breakdown chips have room. */}
       <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
@@ -570,14 +570,14 @@ function Section({
   children: React.ReactNode
 }) {
   const accentTextCls = {
-    emerald: 'text-emerald-700',
-    sky: 'text-sky-700',
-    rose: 'text-rose-700',
+    emerald: 'text-emerald-700 dark:text-emerald-300',
+    sky: 'text-sky-700 dark:text-sky-300',
+    rose: 'text-rose-700 dark:text-rose-300',
   }[accent]
   const accentBgCls = {
-    emerald: 'bg-emerald-50 border-emerald-200',
-    sky: 'bg-sky-50 border-sky-200',
-    rose: 'bg-rose-50 border-rose-200',
+    emerald: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30',
+    sky: 'bg-sky-50 border-sky-200 dark:bg-sky-500/10 dark:border-sky-500/30',
+    rose: 'bg-rose-50 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/30',
   }[accent]
   return (
     <section id={id} className="scroll-mt-24">
@@ -591,14 +591,14 @@ function Section({
         >
           <Icon className="w-4 h-4" />
         </span>
-        <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
+        <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
           {title}
         </h2>
-        <span className="ml-1 inline-flex items-center text-xs font-bold uppercase tracking-widest text-slate-400 tabular-nums">
+        <span className="ml-1 inline-flex items-center text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 tabular-nums">
           {count}
         </span>
       </div>
-      <p className="text-sm text-slate-500 mb-5 max-w-3xl">{subtitle}</p>
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-5 max-w-3xl">{subtitle}</p>
       {children}
     </section>
   )
@@ -697,8 +697,8 @@ function ModifiedCard({
   const PillIcon = pill.icon
 
   return (
-    <article className="animate-in fade-in slide-in-from-bottom-2 duration-500 rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <header className="flex items-baseline justify-between gap-4 px-6 py-4 border-b border-slate-100 bg-slate-50/40">
+    <article className="animate-in fade-in slide-in-from-bottom-2 duration-500 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+      <header className="flex items-baseline justify-between gap-4 px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-800/40">
         <div className="flex items-baseline gap-3 flex-wrap min-w-0">
           <h3 className="text-lg lg:text-xl font-bold text-primary">
             <Link
@@ -723,7 +723,7 @@ function ModifiedCard({
             </span>
           )}
         </div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 tabular-nums flex-shrink-0">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 tabular-nums flex-shrink-0">
           {versions.length || 1} {t('amendments.versionLabel')}
           {(versions.length || 1) > 1 ? 's' : ''}
         </p>
@@ -732,15 +732,15 @@ function ModifiedCard({
       <AmendingLine row={row} t={t} />
 
       {diffOps && (
-        <div className="px-6 py-5 border-b border-slate-100">
-          <div className="flex items-center gap-3 mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+        <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-3 mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
             <span>{t('amendments.diffLabel')}</span>
-            <span className="text-slate-300">·</span>
+            <span className="text-slate-300 dark:text-slate-600">·</span>
             <span>
               v{oldest!.version_number} → v{latest!.version_number}
             </span>
           </div>
-          <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+          <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
             {renderInlineDiff(diffOps)}
           </p>
         </div>
@@ -752,27 +752,27 @@ function ModifiedCard({
         aria-expanded={historyOpen}
         className={cn(
           'w-full flex items-center justify-between gap-3 px-6 py-3 text-left',
-          'text-xs font-bold uppercase tracking-widest text-slate-500',
-          'hover:bg-slate-50 transition-colors',
-          historyOpen ? 'bg-slate-50/60' : '',
+          'text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400',
+          'hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors',
+          historyOpen ? 'bg-slate-50/60 dark:bg-slate-800/40' : '',
         )}
       >
         <span className="inline-flex items-center gap-2">
-          <History className="w-3.5 h-3.5 text-slate-400" />
+          <History className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
           {historyOpen
             ? t('amendments.hideHistory')
             : t('amendments.showHistory')}
         </span>
         <ChevronDown
           className={cn(
-            'w-3.5 h-3.5 text-slate-400 transition-transform',
+            'w-3.5 h-3.5 text-slate-400 dark:text-slate-500 transition-transform',
             historyOpen ? 'rotate-180' : '',
           )}
         />
       </button>
 
       {historyOpen && versions.length > 0 && (
-        <ol className="divide-y divide-slate-100">
+        <ol className="divide-y divide-slate-100 dark:divide-slate-800">
           {versions.map((v, idx) => {
             const fromLabel = formatDate(v.effective_from)
             const toLabel = formatDate(v.effective_to)
@@ -792,31 +792,31 @@ function ModifiedCard({
                     article. So we drop the per-row pill and keep just
                     Version N sur M · date. */}
                 <div className="flex items-center flex-wrap gap-2 mb-3">
-                  <span className="text-[11px] font-semibold uppercase tracking-widest text-slate-400 tabular-nums">
+                  <span className="text-[11px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 tabular-nums">
                     {t('amendments.versionLabel')} {v.version_number}{' '}
-                    <span className="text-slate-300">{t('amendments.of')}</span>{' '}
+                    <span className="text-slate-300 dark:text-slate-600">{t('amendments.of')}</span>{' '}
                     {versions.length}
                   </span>
                   {dateLabel && (
-                    <span className="text-[11px] text-slate-500 italic">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 italic">
                       {dateLabel}
                     </span>
                   )}
                 </div>
                 {title && (
-                  <h4 className="text-sm font-bold text-slate-700 mb-1">
+                  <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">
                     {title}
                   </h4>
                 )}
                 {text ? (
                   <VersionBody text={text} />
                 ) : (
-                  <p className="text-sm text-slate-400 italic">
+                  <p className="text-sm text-slate-400 dark:text-slate-500 italic">
                     {t('amendments.noText')}
                   </p>
                 )}
                 {v.source_amendment_slug && (
-                  <p className="mt-3 text-xs text-slate-500">
+                  <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
                     {t('amendments.amendedBy')}{' '}
                     <Link
                       href={`/loi/${v.source_amendment_slug}`}
@@ -831,7 +831,7 @@ function ModifiedCard({
                   </p>
                 )}
                 {idx === 0 && versions.length > 1 && (
-                  <div className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-slate-400">
+                  <div className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500">
                     <FileText className="w-3 h-3" />
                     {t('amendments.currentlyApplicable')}
                   </div>
@@ -873,18 +873,18 @@ function CompactChangeCard({
     rose: 'before:bg-rose-400',
   }[accent]
   const numberCls = {
-    sky: 'text-sky-700',
-    rose: 'text-rose-700',
+    sky: 'text-sky-700 dark:text-sky-300',
+    rose: 'text-rose-700 dark:text-rose-300',
   }[accent]
 
   return (
     <Link
       href={`/loi/${slug}?article=${encodeURIComponent(articleNumber)}`}
       className={cn(
-        'relative block rounded-lg border bg-white px-4 py-3 transition-all',
+        'relative block rounded-lg border bg-white dark:bg-slate-900 px-4 py-3 transition-all',
         'before:content-[""] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px]',
         accentRail,
-        'border-slate-200 hover:border-slate-300 hover:shadow-sm',
+        'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm',
       )}
     >
       <div className="flex items-baseline justify-between gap-3 mb-1">
@@ -898,16 +898,16 @@ function CompactChangeCard({
           {articleLabel}
         </h3>
         {row.effective_on && (
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 flex-shrink-0">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex-shrink-0">
             {formatDate(row.effective_on)}
           </span>
         )}
       </div>
-      <p className="text-xs text-slate-500 truncate">
-        <span className="font-semibold text-slate-600">
+      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+        <span className="font-semibold text-slate-600 dark:text-slate-300">
           {t('amendments.amendedBy')}
         </span>{' '}
-        <span className="text-slate-700 hover:underline underline-offset-2">
+        <span className="text-slate-700 dark:text-slate-200 hover:underline underline-offset-2">
           {row.amending_text_title_fr}
         </span>
       </p>
@@ -922,9 +922,9 @@ function CompactChangeCard({
 
 function AmendingLine({ row, t }: { row: LegalChangeReceivedRead; t: Tr }) {
   return (
-    <div className="px-6 py-3 border-b border-slate-100 bg-amber-50/30">
-      <p className="text-xs text-slate-700">
-        <span className="font-semibold text-slate-500">
+    <div className="px-6 py-3 border-b border-slate-100 dark:border-slate-800 bg-amber-50/30 dark:bg-amber-500/5">
+      <p className="text-xs text-slate-700 dark:text-slate-300">
+        <span className="font-semibold text-slate-500 dark:text-slate-400">
           {t('amendments.amendedBy')}
         </span>{' '}
         <Link
@@ -935,8 +935,8 @@ function AmendingLine({ row, t }: { row: LegalChangeReceivedRead; t: Tr }) {
         </Link>
         {row.effective_on && (
           <>
-            <span className="text-slate-300 mx-2">·</span>
-            <span className="text-slate-500 italic">
+            <span className="text-slate-300 dark:text-slate-600 mx-2">·</span>
+            <span className="text-slate-500 dark:text-slate-400 italic">
               {t('amendments.inForceSince')}{' '}
               {formatDate(row.effective_on)}
             </span>
@@ -944,8 +944,8 @@ function AmendingLine({ row, t }: { row: LegalChangeReceivedRead; t: Tr }) {
         )}
         {row.new_version_number != null && (
           <>
-            <span className="text-slate-300 mx-2">·</span>
-            <span className="text-slate-500 font-mono">
+            <span className="text-slate-300 dark:text-slate-600 mx-2">·</span>
+            <span className="text-slate-500 dark:text-slate-400 font-mono">
               v{row.new_version_number}
             </span>
           </>
