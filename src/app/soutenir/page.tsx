@@ -250,7 +250,7 @@ export default async function Page() {
 
       {/* Closing CTA — back to the corpus, the thing they're funding. */}
       <div className="container pb-24 lg:pb-32">
-        <div className="relative overflow-hidden rounded-[2rem] bg-primary text-white animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="relative overflow-hidden rounded-[2rem] bg-primary dark:bg-slate-900 text-white animate-in fade-in slide-in-from-bottom-4 duration-700 dark:ring-1 dark:ring-slate-800">
           <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/15 blur-[120px] rounded-full translate-x-1/3 -translate-y-1/3 pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-red-600/12 blur-[120px] rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none" />
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
