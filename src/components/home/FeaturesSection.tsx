@@ -87,7 +87,7 @@ export default async function FeaturesSection() {
                     {String(i + 1).padStart(2, '0')} — {t(`home.features.desktop.pillars.${pillar.key}.label`)}
                   </span>
                 </div>
-                <h3 className="text-lg lg:text-xl font-bold text-primary mb-2 leading-tight">
+                <h3 className="text-lg lg:text-xl font-bold text-primary dark:text-white mb-2 leading-tight">
                   {t(`home.features.desktop.pillars.${pillar.key}.lead`)}
                 </h3>
                 <p className="text-sm lg:text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed">
