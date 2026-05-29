@@ -139,7 +139,12 @@ button:focus-visible {
         --popover: 222 47% 11%;
         --popover-foreground: 210 40% 98%;
 
-        --primary: 229 70% 50%;
+        /* Brighter blue in dark mode: the previous 50% lightness
+           (#2647D9) only reached ~2.8:1 on the near-black dark
+           background — too low for text-primary headings, links and
+           accents. 62% lifts text-primary to a readable contrast while
+           bg-primary buttons (white text) stay legible. */
+        --primary: 229 75% 62%;
         --primary-foreground: 0 0% 100%;
 
         --secondary: 217 33% 17%;

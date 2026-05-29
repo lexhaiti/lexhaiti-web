@@ -2,7 +2,13 @@ import type { Config } from 'tailwindcss'
 import tailwindcssAnimate from 'tailwindcss-animate'
 
 export default {
-  darkMode: ['class', 'dark'],
+  // Class strategy: dark: variants apply when the `.dark` class is on
+  // <html> (toggled by next-themes). The previous value `['class','dark']`
+  // used `dark` as a *selector* — i.e. a nonexistent `<dark>` element —
+  // so every `dark:` utility silently never applied (only the static
+  // `.dark` rules in globals.css fired, darkening the body but leaving
+  // every `bg-white` component white).
+  darkMode: 'class',
   content: [
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
