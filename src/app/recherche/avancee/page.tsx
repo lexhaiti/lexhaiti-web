@@ -317,7 +317,7 @@ export default function AdvancedSearchPage() {
   )
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white dark:bg-slate-950 min-h-screen">
       <StandardPageHeader
         title={t('searchAdvanced.pageTitle')}
         subtitle={t('searchAdvanced.pageSubtitle')}
@@ -327,11 +327,11 @@ export default function AdvancedSearchPage() {
       <div className="container py-10 lg:py-12">
         <form
           onSubmit={submit}
-          className="animate-in fade-in slide-in-from-bottom-2 duration-500 rounded-2xl bg-slate-50/80 border border-slate-200 p-6 sm:p-8 space-y-6"
+          className="animate-in fade-in slide-in-from-bottom-2 duration-500 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-6 sm:p-8 space-y-6"
         >
           {/* Fonds picker — DropdownMenu with tile grid inside */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">
+            <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3">
               {t('searchAdvanced.fondsLabel')}
             </label>
             <FondsPicker
@@ -344,7 +344,7 @@ export default function AdvancedSearchPage() {
           </div>
 
           {form.fonds === 'all' && (
-            <div className="flex items-start gap-3 rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 text-sm text-primary">
+            <div className="flex items-start gap-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 px-4 py-3 text-sm text-primary dark:text-blue-200">
               <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>{t('searchAdvanced.selectFondsHint')}</span>
             </div>
@@ -374,7 +374,7 @@ export default function AdvancedSearchPage() {
                           rounded-bl gives the curved corner cleanly. */}
                       <span
                         aria-hidden
-                        className="pointer-events-none absolute -top-3 left-2 sm:left-4 w-2 sm:w-4 border-l-2 border-b-2 border-slate-300 rounded-bl-lg h-[calc(50%+0.75rem)]"
+                        className="pointer-events-none absolute -top-3 left-2 sm:left-4 w-2 sm:w-4 border-l-2 border-b-2 border-slate-300 dark:border-slate-700 rounded-bl-lg h-[calc(50%+0.75rem)]"
                       />
                       {/* Bottom half (middle rows only): straight trunk
                           continuing from mid-row down through the gap,
@@ -382,7 +382,7 @@ export default function AdvancedSearchPage() {
                       {!isLast && (
                         <span
                           aria-hidden
-                          className="pointer-events-none absolute top-1/2 left-2 sm:left-4 w-0.5 bg-slate-300 h-[calc(50%+0.75rem)]"
+                          className="pointer-events-none absolute top-1/2 left-2 sm:left-4 w-0.5 bg-slate-300 dark:bg-slate-700 h-[calc(50%+0.75rem)]"
                         />
                       )}
                     </>
@@ -420,7 +420,7 @@ export default function AdvancedSearchPage() {
           </div>
 
           {/* Affiner la recherche — collapsible group */}
-          <div className="rounded-xl bg-white border border-slate-200">
+          <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={() => setRefineOpen((v) => !v)}
@@ -446,11 +446,11 @@ export default function AdvancedSearchPage() {
                   exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-5 pb-5 pt-2 border-t border-slate-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-5 pb-5 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <div>
                       <label
                         id="adv-status-label"
-                        className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2"
+                        className="block text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2"
                       >
                         {t('searchAdvanced.statusLabel')}
                       </label>
@@ -462,7 +462,7 @@ export default function AdvancedSearchPage() {
                       >
                         <SelectTrigger
                           aria-labelledby="adv-status-label"
-                          className="!h-11 w-full bg-white"
+                          className="!h-11 w-full bg-white dark:bg-slate-800"
                         >
                           <SelectValue />
                         </SelectTrigger>
@@ -482,7 +482,7 @@ export default function AdvancedSearchPage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                      <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">
                         {t('searchAdvanced.yearLabel')}
                       </label>
                       <div className="flex items-center gap-2">
@@ -497,9 +497,9 @@ export default function AdvancedSearchPage() {
                           onChange={(e) =>
                             setForm((cur) => ({ ...cur, yearFrom: e.target.value }))
                           }
-                          className="w-full h-11 px-3 rounded-md border border-slate-300 bg-white text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
+                          className="w-full h-11 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
                         />
-                        <span aria-hidden="true" className="text-xs text-slate-400">
+                        <span aria-hidden="true" className="text-xs text-slate-400 dark:text-slate-500">
                           {t('searchAdvanced.yearTo')}
                         </span>
                         <input
@@ -513,7 +513,7 @@ export default function AdvancedSearchPage() {
                           onChange={(e) =>
                             setForm((cur) => ({ ...cur, yearTo: e.target.value }))
                           }
-                          className="w-full h-11 px-3 rounded-md border border-slate-300 bg-white text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
+                          className="w-full h-11 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
                         />
                       </div>
                     </div>
@@ -541,34 +541,34 @@ export default function AdvancedSearchPage() {
       {/* Results — only rendered after the user clicks "Lancer la recherche". */}
       <section className="container pb-12 lg:pb-16">
         {!hasSearched ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/40 px-6 py-10 text-center">
-            <p className="text-sm text-slate-500 leading-relaxed max-w-xl mx-auto">
+          <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/40 dark:bg-slate-900/40 px-6 py-10 text-center">
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl mx-auto">
               {t('searchAdvanced.notSearchedYet')}
             </p>
           </div>
         ) : (
           <>
             <div className="flex items-baseline gap-3 mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                 {t('searchAdvanced.resultsTitle')}
               </h2>
               {/* Show "loaded / total" so the editor sees pagination
                   state at a glance. Identical figures (e.g. "5 / 5")
                   imply no Load more. */}
-              <span className="text-sm font-medium text-slate-400 tabular-nums">
+              <span className="text-sm font-medium text-slate-400 dark:text-slate-500 tabular-nums">
                 ({results.length}
                 {total > results.length && ` / ${total}`})
               </span>
             </div>
 
             {loading && results.length === 0 && (
-              <p className="text-sm text-slate-400 italic">{t('searchAdvanced.loading')}</p>
+              <p className="text-sm text-slate-400 dark:text-slate-500 italic">{t('searchAdvanced.loading')}</p>
             )}
             {!loading && errored && (
               <p className="text-sm text-red-500 italic">{t('searchAdvanced.error')}</p>
             )}
             {!loading && !errored && results.length === 0 && (
-              <p className="text-sm text-slate-400 italic">{t('searchAdvanced.noResults')}</p>
+              <p className="text-sm text-slate-400 dark:text-slate-500 italic">{t('searchAdvanced.noResults')}</p>
             )}
 
             {results.length > 0 && (
@@ -613,22 +613,22 @@ export default function AdvancedSearchPage() {
       </section>
 
       {/* Help */}
-      <section className="bg-slate-50/60 border-t border-slate-200 py-12 lg:py-16">
+      <section className="bg-slate-50/60 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800 py-12 lg:py-16">
         <div className="container">
-          <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-3 tracking-tight">
+          <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-3 tracking-tight">
             {t('searchAdvanced.helpTitle')}
           </h3>
-          <p className="text-sm text-slate-600 mb-6 max-w-3xl leading-relaxed">
+          <p className="text-sm text-slate-600 dark:text-slate-300 mb-6 max-w-3xl leading-relaxed">
             {t('searchAdvanced.helpIntro')}
           </p>
-          <ul className="space-y-2 text-sm text-slate-600 leading-relaxed mb-8 max-w-3xl">
+          <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-8 max-w-3xl">
             {(
               (dict?.searchAdvanced?.helpItems ??
                 dictFallback?.searchAdvanced?.helpItems ??
                 []) as string[]
             ).map((item, i) => (
               <li key={i} className="flex items-start gap-2">
-                <span className="mt-1.5 h-1 w-1 rounded-full bg-slate-400 flex-shrink-0" />
+                <span className="mt-1.5 h-1 w-1 rounded-full bg-slate-400 dark:bg-slate-500 flex-shrink-0" />
                 <span>{item}</span>
               </li>
             ))}
@@ -703,7 +703,7 @@ function FondsPicker({
         sideOffset={6}
         className="p-3 w-[min(720px,calc(100vw-2rem))]"
       >
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3 px-1">
+        <p className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3 px-1">
           {dropdownTitle}
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -721,16 +721,16 @@ function FondsPicker({
                 className={cn(
                   'flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors',
                   active
-                    ? 'border-primary bg-primary/5'
-                    : 'border-slate-200 bg-white hover:border-slate-300',
+                    ? 'border-primary bg-primary/5 dark:bg-primary/10'
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600',
                 )}
               >
                 <span
                   className={cn(
                     'flex h-7 w-7 items-center justify-center rounded-full border',
                     active
-                      ? 'border-primary bg-white'
-                      : 'border-slate-300 bg-white',
+                      ? 'border-primary bg-white dark:bg-slate-900'
+                      : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900',
                   )}
                 >
                   {active ? (
@@ -740,13 +740,13 @@ function FondsPicker({
                 <Icon
                   className={cn(
                     'w-4 h-4',
-                    active ? 'text-primary' : 'text-slate-400',
+                    active ? 'text-primary' : 'text-slate-400 dark:text-slate-500',
                   )}
                 />
                 <span
                   className={cn(
                     'text-sm font-medium',
-                    active ? 'text-primary' : 'text-slate-700',
+                    active ? 'text-primary' : 'text-slate-700 dark:text-slate-300',
                   )}
                 >
                   {dropdownLabels[f.value]}
@@ -800,7 +800,7 @@ function CriteriaRowEditor({
       : 'lg:grid-cols-[minmax(180px,220px)_1fr_minmax(180px,220px)]'
 
   return (
-    <div className="rounded-xl bg-white border border-slate-200 p-3 sm:p-4">
+    <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 sm:p-4">
       <div className={cn('grid grid-cols-1 gap-2 items-stretch', gridTemplate)}>
         {/* Operator (link to previous row) — only on rows 2+ */}
         {showOperator && (
@@ -809,7 +809,7 @@ function CriteriaRowEditor({
             onValueChange={(v) => onChange({ operator: v as OperatorKey })}
           >
             <SelectTrigger
-              className="!h-11 w-full bg-white font-semibold text-primary tracking-widest uppercase text-xs"
+              className="!h-11 w-full bg-white dark:bg-slate-800 font-semibold text-primary tracking-widest uppercase text-xs"
               aria-label={t('searchAdvanced.operatorLabel')}
             >
               <SelectValue />
@@ -828,7 +828,7 @@ function CriteriaRowEditor({
           onValueChange={(v) => onChange({ field: v as FieldKey })}
         >
           <SelectTrigger
-            className="!h-11 w-full bg-white"
+            className="!h-11 w-full bg-white dark:bg-slate-800"
             aria-label={t('searchAdvanced.fieldLabel')}
           >
             <SelectValue />
@@ -849,7 +849,7 @@ function CriteriaRowEditor({
           onChange={(e) => onChange({ text: e.target.value })}
           placeholder={t('searchAdvanced.textPlaceholder')}
           aria-label={t('searchAdvanced.textLabel')}
-          className="w-full h-11 px-3 rounded-md border border-slate-300 bg-white text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
+          className="w-full h-11 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
         />
 
         {/* Mode */}
@@ -858,7 +858,7 @@ function CriteriaRowEditor({
           onValueChange={(v) => onChange({ mode: v as ModeKey })}
         >
           <SelectTrigger
-            className="!h-11 w-full bg-white"
+            className="!h-11 w-full bg-white dark:bg-slate-800"
             aria-label={t('searchAdvanced.modeLabel')}
           >
             <SelectValue />
@@ -880,7 +880,7 @@ function CriteriaRowEditor({
               onClick={onDelete}
               aria-label={t('searchAdvanced.deleteCriterion')}
               title={t('searchAdvanced.deleteCriterion')}
-              className="w-11 h-11 inline-flex items-center justify-center rounded-md border border-transparent text-slate-400 hover:text-red-600 hover:bg-red-50 hover:border-red-100 transition-colors"
+              className="w-11 h-11 inline-flex items-center justify-center rounded-md border border-transparent text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-100 dark:hover:border-red-900/40 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -922,7 +922,7 @@ function ResultCard({ text, lang, t, query = '' }: ResultCardProps) {
   // for the title and each individual snippet — clicking a snippet deep-links
   // straight to that article on the detail page via `?article=N`.
   return (
-    <div className="group flex flex-col h-full rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-slate-300 hover:shadow-md">
+    <div className="group flex flex-col h-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 transition-all hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md">
       <div className="flex items-center gap-2 mb-3 flex-wrap">
         <span
           className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${catCls}`}
@@ -942,13 +942,13 @@ function ResultCard({ text, lang, t, query = '' }: ResultCardProps) {
         href={`/loi/${text.slug}`}
         className="block group/title"
       >
-        <h3 className="text-base font-bold text-slate-900 mb-2 leading-snug group-hover/title:text-primary transition-colors line-clamp-2">
+        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2 leading-snug group-hover/title:text-primary transition-colors line-clamp-2">
           {highlightQuery(title, query)}
         </h3>
       </Link>
 
       {desc && (
-        <p className="text-xs text-slate-500 leading-relaxed line-clamp-3 mb-3">
+        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3 mb-3">
           {highlightQuery(desc, query)}
         </p>
       )}
@@ -964,16 +964,16 @@ function ResultCard({ text, lang, t, query = '' }: ResultCardProps) {
               lang === 'ht' && s.snippet_ht ? s.snippet_ht : s.snippet_fr
             if (!snippetHtml) return null
             return (
-              <li key={i} className="text-xs leading-relaxed text-slate-600">
+              <li key={i} className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                 <Link
                   href={`/loi/${text.slug}?article=${encodeURIComponent(s.article_number)}`}
-                  className="block rounded-md hover:bg-amber-50/60 -mx-2 px-2 py-1 transition-colors"
+                  className="block rounded-md hover:bg-amber-50/60 dark:hover:bg-amber-500/10 -mx-2 px-2 py-1 transition-colors"
                 >
-                  <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover/snippet:text-primary mb-0.5">
+                  <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 group-hover/snippet:text-primary mb-0.5">
                     Art. {s.article_number}
                   </span>
                   <span
-                    className="[&_mark]:bg-amber-100 [&_mark]:text-amber-900 [&_mark]:rounded [&_mark]:px-0.5 [&_mark]:font-semibold"
+                    className="[&_mark]:bg-amber-100 [&_mark]:text-amber-900 [&_mark]:rounded [&_mark]:px-0.5 [&_mark]:font-semibold dark:[&_mark]:bg-amber-500/30 dark:[&_mark]:text-amber-200"
                     // Sanitized server-side via ts_headline — only <mark>
                     // tags are inserted around matched terms.
                     dangerouslySetInnerHTML={{ __html: snippetHtml }}
@@ -985,9 +985,9 @@ function ResultCard({ text, lang, t, query = '' }: ResultCardProps) {
         </ul>
       )}
 
-      <div className="mt-auto flex items-center justify-between gap-2 pt-3 border-t border-slate-100">
+      <div className="mt-auto flex items-center justify-between gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
         {year && (
-          <span className="flex items-center gap-1.5 text-[11px] text-slate-400">
+          <span className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500">
             <Calendar className="w-3 h-3" />
             {year}
           </span>

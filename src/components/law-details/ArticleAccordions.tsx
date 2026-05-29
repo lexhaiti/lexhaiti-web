@@ -185,14 +185,16 @@ export function ArticleAccordions({
     Map<number, ArticleResolved>
   >(() => new Map())
 
-  // Trigger citation fetch when Textes-liés opens for the first
-  // time, OR immediately in editor mode so the chip count is honest
-  // about "0 citations" right from initial render.
+  // Trigger the citation fetch only when the "Textes liés" panel is
+  // actually opened. Previously this ALSO fired eagerly in editor mode
+  // (``|| isEditor``) so the chip count showed on first render — but
+  // that made a signed-in editor fetch citations for EVERY article on
+  // page load (2 requests each), flooding the API and tripping its
+  // rate limiter (429) on large texts. On-demand loading keeps the
+  // page load to ~0 citation requests; the count fills in on open.
   useEffect(() => {
     const needLoad =
-      !citationsLoaded &&
-      !citationsLoading &&
-      (openPanel === 'links' || isEditor)
+      !citationsLoaded && !citationsLoading && openPanel === 'links'
     if (!needLoad) return
     setCitationsLoading(true)
     void Promise.all([

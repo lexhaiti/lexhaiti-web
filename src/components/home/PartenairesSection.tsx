@@ -25,7 +25,7 @@ export default async function PartenairesSection() {
     // header + footer + every other section on the landing page.
     // Mixing full-bleed visuals with container-bound content is the
     // pattern used across the site.
-    <section className="relative w-full bg-gradient-to-b from-slate-50/60 via-white to-slate-50/40 py-20 lg:py-28 border-t border-slate-100 overflow-hidden">
+    <section className="relative w-full bg-gradient-to-b from-slate-50/60 via-white to-slate-50/40 dark:from-slate-900/60 dark:via-slate-950 dark:to-slate-900/40 py-20 lg:py-28 border-t border-slate-100 dark:border-slate-800 overflow-hidden">
       {/* Soft brand-tinted blobs for depth — match the hero's visual
           rhythm without competing for attention. */}
       <div className="absolute inset-0 z-0 pointer-events-none">
@@ -56,12 +56,12 @@ export default async function PartenairesSection() {
             return (
               <div
                 key={i}
-                className="group flex items-center gap-5 rounded-2xl border border-dashed border-slate-300 bg-white/80 px-6 py-6 backdrop-blur-sm transition-all hover:border-primary/40 hover:bg-white hover:shadow-sm"
+                className="group flex items-center gap-5 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 px-6 py-6 backdrop-blur-sm transition-all hover:border-primary/40 hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm"
               >
                 <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/[0.06] border border-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white group-hover:border-primary">
                   <Icon className="w-5 h-5" />
                 </div>
-                <span className="text-sm lg:text-base font-semibold text-slate-700 leading-tight">
+                <span className="text-sm lg:text-base font-semibold text-slate-700 dark:text-slate-200 leading-tight">
                   {t(`home.partenaires.types.${type.key}`)}
                 </span>
               </div>

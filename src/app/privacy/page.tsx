@@ -2,7 +2,6 @@
 // metadata + CSS-only entrance animations.
 
 import type { Metadata } from 'next'
-import { Lock } from 'lucide-react'
 import { StandardPageHeader } from '@/components/shared/StandardPageHeader'
 import { getServerLanguage, getT } from '@/i18n/server'
 

@@ -32,7 +32,7 @@ export function ErrorBanner({
     <div
       role="alert"
       className={cn(
-        'rounded-xl border border-red-200 bg-red-50 text-sm text-red-800',
+        'rounded-xl border border-red-200 bg-red-50 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300',
         density === 'compact' ? 'px-5 py-4' : 'p-5',
         Icon && 'flex items-start gap-3',
         className,

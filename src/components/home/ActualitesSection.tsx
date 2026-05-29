@@ -40,7 +40,7 @@ export default async function ActualitesSection() {
   }
 
   return (
-    <section className="relative w-full bg-slate-50/40 py-16 lg:py-20 border-t border-slate-100">
+    <section className="relative w-full bg-slate-50/40 dark:bg-slate-900/40 py-16 lg:py-20 border-t border-slate-100 dark:border-slate-800">
       <div className="container">
         <SectionHeading
           eyebrow={t('home.actualites.eyebrow')}
@@ -58,7 +58,7 @@ export default async function ActualitesSection() {
         />
 
         {items.length === 0 ? (
-          <p className="text-sm text-slate-500 italic">{t('home.actualites.empty')}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 italic">{t('home.actualites.empty')}</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
             {items.map((it) => {
@@ -72,7 +72,7 @@ export default async function ActualitesSection() {
                 <Link
                   key={it.slug}
                   href={`/loi/${it.slug}`}
-                  className="group flex flex-col h-full rounded-xl border border-slate-200 bg-white p-5 lg:p-6 transition-all duration-200 hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5"
+                  className="group flex flex-col h-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 lg:p-6 transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md hover:-translate-y-0.5"
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <span
@@ -80,18 +80,18 @@ export default async function ActualitesSection() {
                     >
                       {categoryLabel(it.category, lang)}
                     </span>
-                    <FileText className="w-3.5 h-3.5 text-slate-400" />
+                    <FileText className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                   </div>
                   <h3 className="text-base lg:text-[15px] font-bold text-primary mb-2 leading-snug line-clamp-2">
                     {title}
                   </h3>
                   {desc && (
-                    <p className="text-xs lg:text-[13px] text-slate-500 leading-relaxed line-clamp-3 mb-3">
+                    <p className="text-xs lg:text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3 mb-3">
                       {desc}
                     </p>
                   )}
                   {(it.updated_at || it.publication_date) && (
-                    <div className="mt-auto flex items-center gap-1.5 text-[11px] text-slate-500 pt-3 border-t border-slate-100">
+                    <div className="mt-auto flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 pt-3 border-t border-slate-100 dark:border-slate-800">
                       <Calendar className="w-3 h-3" />
                       {formatDate(
                         it.updated_at ?? it.publication_date,

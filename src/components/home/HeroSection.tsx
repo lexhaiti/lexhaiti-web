@@ -66,7 +66,7 @@ export default function HeroSection() {
         // room to breathe; ``pt-20`` clears the fixed 80px header.
         // ``overflow-hidden`` keeps the bg image from leaking out
         // when the page is narrower than the image's natural width.
-        'relative w-full bg-slate-50 text-slate-900 pt-20 min-h-screen overflow-hidden',
+        'relative w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pt-20 min-h-screen overflow-hidden',
       )}
     >
       {/* Hero backdrop — rearranged ``lady-justice.png`` composite.
@@ -101,10 +101,10 @@ export default function HeroSection() {
             RIGHT half of the emblem dissolves into the wash.
             Mirrored on the right for Lady Justice. AA-safe (navy
             text on white ≥ 7:1). */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,transparent_0%,transparent_8%,white_24%,white_70%,transparent_86%,transparent_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,transparent_0%,transparent_8%,white_24%,white_70%,transparent_86%,transparent_100%)] dark:bg-[linear-gradient(to_right,transparent_0%,transparent_8%,#020617_24%,#020617_70%,transparent_86%,transparent_100%)]" />
         {/* Bottom fade — protects the popular pills + footer trust
             line so they don't sit on a busy image area. */}
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-50 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-50 dark:from-slate-950 to-transparent" />
       </div>
 
       <div className="relative z-10 container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 min-h-[calc(100vh-5rem)] flex flex-col justify-center">
@@ -129,7 +129,7 @@ export default function HeroSection() {
               }}
             />
           </h1>
-          <p className="mt-5 text-base sm:text-lg md:text-xl leading-relaxed text-slate-700">
+          <p className="mt-5 text-base sm:text-lg md:text-xl leading-relaxed text-slate-700 dark:text-slate-300">
             {t('home.hero.description')}
           </p>
         </div>
@@ -139,7 +139,7 @@ export default function HeroSection() {
             divider; small SVG icons (BadgeCheck for provenance,
             Unlock for posture) give each half a glyph. Reads as the
             project's quality cue before the user even types. */}
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs sm:text-sm text-slate-600">
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
           <span className="inline-flex items-center gap-2">
             <BadgeCheck
               className="w-4 h-4 text-emerald-600 flex-shrink-0"
@@ -147,7 +147,7 @@ export default function HeroSection() {
             />
             {t('home.hero.trustSources')}
           </span>
-          <span className="hidden sm:inline text-slate-400" aria-hidden>
+          <span className="hidden sm:inline text-slate-400 dark:text-slate-600" aria-hidden>
             |
           </span>
           <span className="inline-flex items-center gap-2">
@@ -164,7 +164,7 @@ export default function HeroSection() {
             so the card lifts off the slate-50 surface but doesn't
             shout. No chip row inside any more; the POPULAIRES row
             below takes that role. */}
-        <div className="mt-6 sm:mt-8 rounded-2xl bg-white ring-1 ring-slate-100 shadow-[0_24px_60px_-20px_rgba(15,23,42,0.18)] px-4 sm:px-6 py-4 sm:py-5">
+        <div className="mt-6 sm:mt-8 rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-slate-100 dark:ring-slate-800 shadow-[0_24px_60px_-20px_rgba(15,23,42,0.18)] px-4 sm:px-6 py-4 sm:py-5">
           <label htmlFor="hero-search" className="sr-only">
             {t('home.hero.findLabel')}
           </label>
@@ -174,7 +174,7 @@ export default function HeroSection() {
           >
             <div className="relative flex-1 min-w-0">
               <Search
-                className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none"
+                className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500 pointer-events-none"
                 aria-hidden
               />
               <input
@@ -186,10 +186,10 @@ export default function HeroSection() {
                 aria-label={t('home.hero.findLabel')}
                 className={cn(
                   'w-full h-14 pl-14 pr-4 rounded-full',
-                  'bg-slate-50 ring-1 ring-slate-200',
-                  'placeholder:text-slate-500 placeholder:italic placeholder:text-sm',
-                  'text-base text-slate-900 outline-none',
-                  'focus:ring-2 focus:ring-primary/40 focus:bg-white transition',
+                  'bg-slate-50 dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700',
+                  'placeholder:text-slate-500 dark:placeholder:text-slate-400 placeholder:italic placeholder:text-sm',
+                  'text-base text-slate-900 dark:text-slate-100 outline-none',
+                  'focus:ring-2 focus:ring-primary/40 focus:bg-white dark:focus:bg-slate-800 transition',
                 )}
                 // 16px keeps iOS Safari from zooming the viewport on
                 // input focus — anything below triggers the auto-zoom.
@@ -220,17 +220,17 @@ export default function HeroSection() {
         <div className="mt-4 flex items-center justify-center gap-3 text-sm">
           <Link
             href="/recherche/avancee"
-            className="inline-flex items-center gap-1.5 font-semibold text-slate-600 hover:text-primary transition-colors"
+            className="inline-flex items-center gap-1.5 font-semibold text-slate-600 dark:text-slate-300 hover:text-primary transition-colors"
           >
             <SlidersHorizontal className="w-3.5 h-3.5" aria-hidden />
             {t('home.hero.advanced')}
           </Link>
-          <span className="text-slate-400" aria-hidden>
+          <span className="text-slate-400 dark:text-slate-600" aria-hidden>
             |
           </span>
           <Link
             href="/lois"
-            className="font-medium text-slate-600 hover:text-primary transition-colors"
+            className="font-medium text-slate-600 dark:text-slate-300 hover:text-primary transition-colors"
           >
             {t('home.hero.browse')}
           </Link>
@@ -245,15 +245,15 @@ export default function HeroSection() {
         <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-5">
           {POPULAR[lang].map((p) => {
             const inner = (
-              <span className="text-sm font-semibold text-slate-800 group-hover:text-slate-950 transition-colors">
+              <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 group-hover:text-slate-950 dark:group-hover:text-white transition-colors">
                 {p.label}
               </span>
             )
             const cls = cn(
               'group inline-flex items-center',
-              'rounded-full bg-white ring-1 ring-slate-200 px-4 py-2.5',
+              'rounded-full bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-700 px-4 py-2.5',
               'shadow-[0_1px_3px_-1px_rgba(15,23,42,0.08)]',
-              'hover:ring-slate-300 hover:shadow-[0_6px_16px_-6px_rgba(15,23,42,0.18)] hover:-translate-y-0.5',
+              'hover:ring-slate-300 dark:hover:ring-slate-600 hover:shadow-[0_6px_16px_-6px_rgba(15,23,42,0.18)] hover:-translate-y-0.5',
               'transition-all duration-200',
             )
             if (p.href) {

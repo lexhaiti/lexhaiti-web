@@ -3,7 +3,7 @@
 // now the cards arrive in the SSR HTML, no first-paint placeholder.
 
 import Link from 'next/link'
-import { ArrowRight, Newspaper } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { SectionHeading } from '@/components/shared/SectionHeading'
 import { MoniteurIssueCard } from '@/components/shared/MoniteurIssueCard'
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -35,7 +35,7 @@ export default async function MoniteurRecentSection() {
   const hasIssues = issues.length > 0
 
   return (
-    <section className="relative w-full bg-slate-50/40 py-16 lg:py-20 border-t border-slate-100">
+    <section className="relative w-full bg-slate-50/40 dark:bg-slate-900/40 py-16 lg:py-20 border-t border-slate-100 dark:border-slate-800">
       <div className="container">
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
           <SectionHeading
@@ -57,7 +57,7 @@ export default async function MoniteurRecentSection() {
           <EmptyState
             description={t('home.moniteurRecent.empty')}
             density="compact"
-            className="bg-white"
+            className="bg-white dark:bg-slate-900"
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -78,7 +78,7 @@ export default async function MoniteurRecentSection() {
           <div className="mt-8 text-center">
             <Link
               href="/moniteur"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-primary hover:border-primary/40 hover:shadow-sm transition-all"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-primary hover:border-primary/40 hover:shadow-sm transition-all"
             >
               {t('home.moniteurRecent.cta')}
               <ArrowRight className="w-4 h-4" />

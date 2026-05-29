@@ -52,7 +52,7 @@ export function DecisionListItem({ decision }: Props) {
     >
       <article
         className={cn(
-          'relative overflow-hidden rounded-2xl border border-slate-200 bg-white',
+          'relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900',
           'transition-all duration-300',
           'hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5',
         )}
@@ -72,22 +72,22 @@ export function DecisionListItem({ decision }: Props) {
                 {court}
               </span>
               {decision.chamber && (
-                <span className="text-slate-500">· {decision.chamber}</span>
+                <span className="text-slate-500 dark:text-slate-400">· {decision.chamber}</span>
               )}
               {decision.case_number && (
-                <span className="text-slate-400">· N° {decision.case_number}</span>
+                <span className="text-slate-400 dark:text-slate-500">· N° {decision.case_number}</span>
               )}
             </div>
             <time
               dateTime={decision.decision_date}
-              className="text-xs font-semibold text-slate-500 tabular-nums"
+              className="text-xs font-semibold text-slate-500 dark:text-slate-400 tabular-nums"
             >
               {dateStr}
             </time>
           </header>
 
           {/* Title */}
-          <h3 className="mb-3 text-base sm:text-lg font-bold text-slate-900 leading-snug group-hover:text-primary transition-colors line-clamp-2">
+          <h3 className="mb-3 text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug group-hover:text-primary transition-colors line-clamp-2">
             {title}
           </h3>
 
@@ -111,14 +111,14 @@ export function DecisionListItem({ decision }: Props) {
                 return (
                   <span
                     key={s.key}
-                    className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700"
+                    className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300"
                   >
                     {label}
                   </span>
                 )
               })}
               {subjects.length > 4 && (
-                <span className="text-[11px] font-semibold text-slate-400">
+                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
                   +{subjects.length - 4}
                 </span>
               )}
@@ -126,12 +126,12 @@ export function DecisionListItem({ decision }: Props) {
           )}
 
           {/* Footer: stat strip + arrow affordance */}
-          <footer className="flex items-end justify-between border-t border-slate-100 pt-4">
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-500">
+          <footer className="flex items-end justify-between border-t border-slate-100 dark:border-slate-800 pt-4">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
               {typeof decision.moyens_count === 'number' && (
                 <span className="inline-flex items-center gap-1.5">
-                  <Gavel className="h-3.5 w-3.5 text-slate-400" />
-                  <span className="tabular-nums font-bold text-slate-700">
+                  <Gavel className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                  <span className="tabular-nums font-bold text-slate-700 dark:text-slate-200">
                     {decision.moyens_count}
                   </span>{' '}
                   {t('jurisprudence.rowStats.moyens')}
@@ -139,8 +139,8 @@ export function DecisionListItem({ decision }: Props) {
               )}
               {typeof decision.cited_articles_count === 'number' && (
                 <span className="inline-flex items-center gap-1.5">
-                  <BookText className="h-3.5 w-3.5 text-slate-400" />
-                  <span className="tabular-nums font-bold text-slate-700">
+                  <BookText className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                  <span className="tabular-nums font-bold text-slate-700 dark:text-slate-200">
                     {decision.cited_articles_count}
                   </span>{' '}
                   {t('jurisprudence.rowStats.citedArticles')}

@@ -616,34 +616,30 @@ const ArticleCard = memo(function ArticleCard({
               aria-label={
                 isFr ? 'Position dans le texte' : 'Pozisyon nan tèks la'
               }
-              className="flex flex-nowrap items-center gap-1.5 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden text-[12px] text-slate-500"
+              className="flex items-center gap-1.5 min-w-0 text-[12px] text-slate-500 dark:text-slate-400"
             >
-              {breadcrumbCrumbs.map((c, idx) => {
-                const isLast = idx === breadcrumbCrumbs.length - 1
-                return (
-                  <span
-                    key={c.key}
-                    className="inline-flex items-center gap-1.5 flex-shrink-0"
-                  >
+              {/* Ancestor crumbs — shrink/ellipsize so the article
+                  number (pinned, last) stays visible on mobile. */}
+              {breadcrumbCrumbs.length > 1 && (
+                <span className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                  {breadcrumbCrumbs.slice(0, -1).map((c) => (
                     <span
-                      className={cn(
-                        'whitespace-nowrap',
-                        isLast
-                          ? 'font-bold uppercase tracking-widest text-primary text-[12px] tabular-nums'
-                          : 'font-medium',
-                      )}
+                      key={c.key}
+                      className="inline-flex items-center gap-1.5 min-w-0"
                     >
-                      {c.label}
-                    </span>
-                    {!isLast && (
+                      <span className="font-medium truncate">{c.label}</span>
                       <ChevronRight
                         aria-hidden
-                        className="w-3 h-3 text-slate-300"
+                        className="w-3 h-3 text-slate-300 flex-shrink-0"
                       />
-                    )}
-                  </span>
-                )
-              })}
+                    </span>
+                  ))}
+                </span>
+              )}
+              {/* Article number — always fully visible. */}
+              <span className="font-bold uppercase tracking-widest text-primary text-[12px] tabular-nums whitespace-nowrap flex-shrink-0">
+                {breadcrumbCrumbs[breadcrumbCrumbs.length - 1].label}
+              </span>
             </nav>
           )}
           {(isAbrogated || title) && (

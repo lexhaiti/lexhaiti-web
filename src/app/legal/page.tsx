@@ -3,7 +3,6 @@
 // so no client component is needed.
 
 import type { Metadata } from 'next'
-import { ShieldAlert } from 'lucide-react'
 import { StandardPageHeader } from '@/components/shared/StandardPageHeader'
 import { getServerLanguage, getT } from '@/i18n/server'
 

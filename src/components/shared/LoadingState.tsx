@@ -37,8 +37,8 @@ export function LoadingState({
         className,
       )}
     >
-      <Loader2 className="w-8 h-8 text-slate-300 animate-spin" />
-      {label && <span className="text-sm text-slate-500">{label}</span>}
+      <Loader2 className="w-8 h-8 text-slate-300 dark:text-slate-600 animate-spin" />
+      {label && <span className="text-sm text-slate-500 dark:text-slate-400">{label}</span>}
     </div>
   )
 }

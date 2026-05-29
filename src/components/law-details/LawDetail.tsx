@@ -4,20 +4,56 @@ import React, {
   useDeferredValue,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react'
+import dynamic from 'next/dynamic'
 import { Loader2 } from 'lucide-react'
 import {
   TooltipProvider,
 } from '@/components/ui/tooltip'
 import { usePathname, useParams, useRouter, useSearchParams } from 'next/navigation'
-import { EditorBar } from './EditorBar'
 import { FinalPart } from '@/components/law-details/FinalPart'
-import { ChangesMadePanel } from '@/components/law-details/_panels/ChangesMadePanel'
-import { AddHeadingDialog } from '@/components/law-details/_panels/AddHeadingDialog'
-import { AddArticleDialog } from '@/components/law-details/_panels/AddArticleDialog'
-import { DeviseEditorDialog } from './_panels/DeviseEditorDialog'
+
+// Editor-only overlays. These render only for signed-in editors (gated
+// behind ``isEditor``) and never participate in SSR/SEO, yet they were
+// previously imported eagerly — pulling the whole editor surface (incl.
+// the Tiptap rich-text editor that ``AddArticleDialog`` carries) into
+// every public reader's first-load bundle. Loading them via
+// ``next/dynamic`` with ``ssr: false`` keeps the heavy editor chunks out
+// of the public ``/loi/[slug]`` payload; they fetch on demand the first
+// time an editor session mounts them.
+const EditorBar = dynamic(
+  () => import('./EditorBar').then((m) => ({ default: m.EditorBar })),
+  { ssr: false },
+)
+const ChangesMadePanel = dynamic(
+  () =>
+    import('@/components/law-details/_panels/ChangesMadePanel').then((m) => ({
+      default: m.ChangesMadePanel,
+    })),
+  { ssr: false },
+)
+const AddHeadingDialog = dynamic(
+  () =>
+    import('@/components/law-details/_panels/AddHeadingDialog').then((m) => ({
+      default: m.AddHeadingDialog,
+    })),
+  { ssr: false },
+)
+const AddArticleDialog = dynamic(
+  () =>
+    import('@/components/law-details/_panels/AddArticleDialog').then((m) => ({
+      default: m.AddArticleDialog,
+    })),
+  { ssr: false },
+)
+const DeviseEditorDialog = dynamic(
+  () =>
+    import('./_panels/DeviseEditorDialog').then((m) => ({
+      default: m.DeviseEditorDialog,
+    })),
+  { ssr: false },
+)
 import { useLawDetail } from '@/lib/hooks/useLawDetail'
 import { getLevelLabel } from '@/lib/legal/headingLabels'
 import { useLanguage } from '@/i18n/LanguageContext'

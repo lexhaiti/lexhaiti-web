@@ -4,15 +4,12 @@ import { Suspense, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
-  ArrowLeft,
   ArrowRight,
   Calendar,
   FileText,
   Hash,
-  Loader2,
   Newspaper,
   Search,
-  SearchX,
 } from 'lucide-react'
 import { StandardPageHeader } from '@/components/shared/StandardPageHeader'
 import { LawCard } from '@/components/shared/LawCard'
@@ -106,20 +103,20 @@ function MoniteurCard({
   return (
     <Link
       href={`/moniteur/${moniteurIssueSlug(issue)}`}
-      className="group flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 transition-all hover:border-slate-300 hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.12)]"
+      className="group flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 transition-all hover:border-slate-300 hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.12)] dark:border-slate-700/80 dark:bg-slate-900 dark:hover:border-slate-600"
     >
-      <div className="flex-shrink-0 p-3 rounded-xl bg-primary/5 border border-primary/10 text-primary">
+      <div className="flex-shrink-0 p-3 rounded-xl bg-primary/5 border border-primary/10 text-primary dark:bg-primary/10">
         <Newspaper className="w-6 h-6" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
           {lang === 'fr' ? 'Le Moniteur' : 'Moniteur'} ·{' '}
           {highlightMatches(String(issue.year), query)}
         </div>
-        <div className="text-base font-bold text-slate-900 truncate">
+        <div className="text-base font-bold text-slate-900 dark:text-slate-100 truncate">
           {highlightMatches(numberDisplay, query)}
         </div>
-        <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
+        <div className="flex items-center gap-3 mt-1 text-xs text-slate-500 dark:text-slate-400">
           {issue.publication_date && (
             <span className="inline-flex items-center gap-1">
               <Calendar className="w-3 h-3" />
@@ -131,7 +128,7 @@ function MoniteurCard({
           )}
         </div>
       </div>
-      <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+      <ArrowRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
     </Link>
   )
 }
@@ -291,7 +288,7 @@ function SearchPageInner() {
     (query && !loading && !error && data && totals.total === 0)
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white dark:bg-slate-950 flex flex-col">
       <StandardPageHeader
         title={headerTitle}
         subtitle={headerSubtitle}
@@ -420,17 +417,17 @@ function SectionHeader({
   return (
     <div className="flex items-end justify-between gap-4">
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-slate-100 text-slate-700">
+        <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
           <Icon className="w-4 h-4" />
         </div>
         <div>
           <h2
             id={id}
-            className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500"
+            className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400"
           >
             {label}
           </h2>
-          <p className="text-base font-bold text-slate-900 mt-0.5">
+          <p className="text-base font-bold text-slate-900 dark:text-slate-100 mt-0.5">
             {count} {count === 1 ? (lang === 'fr' ? 'résultat' : 'rezilta') : (lang === 'fr' ? 'résultats' : 'rezilta')}
           </p>
         </div>
@@ -472,7 +469,7 @@ function EmptyPrompt({ lang }: { lang: 'fr' | 'ht' }) {
             <Link
               key={ex}
               href={`/recherche?q=${encodeURIComponent(ex)}`}
-              className="px-3.5 py-1.5 rounded-full border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:border-primary/30 hover:bg-slate-50 hover:text-primary transition-colors"
+              className="px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-primary/30 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-colors"
             >
               {ex}
             </Link>
@@ -514,7 +511,7 @@ function NoResults({ query, lang }: { query: string; lang: 'fr' | 'ht' }) {
           </Link>
           <Link
             href="/recherche/avancee"
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 hover:border-slate-300 bg-white text-slate-700 px-6 py-3 text-sm font-semibold transition-all"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 px-6 py-3 text-sm font-semibold transition-all"
           >
             {lang === 'fr' ? 'Recherche avancée' : 'Rechèch avanse'}
           </Link>
@@ -522,7 +519,7 @@ function NoResults({ query, lang }: { query: string; lang: 'fr' | 'ht' }) {
       }
       suggestions={
         <div className="flex flex-col items-center gap-3">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
             {lang === 'fr' ? 'Essayer plutôt' : 'Eseye olye'}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2">
@@ -530,7 +527,7 @@ function NoResults({ query, lang }: { query: string; lang: 'fr' | 'ht' }) {
               <Link
                 key={s}
                 href={`/recherche?q=${encodeURIComponent(s)}`}
-                className="px-3.5 py-1.5 rounded-full border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:border-primary/30 hover:bg-slate-50 hover:text-primary transition-colors"
+                className="px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-primary/30 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-colors"
               >
                 {s}
               </Link>

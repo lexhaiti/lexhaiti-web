@@ -9,7 +9,7 @@ export default async function AppelContribution() {
   const t = await getT()
 
   return (
-    <section className="relative w-full bg-white py-16 lg:py-20 border-t border-slate-100">
+    <section className="relative w-full bg-white dark:bg-slate-950 py-16 lg:py-20 border-t border-slate-100 dark:border-slate-800">
       <div className="container">
         <div className="relative rounded-2xl bg-primary p-8 sm:p-10 lg:p-14 overflow-hidden">
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-12">

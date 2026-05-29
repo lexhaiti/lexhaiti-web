@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import {
@@ -10,10 +11,8 @@ import {
   Calendar,
   ChevronRight,
   Download,
-  FileText,
   Files,
   Layers,
-  Loader2,
   Newspaper,
   Pencil,
   Trash2,
@@ -36,7 +35,18 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import { useEditorMode } from '@/lib/hooks/useEditorMode'
 import { useSession } from 'next-auth/react'
 import { useT } from '@/i18n/useT'
-import { MoniteurIssueEditorPanel } from './MoniteurIssueEditorPanel'
+
+// Editor-only review/translation workspace (~1.3k lines + sub-panels).
+// Mounted only when a signed-in editor flips the issue into "editor"
+// view, so it has no business in the public reader's first-load bundle.
+// ``ssr: false`` because it's a client-only editing surface.
+const MoniteurIssueEditorPanel = dynamic(
+  () =>
+    import('./MoniteurIssueEditorPanel').then((m) => ({
+      default: m.MoniteurIssueEditorPanel,
+    })),
+  { ssr: false },
+)
 
 // ---------------------------------------------------------------------------
 // Helpers

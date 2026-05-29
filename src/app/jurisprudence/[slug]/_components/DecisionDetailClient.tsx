@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
@@ -17,7 +18,17 @@ import { MoyenAccordion } from '@/components/jurisprudence/MoyenAccordion'
 import { JudgesList } from '@/components/jurisprudence/JudgesList'
 import { ProceduralTimeline } from '@/components/jurisprudence/ProceduralTimeline'
 import { CitedArticleLink } from '@/components/jurisprudence/CitedArticleLink'
-import { DecisionEditorBar } from '@/components/jurisprudence/DecisionEditorBar'
+
+// Editor-only review bar (+ the decision editor it carries). Rendered
+// solely for signed-in editors and irrelevant to SSR/SEO, so it loads
+// on demand instead of weighing down the public decision page.
+const DecisionEditorBar = dynamic(
+  () =>
+    import('@/components/jurisprudence/DecisionEditorBar').then((m) => ({
+      default: m.DecisionEditorBar,
+    })),
+  { ssr: false },
+)
 
 interface Props {
   decision: DecisionDetail

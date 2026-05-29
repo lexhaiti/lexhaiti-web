@@ -41,7 +41,7 @@ export default async function ExplorerSection() {
   const t = await getT()
 
   return (
-    <section className="relative w-full bg-white py-16 lg:py-24 border-t border-slate-100">
+    <section className="relative w-full bg-white dark:bg-slate-950 py-16 lg:py-24 border-t border-slate-100 dark:border-slate-800">
       <div className="container">
         <SectionHeading title={t('home.explorer.eyebrow')} />
 
@@ -52,8 +52,8 @@ export default async function ExplorerSection() {
               href={card.href}
               className={cn(
                 'group relative flex flex-col rounded-2xl overflow-hidden',
-                'border border-slate-200/80 bg-white',
-                'hover:border-slate-300 hover:shadow-lg',
+                'border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900',
+                'hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-lg',
                 'hover:-translate-y-1 transition-all duration-300',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
               )}
@@ -80,10 +80,10 @@ export default async function ExplorerSection() {
 
               {/* Text content */}
               <div className="flex flex-col flex-1 p-6">
-                <h3 className="text-base lg:text-lg font-bold text-slate-900 leading-tight">
+                <h3 className="text-base lg:text-lg font-bold text-slate-900 dark:text-slate-100 leading-tight">
                   {t(`home.explorer.cards.${card.key}.title`)}
                 </h3>
-                <p className="mt-2.5 text-sm text-slate-500 leading-relaxed flex-1">
+                <p className="mt-2.5 text-sm text-slate-500 dark:text-slate-400 leading-relaxed flex-1">
                   {t(`home.explorer.cards.${card.key}.description`)}
                 </p>
                 <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">

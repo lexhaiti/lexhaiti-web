@@ -2,10 +2,9 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { FileText, Grid3X3, List, Loader2, Plus, Search, SearchX } from 'lucide-react'
+import { Grid3X3, List, Loader2, Plus, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import LawFilters from '@/components/all-laws/LawFilter'
-import type { components } from '@/lib/api-types'
 import { CardStyle, LawCard } from '@/components/shared/LawCard'
 import type { DisplayItem } from '@/lib/hooks/useAllTexts'
 import { Breadcrumb } from '@/components/shared/Breadcrumb'
@@ -18,8 +17,6 @@ import {
   CATEGORY_LABELS_PLURAL as CATEGORY_LABELS,
   SUBCATEGORY_LABELS,
 } from '@/lib/legal/labels'
-
-type LegalTextListItem = components['schemas']['LegalTextListItem']
 
 /**
  * Title shown in the page hero — reflects the active filter (theme >
@@ -189,7 +186,7 @@ export function AllLawsUI({
   const { isEditor } = useEditorMode()
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Header */}
       <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
         {/* Background Decorative Elements */}
@@ -320,7 +317,7 @@ export function AllLawsUI({
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-white border-b sticky top-16 lg:top-20 z-30">
+      <div className="bg-white dark:bg-slate-950 border-b dark:border-slate-800 sticky top-16 lg:top-20 z-30">
         <div className="container py-4">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3 flex-wrap">
@@ -338,14 +335,14 @@ export function AllLawsUI({
             </div>
 
             {/* View Toggle */}
-            <div className="hidden lg:flex items-center gap-1 bg-gray-100 p-1 rounded-full px-2">
+            <div className="hidden lg:flex items-center gap-1 bg-gray-100 dark:bg-slate-800 p-1 rounded-full px-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onViewModeChange('grid')}
                 className={
                   cardStyle === 'grid'
-                    ? 'bg-white shadow-sm rounded-full'
+                    ? 'bg-white dark:bg-slate-700 shadow-sm rounded-full'
                     : 'rounded-full'
                 }
                 aria-pressed={cardStyle === 'grid'}
@@ -359,7 +356,7 @@ export function AllLawsUI({
                 onClick={() => onViewModeChange('list')}
                 className={
                   cardStyle === 'list'
-                    ? 'bg-white shadow-sm rounded-full'
+                    ? 'bg-white dark:bg-slate-700 shadow-sm rounded-full'
                     : 'rounded-full'
                 }
                 aria-pressed={cardStyle === 'list'}
@@ -379,10 +376,10 @@ export function AllLawsUI({
             instead of competing with filter chrome for horizontal space. */}
         {!isLoading && laws.length > 0 && (
           <div className="mb-6 flex items-baseline gap-2 text-sm">
-            <span className="text-base font-bold text-slate-900 tabular-nums">
+            <span className="text-base font-bold text-slate-900 dark:text-slate-100 tabular-nums">
               {typeof total === 'number' ? total : laws.length}
             </span>
-            <span className="text-slate-500">
+            <span className="text-slate-500 dark:text-slate-400">
               {(typeof total === 'number' ? total : laws.length) === 1
                 ? lang === 'fr' ? 'texte trouvé' : 'tèks jwenn'
                 : lang === 'fr' ? 'textes trouvés' : 'tèks jwenn'}

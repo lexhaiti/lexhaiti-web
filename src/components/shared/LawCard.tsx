@@ -82,13 +82,13 @@ function statusBadgeMeta(badge?: {
 function badgeClass(tone: 'success' | 'warning' | 'danger' | 'neutral') {
   switch (tone) {
     case 'success':
-      return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+      return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30'
     case 'warning':
-      return 'bg-amber-50 text-amber-700 border-amber-200'
+      return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30'
     case 'danger':
-      return 'bg-red-50 text-red-700 border-red-200'
+      return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/30'
     default:
-      return 'bg-gray-50 text-gray-600 border-gray-200'
+      return 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
   }
 }
 
@@ -151,8 +151,8 @@ export function LawCard(props: Props) {
         <div
           style={activeStyle}
           className={cn(
-            'relative overflow-hidden rounded-xl bg-white transition-all duration-300',
-            'border border-gray-100 hover:border-[var(--card-theme-medium)]',
+            'relative overflow-hidden rounded-xl bg-white dark:bg-slate-900 transition-all duration-300',
+            'border border-gray-100 dark:border-slate-800 hover:border-[var(--card-theme-medium)]',
             'shadow-sm hover:shadow-md hover:shadow-[var(--card-theme-light)]',
             'hover:-translate-y-0.5',
           )}
@@ -190,7 +190,7 @@ export function LawCard(props: Props) {
                       <div className="flex-1 min-w-0">
                         <h3
                           className={cn(
-                            'text-base font-semibold text-gray-900 truncate',
+                            'text-base font-semibold text-gray-900 dark:text-slate-100 truncate',
                             'group-hover:text-[var(--card-theme)] transition-colors duration-300',
                           )}
                           title={title}
@@ -199,8 +199,8 @@ export function LawCard(props: Props) {
                         </h3>
                         {subtitle && (
                           <div className="flex items-center gap-1.5 mt-1">
-                            <SubtitleIcon className="h-3 w-3 text-gray-400" />
-                            <span className="text-xs text-gray-500">
+                            <SubtitleIcon className="h-3 w-3 text-gray-400 dark:text-slate-500" />
+                            <span className="text-xs text-gray-500 dark:text-slate-400">
                               {subtitle}
                             </span>
                           </div>
@@ -219,12 +219,12 @@ export function LawCard(props: Props) {
                                 return (
                                   <div
                                     key={si}
-                                    className="text-xs border-l-2 border-red-500/30 pl-3 py-1 bg-gray-50/50 rounded-r-lg"
+                                    className="text-xs border-l-2 border-red-500/30 pl-3 py-1 bg-gray-50/50 dark:bg-slate-800/50 rounded-r-lg"
                                   >
-                                    <p className="font-bold text-gray-900 mb-1">
+                                    <p className="font-bold text-gray-900 dark:text-slate-100 mb-1">
                                       Article {snippet.article.number}
                                     </p>
-                                    <p className="text-gray-600 line-clamp-1 italic">
+                                    <p className="text-gray-600 dark:text-slate-300 line-clamp-1 italic">
                                       &quot;
                                       <HighlightText
                                         text={sContent || ''}
@@ -237,7 +237,7 @@ export function LawCard(props: Props) {
                               })}
                             </div>
                           ) : (
-                            <p className="text-sm text-gray-600 line-clamp-2">
+                            <p className="text-sm text-gray-600 dark:text-slate-300 line-clamp-2">
                               <HighlightText
                                 text={description ?? ''}
                                 query={highlightQuery}
@@ -266,20 +266,20 @@ export function LawCard(props: Props) {
                 {/* Mobile-only description row */}
                 {description && (
                   <div className="md:hidden mb-3">
-                    <p className="text-sm text-gray-600 line-clamp-2">
+                    <p className="text-sm text-gray-600 dark:text-slate-300 line-clamp-2">
                       <HighlightText text={description} query={highlightQuery} />
                     </p>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-slate-800">
                   <div className="flex items-center gap-6">
                     {(stats ?? []).slice(0, 2).map((stat, i) => (
                       <div key={i} className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                        <span className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide">
                           {stat.label}
                         </span>
-                        <span className="text-sm font-bold text-gray-700 font-mono">
+                        <span className="text-sm font-bold text-gray-700 dark:text-slate-200 font-mono">
                           {stat.value}
                         </span>
                       </div>
@@ -322,8 +322,8 @@ export function LawCard(props: Props) {
       <div
         style={activeStyle}
         className={cn(
-          'relative flex h-full flex-col justify-between overflow-hidden rounded-3xl bg-white transition-all duration-500',
-          'border border-gray-100 hover:border-[var(--card-theme-medium)]',
+          'relative flex h-full flex-col justify-between overflow-hidden rounded-3xl bg-white dark:bg-slate-900 transition-all duration-500',
+          'border border-gray-100 dark:border-slate-800 hover:border-[var(--card-theme-medium)]',
           'shadow-sm hover:shadow-xl hover:shadow-[var(--card-theme-light)]',
           'hover:-translate-y-1',
         )}
@@ -363,18 +363,18 @@ export function LawCard(props: Props) {
           </div>
 
           <div className="mb-8 flex-1">
-            <h3 className="mb-2 text-xl font-bold text-gray-900 group-hover:text-[var(--card-theme)] transition-colors">
+            <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-slate-100 group-hover:text-[var(--card-theme)] transition-colors">
               <HighlightText text={title} query={highlightQuery} />
             </h3>
 
             {subtitle && (
-              <div className="mb-4 inline-block rounded-full bg-gray-50 px-3 py-1 text-xs font-medium text-gray-500 border border-gray-100">
+              <div className="mb-4 inline-block rounded-full bg-gray-50 dark:bg-slate-800 px-3 py-1 text-xs font-medium text-gray-500 dark:text-slate-400 border border-gray-100 dark:border-slate-700">
                 {subtitle}
               </div>
             )}
 
             {description && !isHit && (
-              <p className="line-clamp-2 text-sm leading-relaxed text-gray-600">
+              <p className="line-clamp-2 text-sm leading-relaxed text-gray-600 dark:text-slate-300">
                 <HighlightText text={description} query={highlightQuery} />
               </p>
             )}
@@ -389,7 +389,7 @@ export function LawCard(props: Props) {
                   return (
                     <div
                       key={si}
-                      className="text-[11px] border-l-2 border-red-500/30 pl-2 py-0.5 bg-gray-50/50 rounded-r-lg italic text-gray-600 line-clamp-2"
+                      className="text-[11px] border-l-2 border-red-500/30 pl-2 py-0.5 bg-gray-50/50 dark:bg-slate-800/50 rounded-r-lg italic text-gray-600 dark:text-slate-300 line-clamp-2"
                     >
                       &quot;
                       <HighlightText
@@ -404,15 +404,15 @@ export function LawCard(props: Props) {
             )}
           </div>
 
-          <div className="mt-auto border-t border-gray-100/80 pt-5">
+          <div className="mt-auto border-t border-gray-100/80 dark:border-slate-800/80 pt-5">
             <div className="flex items-end justify-between">
               <div className="flex gap-6">
                 {(stats ?? []).slice(0, 2).map((stat, i) => (
                   <div key={i} className="flex flex-col">
-                    <span className="text-[10px] uppercase text-gray-400 font-semibold tracking-wide leading-tight">
+                    <span className="text-[10px] uppercase text-gray-400 dark:text-slate-500 font-semibold tracking-wide leading-tight">
                       {stat.label}
                     </span>
-                    <span className="text-sm font-bold text-gray-700 leading-tight font-mono">
+                    <span className="text-sm font-bold text-gray-700 dark:text-slate-200 leading-tight font-mono">
                       {stat.value}
                     </span>
                   </div>

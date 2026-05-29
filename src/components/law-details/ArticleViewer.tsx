@@ -3,16 +3,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import {
-  ArrowLeftRight,
-  ArrowUpRight,
   ChevronLeft,
   ChevronRight,
   Clock,
   Copy,
-  ExternalLink,
   FileText,
   GitCompare,
-  History,
   Layers,
   Link2,
   Loader2,
@@ -60,7 +56,6 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { EditableHeroField } from '@/components/law-details/_helpers/EditableHeroField'
 import {
   mapCitations,
-  type CitationEntry,
   type CitationRow,
   type SiblingArticle,
 } from './citation-mapping'
@@ -896,28 +891,37 @@ export default function ArticleViewer({
                 ? 'Chemin dans le texte'
                 : 'Chemen nan tèks la'
             }
-            className="flex flex-nowrap items-center gap-1.5 text-sm font-medium text-gray-500 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex items-center gap-1.5 text-sm font-medium text-gray-500 min-w-0 flex-1"
           >
-            {breadcrumb.map((node, i) => {
-              const label =
-                getLevelLabel(node.level, currentLang, codeSubcategory) ??
-                node.level
-              return (
-                <span
-                  key={node.id}
-                  className="flex items-center gap-1.5 flex-shrink-0"
-                >
-                  {i > 0 && <ChevronRight className="w-3 h-3 text-gray-300" />}
-                  <span className="font-medium text-gray-600 whitespace-nowrap">
-                    {label} {node.number}
-                  </span>
-                </span>
-              )
-            })}
+            {/* Ancestor crumbs — shrink/ellipsize on narrow screens so the
+                article number (pinned, below) is NEVER pushed off-screen
+                on mobile. */}
+            {breadcrumb.length > 0 && (
+              <span className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                {breadcrumb.map((node, i) => {
+                  const label =
+                    getLevelLabel(node.level, currentLang, codeSubcategory) ??
+                    node.level
+                  return (
+                    <span
+                      key={node.id}
+                      className="flex items-center gap-1.5 min-w-0"
+                    >
+                      {i > 0 && (
+                        <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                      )}
+                      <span className="font-medium text-gray-600 dark:text-slate-400 truncate">
+                        {label} {node.number}
+                      </span>
+                    </span>
+                  )
+                })}
+              </span>
+            )}
             {breadcrumb.length > 0 && (
               <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
             )}
-            <h2 className="font-bold text-slate-900 tracking-tight text-sm m-0 whitespace-nowrap flex-shrink-0">
+            <h2 className="font-bold text-slate-900 dark:text-slate-100 tracking-tight text-sm m-0 whitespace-nowrap flex-shrink-0">
               {(() => {
                 // Same FR/HT-aware article-number rendering as the TOC:
                 // FR keeps the canonical ``Article premier``; HT renders

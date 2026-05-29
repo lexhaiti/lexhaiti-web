@@ -61,7 +61,7 @@ export function EmptyState({
           <p
             className={cn(
               'text-xs font-bold uppercase tracking-widest mb-4',
-              isAttention ? 'text-red-500' : 'text-slate-400',
+              isAttention ? 'text-red-500 dark:text-red-400' : 'text-slate-400 dark:text-slate-500',
             )}
           >
             {eyebrow}
@@ -69,13 +69,13 @@ export function EmptyState({
         )}
 
         {title && (
-          <h2 className="text-2xl lg:text-3xl font-black text-slate-900 mb-4 tracking-tight leading-tight">
+          <h2 className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-slate-100 mb-4 tracking-tight leading-tight">
             {title}
           </h2>
         )}
 
         {description && (
-          <p className="text-sm lg:text-base text-slate-500 leading-relaxed mx-auto max-w-md">
+          <p className="text-sm lg:text-base text-slate-500 dark:text-slate-400 leading-relaxed mx-auto max-w-md">
             {description}
           </p>
         )}
@@ -83,7 +83,7 @@ export function EmptyState({
         {actions && <div className="mt-8">{actions}</div>}
 
         {suggestions && (
-          <div className="mt-12 pt-8 border-t border-slate-200/70">
+          <div className="mt-12 pt-8 border-t border-slate-200/70 dark:border-slate-700/70">
             {suggestions}
           </div>
         )}

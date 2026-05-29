@@ -73,8 +73,8 @@ export function MoniteurIssueCard({
     <Link
       href={target}
       className={cn(
-        'group flex flex-col rounded-2xl bg-white border border-slate-200/80',
-        'hover:border-slate-300 hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.18)]',
+        'group flex flex-col rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800',
+        'hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.18)]',
         'transition-all duration-200 overflow-hidden h-full',
         className,
       )}
@@ -130,7 +130,7 @@ export function MoniteurIssueCard({
           isCompact ? 'px-5 py-3' : 'px-6 py-4',
         )}
       >
-        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-2">
+        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-slate-500 mb-2">
           {lang === 'fr' ? 'Sommaire' : 'Somè'}
         </p>
         {visible.length > 0 ? (
@@ -143,16 +143,16 @@ export function MoniteurIssueCard({
                 <span className="w-1 h-1 rounded-full bg-red-500 flex-shrink-0 mt-[0.45em]" />
                 <span className="line-clamp-2">
                   {s.category && (
-                    <span className="font-bold text-slate-800 text-[11px] uppercase tracking-wide mr-1">
+                    <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wide mr-1">
                       {categoryLabel(s.category, lang)}
                     </span>
                   )}
                   {s.number && (
-                    <span className="font-mono text-[11px] text-slate-500 mr-1">
+                    <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400 mr-1">
                       N° <HighlightText text={s.number} query={query} />
                     </span>
                   )}
-                  <span className="text-slate-600">
+                  <span className="text-slate-600 dark:text-slate-300">
                     <HighlightText
                       text={titleCase(
                         s.title ?? (lang === 'fr' ? 'Sans titre' : 'San tit'),
@@ -164,7 +164,7 @@ export function MoniteurIssueCard({
               </li>
             ))}
             {overflow > 0 && (
-              <li className="text-xs italic text-slate-400 pl-3">
+              <li className="text-xs italic text-slate-400 dark:text-slate-500 pl-3">
                 {lang === 'fr'
                   ? `+ ${overflow} de plus…`
                   : `+ ${overflow} ankò…`}
@@ -172,7 +172,7 @@ export function MoniteurIssueCard({
             )}
           </ul>
         ) : (
-          <p className="text-xs italic text-slate-400">
+          <p className="text-xs italic text-slate-400 dark:text-slate-500">
             {lang === 'fr' ? 'Sommaire non indexé.' : 'Somè pa endekse.'}
           </p>
         )}
@@ -182,7 +182,7 @@ export function MoniteurIssueCard({
           all cards in the grid line up regardless of sommaire length. */}
       <div
         className={cn(
-          'border-t border-slate-100 bg-slate-50/60 mt-auto flex items-center gap-5 text-xs text-slate-500',
+          'border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 mt-auto flex items-center gap-5 text-xs text-slate-500 dark:text-slate-400',
           isCompact ? 'px-5 py-2.5' : 'px-6 py-3',
         )}
       >

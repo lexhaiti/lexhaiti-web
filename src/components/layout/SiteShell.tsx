@@ -8,7 +8,7 @@ import { ReaderChromeProvider } from '@/components/layout/ReaderChromeContext'
 export default function SiteShell({ children }: { children: React.ReactNode }) {
   return (
     <ReaderChromeProvider>
-      <div className="flex min-h-screen flex-col bg-white">
+      <div className="flex min-h-screen flex-col bg-white dark:bg-slate-950">
         <Header />
         <main id="main-content" className="flex-1 flex flex-col">{children}</main>
         <Footer />

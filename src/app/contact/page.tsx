@@ -5,7 +5,7 @@
 
 import type { Metadata } from 'next'
 import { StandardPageHeader } from '@/components/shared/StandardPageHeader'
-import { Mail, MapPin, MessageCircle, Send } from 'lucide-react'
+import { Mail, MapPin, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'

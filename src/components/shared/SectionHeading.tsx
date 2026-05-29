@@ -75,7 +75,7 @@ export function SectionHeading({
         </h2>
         <div className="mt-5 h-[3px] w-16 bg-amber-400" />
         {subtitle && (
-          <p className="mt-5 text-base lg:text-lg text-slate-600 leading-relaxed">
+          <p className="mt-5 text-base lg:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
             {subtitle}
           </p>
         )}

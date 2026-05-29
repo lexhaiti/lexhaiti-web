@@ -5,7 +5,7 @@
  * `http://localhost:8000/api/v1`. All paths here are relative to that base.
  */
 import type { components, paths } from '@/lib/api-types'
-import { apiDelete, apiGet, apiPatch, apiPost, apiPostForm, apiPut } from '@/lib/api/client'
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from '@/lib/api/client'
 
 // Re-exported types — what consumers reach for.
 export type LegalTextRead = components['schemas']['LegalTextRead']

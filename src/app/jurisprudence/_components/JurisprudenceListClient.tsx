@@ -16,7 +16,6 @@ import {
   listDecisions,
   listEditorialDecisions,
   type CourtType,
-  type DecisionListItemRich,
   type DecisionSubjectTag,
   type EditorialDecisionListItem,
   type EditorialStatus,
@@ -222,7 +221,7 @@ export default function JurisprudenceListClient() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       <StandardPageHeader
         title={t('jurisprudence.title')}
         subtitle={t('jurisprudence.intro')}
@@ -283,7 +282,7 @@ export default function JurisprudenceListClient() {
                     'inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
                     active
                       ? 'bg-primary text-white'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200',
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700',
                   )}
                 >
                   {t(f.labelKey)}
@@ -294,8 +293,8 @@ export default function JurisprudenceListClient() {
         )}
 
         {/* Filter bar */}
-        <div className="mb-8 rounded-2xl border border-slate-200 bg-slate-50/40 p-4">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">
+        <div className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/40 p-4">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3">
             <Filter className="h-3.5 w-3.5" />
             {t('jurisprudence.filtersLabel')}
           </div>
@@ -344,7 +343,7 @@ export default function JurisprudenceListClient() {
               <button
                 type="button"
                 onClick={handleReset}
-                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 {t('jurisprudence.reset')}
@@ -355,8 +354,8 @@ export default function JurisprudenceListClient() {
 
         {/* Results count */}
         {!loading && !error && total > 0 && (
-          <p className="mb-6 text-sm text-slate-500">
-            <span className="font-bold tabular-nums text-slate-900">{total}</span>{' '}
+          <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
+            <span className="font-bold tabular-nums text-slate-900 dark:text-slate-100">{total}</span>{' '}
             {t('jurisprudence.resultsCount')}
           </p>
         )}
@@ -426,17 +425,17 @@ export default function JurisprudenceListClient() {
                   disabled={page === 1}
                   onClick={() => handlePageChange(Math.max(1, page - 1))}
                   className={cn(
-                    'rounded-full border-slate-200 px-5 h-10 font-semibold',
+                    'rounded-full border-slate-200 dark:border-slate-700 px-5 h-10 font-semibold',
                     page === 1 && 'opacity-50',
                   )}
                 >
                   ← {t('jurisprudence.previous')}
                 </Button>
-                <p className="text-sm text-slate-500 tabular-nums">
+                <p className="text-sm text-slate-500 dark:text-slate-400 tabular-nums">
                   {t('jurisprudence.page')}{' '}
-                  <span className="font-bold text-slate-900">{page}</span>{' '}
+                  <span className="font-bold text-slate-900 dark:text-slate-100">{page}</span>{' '}
                   {t('jurisprudence.of')}{' '}
-                  <span className="font-bold text-slate-900">{totalPages}</span>
+                  <span className="font-bold text-slate-900 dark:text-slate-100">{totalPages}</span>
                 </p>
                 <Button
                   variant="outline"
@@ -445,7 +444,7 @@ export default function JurisprudenceListClient() {
                     handlePageChange(Math.min(totalPages, page + 1))
                   }
                   className={cn(
-                    'rounded-full border-slate-200 px-5 h-10 font-semibold',
+                    'rounded-full border-slate-200 dark:border-slate-700 px-5 h-10 font-semibold',
                     page >= totalPages && 'opacity-50',
                   )}
                 >
@@ -462,7 +461,7 @@ export default function JurisprudenceListClient() {
             actions={
               <Button
                 variant="outline"
-                className="rounded-full border-slate-200 hover:bg-white hover:border-primary hover:text-primary px-6 h-11 font-bold transition-all"
+                className="rounded-full border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:border-primary hover:text-primary px-6 h-11 font-bold transition-all"
                 onClick={() => (window.location.href = '/lois')}
               >
                 {isFr
@@ -494,14 +493,14 @@ interface FilterSelectProps {
  */
 function FilterSelect({ label, value, onChange, options }: FilterSelectProps) {
   return (
-    <label className="flex flex-shrink-0 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5">
-      <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+    <label className="flex flex-shrink-0 items-center gap-2 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5">
+      <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
         {label}
       </span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="bg-transparent text-sm font-semibold text-slate-800 outline-none cursor-pointer pr-1"
+        className="bg-transparent text-sm font-semibold text-slate-800 dark:text-slate-200 outline-none cursor-pointer pr-1"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

@@ -23,7 +23,7 @@ export default async function FeaturesSection() {
   const t = await getT()
 
   return (
-    <section className="relative w-full bg-white py-16 lg:py-20 border-t border-slate-100">
+    <section className="relative w-full bg-white dark:bg-slate-950 py-16 lg:py-20 border-t border-slate-100 dark:border-slate-800">
       <div className="container">
         {/* Headings — render both, toggle by breakpoint. The institutional
             voice reads on desktop where there's room; the minimal voice
@@ -52,17 +52,17 @@ export default async function FeaturesSection() {
             return (
               <div
                 key={i}
-                className="group rounded-xl border border-slate-200 bg-white p-5 transition-all duration-200 hover:border-slate-300 hover:shadow-md"
+                className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/5 border border-primary/10 text-primary">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 tabular-nums">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 tabular-nums">
                     {String(i + 1).padStart(2, '0')} — {t(`home.features.mobile.pillars.${pillar.key}.label`)}
                   </span>
                 </div>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                   {t(`home.features.mobile.pillars.${pillar.key}.desc`)}
                 </p>
               </div>
@@ -77,20 +77,20 @@ export default async function FeaturesSection() {
             return (
               <div
                 key={i}
-                className="group relative rounded-xl border border-slate-200 bg-white p-6 lg:p-7 transition-all duration-200 hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5"
+                className="group relative rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 lg:p-7 transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md hover:-translate-y-0.5"
               >
                 <div className="flex items-center gap-3 mb-4">
                   <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/5 border border-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white group-hover:border-primary">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 tabular-nums">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 tabular-nums">
                     {String(i + 1).padStart(2, '0')} — {t(`home.features.desktop.pillars.${pillar.key}.label`)}
                   </span>
                 </div>
                 <h3 className="text-lg lg:text-xl font-bold text-primary mb-2 leading-tight">
                   {t(`home.features.desktop.pillars.${pillar.key}.lead`)}
                 </h3>
-                <p className="text-sm lg:text-[15px] text-slate-600 leading-relaxed">
+                <p className="text-sm lg:text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed">
                   {t(`home.features.desktop.pillars.${pillar.key}.desc`)}
                 </p>
               </div>

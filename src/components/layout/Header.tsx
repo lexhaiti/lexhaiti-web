@@ -124,7 +124,9 @@ export default function Header() {
           // Solid white avoids that boundary problem at the cost of a
           // touch less polish — worth the trade since the dark headers
           // are the most common landing surfaces.
-          scrolled ? 'bg-white shadow-sm' : 'bg-white',
+          scrolled
+            ? 'bg-white dark:bg-slate-900 shadow-sm'
+            : 'bg-white dark:bg-slate-900',
         )}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -138,7 +140,7 @@ export default function Header() {
           {/* 1. LOGO (Always Visible) */}
           <div className="flex-shrink-0 z-20 relative">
             <BrandLogo
-              titleClassName="text-slate-900 font-extrabold text-2xl tracking-tighter"
+              titleClassName="text-slate-900 dark:text-slate-100 font-extrabold text-2xl tracking-tighter"
               taglineClassName=" text-[10px] font-bold uppercase tracking-widest mt-0.5"
               // Uses the BrandLogo default size (48px mobile / 56px
               // from sm+) — no override needed. Slightly bigger than
@@ -170,7 +172,7 @@ export default function Header() {
                     isPathActive(pathname, searchParams, item.href!) ||
                       activeMegaMenu === item.labelKey
                       ? 'text-red-600'
-                      : 'text-slate-800 hover:text-red-600',
+                      : 'text-slate-800 dark:text-slate-200 hover:text-red-600 dark:hover:text-red-400',
                   )}
                 >
                   {t(item.labelKey)}
@@ -205,7 +207,7 @@ export default function Header() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -5 }}
                   transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className="fixed left-0 right-0 top-20 bg-white border-b border-gray-100 shadow-xl z-40"
+                  className="fixed left-0 right-0 top-20 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 shadow-xl z-40"
                   onMouseEnter={() =>
                     handleMegaMenuOpen(activeItem.labelKey)
                   }
@@ -217,12 +219,12 @@ export default function Header() {
                   <div className="container mx-auto px-4 py-8">
                     <div className="flex gap-12">
                       {/* Left: Section Info */}
-                      <div className="w-1/4 pr-8 border-r border-gray-100">
-                        <h2 className="text-2xl font-extrabold text-slate-900 mb-2">
+                      <div className="w-1/4 pr-8 border-r border-gray-100 dark:border-slate-800">
+                        <h2 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 mb-2">
                           {t(activeItem.labelKey)}
                         </h2>
                         {activeItem.descriptionKey && (
-                          <p className="text-sm text-slate-500 leading-relaxed">
+                          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                             {t(activeItem.descriptionKey)}
                           </p>
                         )}
@@ -242,7 +244,7 @@ export default function Header() {
                       <div className="flex-1 grid grid-cols-3 gap-8">
                         {activeItem.columns?.map((column, colIndex) => (
                           <div key={colIndex} className="space-y-4">
-                            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
+                            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
                               <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
                               {t(column.titleKey)}
                             </h3>
@@ -254,11 +256,11 @@ export default function Header() {
                                     onClick={handleMegaMenuClose}
                                     className="group block py-1"
                                   >
-                                    <span className="text-sm font-semibold text-slate-700 transition-colors group-hover:text-red-600">
+                                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 transition-colors group-hover:text-red-600 dark:group-hover:text-red-400">
                                       {t(subItem.labelKey)}
                                     </span>
                                     {subItem.descriptionKey && (
-                                      <p className="text-xs text-slate-400 group-hover:text-slate-500 line-clamp-1">
+                                      <p className="text-xs text-slate-400 dark:text-slate-500 group-hover:text-slate-500 dark:group-hover:text-slate-400 line-clamp-1">
                                         {t(subItem.descriptionKey)}
                                       </p>
                                     )}
@@ -334,11 +336,11 @@ export default function Header() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 right-0 z-[61] w-full md:w-1/2 bg-white shadow-2xl xl:hidden flex flex-col"
+              className="fixed inset-y-0 right-0 z-[61] w-full md:w-1/2 bg-white dark:bg-slate-900 shadow-2xl xl:hidden flex flex-col"
             >
-              <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-slate-50">
+              <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
                 <BrandLogo
-                  titleClassName="text-slate-900 font-bold text-lg"
+                  titleClassName="text-slate-900 dark:text-slate-100 font-bold text-lg"
                   taglineClassName="hidden"
                 />
                 <Button
@@ -346,7 +348,7 @@ export default function Header() {
                   size="icon"
                   aria-label={t('nav.menuClose')}
                   onClick={() => setMobileOpen(false)}
-                  className="h-11 w-11 rounded-full hover:bg-white hover:text-red-600"
+                  className="h-11 w-11 rounded-full hover:bg-white dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-red-400"
                 >
                   <AnimatedHamburger isOpen={true} />
                 </Button>
@@ -375,11 +377,11 @@ export default function Header() {
                     (subagent audit found these gaps): advanced search +
                     editor sign-in. Both live in the footer/header on
                     desktop only. */}
-                <div className="mt-6 pt-6 border-t border-gray-100 space-y-2">
+                <div className="mt-6 pt-6 border-t border-gray-100 dark:border-slate-800 space-y-2">
                   <Link
                     href="/recherche/avancee"
                     onClick={() => setMobileOpen(false)}
-                    className="block rounded-lg px-4 py-3 text-base font-bold text-slate-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                    className="block rounded-lg px-4 py-3 text-base font-bold text-slate-700 dark:text-slate-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                   >
                     {t('nav.advancedSearch')}
                   </Link>
@@ -387,7 +389,7 @@ export default function Header() {
                     <Link
                       href="/sign-in"
                       onClick={() => setMobileOpen(false)}
-                      className="block rounded-lg px-4 py-3 text-base font-bold text-slate-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                      className="block rounded-lg px-4 py-3 text-base font-bold text-slate-700 dark:text-slate-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                     >
                       {t('nav.editorSignIn')}
                     </Link>
@@ -421,10 +423,10 @@ function MobileMenuItem({
         onClick={closeMenu}
         className={cn(
           'group relative block rounded-xl px-4 py-3.5',
-          'text-base font-semibold text-slate-800',
-          'border border-slate-200/70 bg-white',
+          'text-base font-semibold text-slate-800 dark:text-slate-200',
+          'border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-900',
           'shadow-[0_1px_2px_-1px_rgba(15,23,42,0.04)]',
-          'hover:border-red-200 hover:bg-red-50/50 hover:text-red-700',
+          'hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50/50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-400',
           'transition-all duration-200',
           'active:scale-[0.99]',
         )}
@@ -442,11 +444,11 @@ function MobileMenuItem({
   return (
     <div
       className={cn(
-        'rounded-xl border bg-white overflow-hidden',
+        'rounded-xl border bg-white dark:bg-slate-900 overflow-hidden',
         'transition-all duration-200',
         isOpen
-          ? 'border-red-200 shadow-[0_6px_16px_-8px_rgba(220,38,38,0.18)]'
-          : 'border-slate-200/70 shadow-[0_1px_2px_-1px_rgba(15,23,42,0.04)]',
+          ? 'border-red-200 dark:border-red-900/50 shadow-[0_6px_16px_-8px_rgba(220,38,38,0.18)]'
+          : 'border-slate-200/70 dark:border-slate-800 shadow-[0_1px_2px_-1px_rgba(15,23,42,0.04)]',
       )}
     >
       <button
@@ -455,13 +457,13 @@ function MobileMenuItem({
         className={cn(
           'flex w-full items-center justify-between px-4 py-3.5',
           'text-left transition-colors',
-          isOpen ? 'bg-red-50/40' : 'bg-white hover:bg-slate-50',
+          isOpen ? 'bg-red-50/40 dark:bg-red-950/30' : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800',
         )}
       >
         <span
           className={cn(
             'text-base font-semibold transition-colors',
-            isOpen ? 'text-red-700' : 'text-slate-800',
+            isOpen ? 'text-red-700 dark:text-red-400' : 'text-slate-800 dark:text-slate-200',
           )}
         >
           {t(item.labelKey)}
@@ -471,8 +473,8 @@ function MobileMenuItem({
             'inline-flex items-center justify-center w-7 h-7 rounded-full',
             'transition-all duration-300',
             isOpen
-              ? 'bg-red-100 text-red-600'
-              : 'bg-slate-100 text-slate-500',
+              ? 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400',
           )}
         >
           <ChevronDown
@@ -496,7 +498,7 @@ function MobileMenuItem({
             }}
             style={{ overflow: 'hidden' }}
           >
-            <div className="px-4 pb-4 pt-3 space-y-5 border-t border-red-100/60 bg-gradient-to-b from-red-50/30 to-transparent">
+            <div className="px-4 pb-4 pt-3 space-y-5 border-t border-red-100/60 dark:border-red-900/40 bg-gradient-to-b from-red-50/30 dark:from-red-950/20 to-transparent">
               {item.columns?.map((column: any, colIndex: number) => (
                 <div key={colIndex}>
                   <h4 className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-red-600/80">
@@ -511,10 +513,10 @@ function MobileMenuItem({
                         className={cn(
                           'flex items-center justify-between gap-2',
                           'py-2 px-2 rounded-md',
-                          'text-sm font-medium text-slate-700',
-                          'hover:bg-white hover:text-red-700',
+                          'text-sm font-medium text-slate-700 dark:text-slate-300',
+                          'hover:bg-white dark:hover:bg-slate-800 hover:text-red-700 dark:hover:text-red-400',
                           'transition-colors duration-150',
-                          'active:bg-red-50',
+                          'active:bg-red-50 dark:active:bg-red-950/40',
                         )}
                       >
                         <span>{t(subItem.labelKey)}</span>

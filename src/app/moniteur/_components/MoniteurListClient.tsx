@@ -114,7 +114,7 @@ export default function MoniteurListClient() {
     : filteredByQuery
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       <StandardPageHeader
         title={t('moniteur.title', { fallback: 'Le Moniteur' })}
         subtitle={t('moniteur.subtitle', {
@@ -270,22 +270,22 @@ export default function MoniteurListClient() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="p-12 rounded-[3rem] bg-slate-50 border border-slate-100 text-center"
+            className="p-12 rounded-[3rem] bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-center"
           >
-            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm">
-              <Newspaper className="w-10 h-10 text-slate-300" />
+            <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm">
+              <Newspaper className="w-10 h-10 text-slate-300 dark:text-slate-600" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">
               {isFr ? 'Bientôt disponible' : 'Byento disponib'}
             </h3>
-            <p className="text-slate-500 max-w-md mx-auto mb-10">
+            <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-10">
               {isFr
                 ? 'La base de données complète du Moniteur est en cours de numérisation. Vous pouvez déjà retrouver les textes principaux dans la section Lois.'
                 : 'Baz done konplè Moniteur a ap nimerize. Ou ka deja jwenn tèks prensipal yo nan seksyon Lwa.'}
             </p>
             <Button
               variant="outline"
-              className="rounded-full border-slate-200 hover:bg-white hover:border-red-600 hover:text-red-600 px-8 h-12 font-bold transition-all"
+              className="rounded-full border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:border-red-600 hover:text-red-600 px-8 h-12 font-bold transition-all"
               onClick={() => (window.location.href = '/lois')}
             >
               {isFr ? 'Voir les lois disponibles' : 'Wè lwa ki disponib yo'}

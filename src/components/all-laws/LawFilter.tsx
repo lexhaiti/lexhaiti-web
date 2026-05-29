@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useMemo } from 'react'
-import { Filter, RotateCcw, SlidersHorizontal } from 'lucide-react'
+import { RotateCcw, SlidersHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -14,7 +14,6 @@ import {
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -186,7 +185,7 @@ function FilterContent({
       <div className="flex-1 overflow-y-auto space-y-6 pb-20">
         {/* Category */}
         <div>
-          <label className="text-sm font-semibold text-gray-900 mb-3 block">
+          <label className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3 block">
             {t('filters.category')}
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -206,7 +205,7 @@ function FilterContent({
                   'px-4 py-3 rounded-xl text-sm font-medium transition-all text-left border',
                   (filters.category ?? 'all') === cat.value
                     ? 'bg-primary text-white border-primary shadow-md'
-                    : 'bg-gray-50 text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-100',
+                    : 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 border-gray-100 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-700',
                 )}
               >
                 {cat.label[lang]}
@@ -219,14 +218,14 @@ function FilterContent({
             sheet stays light when filtering Constitutions / Lois / etc. */}
         {filters.category === 'code' && (
           <div>
-            <label className="text-sm font-semibold text-gray-900 mb-3 block">
+            <label className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3 block">
               {lang === 'fr' ? 'Code spécifique' : 'Kòd espesifik'}
             </label>
             <Select
               value={filters.codeSubcategory ?? 'all'}
               onValueChange={(v) => patch({ codeSubcategory: v })}
             >
-              <SelectTrigger className="w-full h-12 rounded-xl bg-gray-50 border-gray-200">
+              <SelectTrigger className="w-full h-12 rounded-xl bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -242,7 +241,7 @@ function FilterContent({
 
         {/* Year */}
         <div>
-          <label className="text-sm font-semibold text-gray-900 mb-3 block">
+          <label className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3 block">
             {t('filters.period')}
           </label>
           <Select
@@ -264,7 +263,7 @@ function FilterContent({
 
         {/* Status */}
         <div>
-          <label className="text-sm font-semibold text-gray-900 mb-3 block">
+          <label className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3 block">
             {t('filters.status')}
           </label>
           <div className="flex flex-wrap gap-2">
@@ -276,7 +275,7 @@ function FilterContent({
                   'px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all border',
                   (filters.status ?? 'all') === s.value
                     ? 'bg-primary text-white border-primary shadow-md'
-                    : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-700',
+                    : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:border-gray-400 dark:hover:border-slate-600 hover:text-gray-700 dark:hover:text-slate-100',
                 )}
               >
                 {s.label[lang]}
@@ -291,7 +290,7 @@ function FilterContent({
             the URL contract by switching the dropdown for a chips
             input later. */}
         <div>
-          <label className="text-sm font-semibold text-gray-900 mb-3 block">
+          <label className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3 block">
             {lang === 'fr' ? 'Thématique' : 'Tèm'}
           </label>
           <Select
@@ -313,7 +312,7 @@ function FilterContent({
 
         {/* Sort */}
         <div>
-          <label className="text-sm font-semibold text-gray-900 mb-3 block">
+          <label className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3 block">
             {t('filters.sortBy')}
           </label>
           <Select
@@ -335,12 +334,12 @@ function FilterContent({
       </div>
 
       {/* Action Buttons */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t flex gap-3">
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-slate-900 border-t dark:border-slate-800 flex gap-3">
         {activeFiltersCount > 0 && (
           <Button
             variant="outline"
             onClick={onReset}
-            className="flex-1 h-12 rounded-xl border-gray-200 font-bold"
+            className="flex-1 h-12 rounded-xl border-gray-200 dark:border-slate-700 font-bold"
           >
             <RotateCcw className="w-4 h-4 mr-2" />
             {t('filters.reset')}
@@ -428,7 +427,7 @@ export default function LawFilters({
       'rounded-full h-9 text-sm transition-all',
       active
         ? 'bg-primary text-white border-primary hover:bg-primary/90 shadow-sm [&_svg]:text-white/60'
-        : 'bg-white border-gray-200 hover:border-gray-400 text-gray-700',
+        : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 hover:border-gray-400 dark:hover:border-slate-600 text-gray-700 dark:text-slate-200',
     )
 
   return (
@@ -535,7 +534,7 @@ export default function LawFilters({
           </SelectContent>
         </Select>
 
-        <div className="h-6 w-px bg-gray-200 mx-1" />
+        <div className="h-6 w-px bg-gray-200 dark:bg-slate-700 mx-1" />
 
         <Select
           value={filters.sort ?? 'newest'}
@@ -558,7 +557,7 @@ export default function LawFilters({
             variant="ghost"
             size="sm"
             onClick={handleReset}
-            className="text-slate-500 hover:text-slate-900 rounded-full h-9 px-3"
+            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-full h-9 px-3"
           >
             <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
             {t('filters.reset')}
@@ -575,7 +574,7 @@ export default function LawFilters({
               'lg:hidden w-full justify-between rounded-xl h-11',
               activeFiltersCount > 0
                 ? 'bg-primary text-white border-primary hover:bg-primary/90'
-                : 'border-gray-200',
+                : 'border-gray-200 dark:border-slate-700',
             )}
           >
             <span className="flex items-center gap-2">
@@ -594,11 +593,11 @@ export default function LawFilters({
           side="bottom"
           className="h-[85vh] rounded-t-[2rem] p-0 overflow-hidden border-none"
         >
-          <div className="flex flex-col h-full bg-white">
+          <div className="flex flex-col h-full bg-white dark:bg-slate-900">
             <div className="p-6 pb-2">
-              <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6" />
+              <div className="w-12 h-1.5 bg-gray-200 dark:bg-slate-700 rounded-full mx-auto mb-6" />
               <SheetHeader className="text-left">
-                <SheetTitle className="text-2xl font-black text-gray-900">
+                <SheetTitle className="text-2xl font-black text-gray-900 dark:text-slate-100">
                   {t('filters.title')}
                 </SheetTitle>
                 {/* Subtitle removed — the result count belongs above the
