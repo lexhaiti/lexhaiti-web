@@ -528,16 +528,23 @@ export default function LawDetail() {
 
   // Article-reference link interception.
   // The backend linkifier (services/text/linkify.py) rewrites every
-  // inline "article 295" / "art. 1382" mention in body text as
-  // ``<a class="rt-art-ref" data-article="N" href="?article=N">``.
-  // The relative ``?article=N`` href would, on a plain click, trigger
-  // a full Next.js navigation that re-fetches the same law. We
-  // intercept it here and call ``router.replace`` so:
-  //   1. the URL ``?article`` param updates without a route change
-  //      (the existing ``requestedArticleParam`` effect above then
-  //      selects + scrolls to the article),
-  //   2. modifier-clicks (cmd/ctrl/shift/middle-click) fall through
-  //      to the browser so "open in new tab" still works.
+  // inline "article 295" / "art. 1382" / "article 267.2" mention in
+  // body text as ``article <a class="rt-art-ref" data-article="N"
+  // href="?article=N">N</a>`` (same-law) or with an absolute
+  // ``href="/loi/{slug}?article=N"`` + ``data-target="{slug}"`` when
+  // the law amends exactly one other law (cross-text routing).
+  // Two click outcomes:
+  //   1. Relative href (``?article=N``) — same law. We intercept and
+  //      call ``router.replace`` so the URL ``?article`` param
+  //      updates without a full route change (the existing
+  //      ``requestedArticleParam`` effect above then selects +
+  //      scrolls to the article).
+  //   2. Absolute href (``/loi/{slug}?article=N``) — cross-text.
+  //      Do NOT preventDefault: let Next.js handle the click as a
+  //      regular client-side route change to the destination law.
+  // Modifier-clicks (cmd/ctrl/shift/middle-click) always fall
+  // through to the browser so "open in new tab" still works for
+  // both shapes.
   useEffect(() => {
     const root = lawDetailRootRef.current
     if (!root) return
@@ -560,6 +567,18 @@ export default function LawDetail() {
         'a.rt-art-ref',
       ) as HTMLAnchorElement | null
       if (!target) return
+      // Read the href *attribute* directly (not the resolved DOM
+      // property) — the attribute carries the original shape
+      // ("?article=N" vs "/loi/{slug}?article=N"), the property
+      // resolves to an absolute URL in both cases. The attribute
+      // shape is what tells us which click path to take.
+      const hrefAttr = target.getAttribute('href') || ''
+      if (hrefAttr.startsWith('/loi/')) {
+        // Cross-text reference — let the browser nav fire a regular
+        // Next.js client-side route change to the destination law.
+        // No preventDefault, no manual routing here.
+        return
+      }
       // Pull the article number off the data attribute (cheaper than
       // re-parsing the href). Bail when both are missing — leaves the
       // browser to handle the click as-is (defensive; the linkifier
