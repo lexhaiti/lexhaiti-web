@@ -618,23 +618,23 @@ const ArticleCard = memo(function ArticleCard({
               }
               className="flex items-center gap-1.5 min-w-0 text-[12px] text-slate-500 dark:text-slate-400"
             >
-              {/* Ancestor crumbs — shrink/ellipsize so the article
-                  number (pinned, last) stays visible on mobile. */}
+              {/* Ancestors as ONE truncating string — shows leading text
+                  + ellipsis on narrow screens (e.g. "Titre I › Chapi…")
+                  instead of collapsing each label to nothing, while the
+                  article number (pinned, below) stays fully visible. */}
               {breadcrumbCrumbs.length > 1 && (
-                <span className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-                  {breadcrumbCrumbs.slice(0, -1).map((c) => (
-                    <span
-                      key={c.key}
-                      className="inline-flex items-center gap-1.5 min-w-0"
-                    >
-                      <span className="font-medium truncate">{c.label}</span>
-                      <ChevronRight
-                        aria-hidden
-                        className="w-3 h-3 text-slate-300 flex-shrink-0"
-                      />
-                    </span>
-                  ))}
-                </span>
+                <>
+                  <span className="font-medium truncate min-w-0">
+                    {breadcrumbCrumbs
+                      .slice(0, -1)
+                      .map((c) => c.label)
+                      .join('  ›  ')}
+                  </span>
+                  <ChevronRight
+                    aria-hidden
+                    className="w-3 h-3 text-slate-300 dark:text-slate-600 flex-shrink-0"
+                  />
+                </>
               )}
               {/* Article number — always fully visible. */}
               <span className="font-bold uppercase tracking-widest text-primary text-[12px] tabular-nums whitespace-nowrap flex-shrink-0">
@@ -657,7 +657,7 @@ const ArticleCard = memo(function ArticleCard({
             </div>
           )}
         </div>
-        <div className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+        <div className="hidden sm:inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
           {lawShortTitle && (
             <CiteArticleButton
               articleNumber={numStr}

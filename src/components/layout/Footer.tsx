@@ -15,7 +15,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="relative bg-primary text-slate-300 overflow-hidden">
+    <footer className="relative bg-primary dark:bg-slate-950 text-slate-300 overflow-hidden border-t border-transparent dark:border-slate-800">
       {/* Top accent — a flag-inspired red/blue hairline, faded at the
           edges. The previous 1px solid-red stripe read as a glitch
           when stacked under a same-navy section (e.g. the closing

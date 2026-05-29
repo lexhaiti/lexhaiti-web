@@ -893,29 +893,18 @@ export default function ArticleViewer({
             }
             className="flex items-center gap-1.5 text-sm font-medium text-gray-500 min-w-0 flex-1"
           >
-            {/* Ancestor crumbs — shrink/ellipsize on narrow screens so the
-                article number (pinned, below) is NEVER pushed off-screen
-                on mobile. */}
+            {/* Ancestors as ONE truncating string — shows leading text +
+                ellipsis on narrow screens instead of collapsing each label
+                to nothing, while the article number (pinned, below) stays
+                fully visible. */}
             {breadcrumb.length > 0 && (
-              <span className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-                {breadcrumb.map((node, i) => {
-                  const label =
-                    getLevelLabel(node.level, currentLang, codeSubcategory) ??
-                    node.level
-                  return (
-                    <span
-                      key={node.id}
-                      className="flex items-center gap-1.5 min-w-0"
-                    >
-                      {i > 0 && (
-                        <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
-                      )}
-                      <span className="font-medium text-gray-600 dark:text-slate-400 truncate">
-                        {label} {node.number}
-                      </span>
-                    </span>
+              <span className="font-medium text-gray-600 dark:text-slate-400 truncate min-w-0">
+                {breadcrumb
+                  .map(
+                    (node) =>
+                      `${getLevelLabel(node.level, currentLang, codeSubcategory) ?? node.level} ${node.number}`,
                   )
-                })}
+                  .join('  ›  ')}
               </span>
             )}
             {breadcrumb.length > 0 && (
