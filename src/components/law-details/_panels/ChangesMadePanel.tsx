@@ -39,37 +39,37 @@ const CHANGE_KIND_LABEL: Record<
   amend: {
     fr: 'Modifié',
     ht: 'Modifye',
-    cls: 'bg-amber-50 text-amber-800 border-amber-200',
+    cls: 'bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-500/30',
   },
   abrogate: {
     fr: 'Abrogé',
     ht: 'Abwoje',
-    cls: 'bg-red-50 text-red-700 border-red-200',
+    cls: 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-300 border-red-200 dark:border-red-500/30',
   },
   replace: {
     fr: 'Remplacé',
     ht: 'Ranplase',
-    cls: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    cls: 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-500/30',
   },
   add: {
     fr: 'Ajouté',
     ht: 'Ajoute',
-    cls: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    cls: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30',
   },
   renumber: {
     fr: 'Renuméroté',
     ht: 'Renimewote',
-    cls: 'bg-blue-50 text-blue-700 border-blue-200',
+    cls: 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-500/30',
   },
   suspend: {
     fr: 'Suspendu',
     ht: 'Sispann',
-    cls: 'bg-slate-100 text-slate-600 border-slate-200',
+    cls: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700',
   },
   restore: {
     fr: 'Rétabli',
     ht: 'Retabli',
-    cls: 'bg-teal-50 text-teal-700 border-teal-200',
+    cls: 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-500/30',
   },
 }
 
@@ -124,22 +124,22 @@ export function ChangesMadePanel({ lawSlug, lang }: Props) {
   }
 
   return (
-    <section className="mt-12 pt-8 border-t border-slate-200">
+    <section className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800">
       <div className="flex items-baseline justify-between mb-5 gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <FileEdit className="w-4 h-4 text-amber-600" />
-          <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-slate-600">
+          <FileEdit className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+          <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-slate-600 dark:text-slate-300">
             {lang === 'fr'
               ? 'Modifications apportées'
               : 'Modifikasyon yo te fè'}
           </h2>
           {rows && rows.length > 0 && (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
               {rows.length}
             </span>
           )}
         </div>
-        <p className="text-xs text-slate-500 italic">
+        <p className="text-xs text-slate-500 dark:text-slate-400 italic">
           {lang === 'fr'
             ? 'Articles modifiés par ce texte dans d’autres lois.'
             : 'Atik tèks sa modifye nan lòt lwa yo.'}
@@ -162,7 +162,7 @@ export function ChangesMadePanel({ lawSlug, lang }: Props) {
       )}
 
       {rows && rows.length > 0 && (
-        <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white overflow-hidden">
+        <ul className="divide-y divide-slate-100 dark:divide-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
           {rows.map((r) => {
             const kindMeta = CHANGE_KIND_LABEL[r.change_kind] ?? {
               fr: r.change_kind,
@@ -195,7 +195,7 @@ export function ChangesMadePanel({ lawSlug, lang }: Props) {
               <li key={r.id}>
                 <Link
                   href={target.href}
-                  className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50 transition-colors group"
+                  className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors group"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap mb-0.5">
@@ -207,12 +207,12 @@ export function ChangesMadePanel({ lawSlug, lang }: Props) {
                       >
                         {kindMeta[lang]}
                       </span>
-                      <span className="text-sm font-semibold text-slate-900 truncate">
+                      <span className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
                         {r.amended_text_title_fr}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500">
-                      <span className="text-slate-700">{target.label}</span>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      <span className="text-slate-700 dark:text-slate-300">{target.label}</span>
                       {target.versionNumber != null && (
                         <>
                           {' · '}
@@ -229,7 +229,7 @@ export function ChangesMadePanel({ lawSlug, lang }: Props) {
                       )}
                     </p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                  <ArrowRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                 </Link>
               </li>
             )
