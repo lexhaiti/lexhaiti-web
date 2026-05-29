@@ -45,7 +45,7 @@ export default async function Page() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       <StandardPageHeader
         title={t('contact.title', {
           fallback: isFr ? 'Contact' : 'Kontakte Nou',
@@ -66,10 +66,10 @@ export default async function Page() {
           {/* Contact Info */}
           <div className="space-y-12 animate-in fade-in slide-in-from-left-4 duration-500">
             <div>
-              <h2 className="text-3xl font-bold mb-6 text-slate-900">
+              <h2 className="text-3xl font-bold mb-6 text-slate-900 dark:text-slate-100">
                 {isFr ? 'Parlons ensemble' : 'Ann pale ansanm'}
               </h2>
-              <p className="text-slate-500 text-lg leading-relaxed max-w-md">
+              <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed max-w-md">
                 {isFr
                   ? 'Que vous soyez un professionnel du droit, un étudiant ou un citoyen, nous apprécions vos retours pour améliorer LexHaiti.'
                   : 'Kit ou se yon pwofesyonèl nan dwa, yon etidyan oswa yon sitwayen, nou apresye fidbak ou pou nou amelyore LexHaiti.'}
@@ -83,10 +83,10 @@ export default async function Page() {
                     <info.icon className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-1">
+                    <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
                       {info.title}
                     </h4>
-                    <p className="text-xl font-bold text-slate-900">
+                    <p className="text-xl font-bold text-slate-900 dark:text-slate-100">
                       {info.detail}
                     </p>
                   </div>
@@ -98,7 +98,7 @@ export default async function Page() {
           {/* Contact Form */}
           <div className="relative animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-red-500/5 blur-3xl rounded-[3rem]" />
-            <div className="relative bg-white border border-slate-100 shadow-2xl shadow-slate-200/50 rounded-[3rem] p-8 lg:p-12">
+            <div className="relative bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-black/40 rounded-[3rem] p-8 lg:p-12">
               {/* TODO: Wire form to a backend endpoint (e.g. /api/contact).
                   Until then, inputs are disabled and the submit button
                   shows a "coming soon" label so visitors aren't misled. */}
@@ -107,7 +107,7 @@ export default async function Page() {
                   <div className="space-y-2">
                     <label
                       htmlFor="contact-name"
-                      className="text-sm font-bold text-slate-600 ml-1"
+                      className="text-sm font-bold text-slate-600 dark:text-slate-300 ml-1"
                     >
                       {isFr ? 'Nom' : 'Non'}
                     </label>
@@ -115,13 +115,13 @@ export default async function Page() {
                       id="contact-name"
                       name="name"
                       autoComplete="name"
-                      className="rounded-md border-slate-200 focus:ring-primary focus:border-primary h-12"
+                      className="rounded-md border-slate-200 dark:border-slate-700 focus:ring-primary focus:border-primary h-12"
                     />
                   </div>
                   <div className="space-y-2">
                     <label
                       htmlFor="contact-email"
-                      className="text-sm font-bold text-slate-600 ml-1"
+                      className="text-sm font-bold text-slate-600 dark:text-slate-300 ml-1"
                     >
                       Email
                     </label>
@@ -130,34 +130,34 @@ export default async function Page() {
                       name="email"
                       type="email"
                       autoComplete="email"
-                      className="rounded-md border-slate-200 focus:ring-primary focus:border-primary h-12"
+                      className="rounded-md border-slate-200 dark:border-slate-700 focus:ring-primary focus:border-primary h-12"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label
                     htmlFor="contact-subject"
-                    className="text-sm font-bold text-slate-600 ml-1"
+                    className="text-sm font-bold text-slate-600 dark:text-slate-300 ml-1"
                   >
                     {isFr ? 'Sujet' : 'Sijè'}
                   </label>
                   <Input
                     id="contact-subject"
                     name="subject"
-                    className="rounded-md border-slate-200 focus:ring-primary focus:border-primary h-12"
+                    className="rounded-md border-slate-200 dark:border-slate-700 focus:ring-primary focus:border-primary h-12"
                   />
                 </div>
                 <div className="space-y-2">
                   <label
                     htmlFor="contact-message"
-                    className="text-sm font-bold text-slate-600 ml-1"
+                    className="text-sm font-bold text-slate-600 dark:text-slate-300 ml-1"
                   >
                     {isFr ? 'Message' : 'Mesaj'}
                   </label>
                   <Textarea
                     id="contact-message"
                     name="message"
-                    className="rounded-md border-slate-200 focus:ring-primary focus:border-primary min-h-[150px]"
+                    className="rounded-md border-slate-200 dark:border-slate-700 focus:ring-primary focus:border-primary min-h-[150px]"
                   />
                 </div>
                 <Button

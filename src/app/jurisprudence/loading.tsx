@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Hero skeleton */}
       <div className="bg-primary pt-28 pb-10 lg:pb-14 lg:pt-36">
         <div className="container">
@@ -11,7 +11,7 @@ export default function Loading() {
 
       {/* Filter bar skeleton */}
       <div className="container py-8">
-        <div className="h-20 rounded-2xl bg-slate-50 animate-pulse" />
+        <div className="h-20 rounded-2xl bg-slate-50 dark:bg-slate-900 animate-pulse" />
       </div>
 
       {/* Row skeletons */}
@@ -19,21 +19,21 @@ export default function Loading() {
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-2xl border border-slate-200 p-6 space-y-4"
+            className="rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4"
           >
             <div className="flex justify-between">
-              <div className="h-4 w-32 bg-slate-100 rounded animate-pulse" />
-              <div className="h-4 w-24 bg-slate-100 rounded animate-pulse" />
+              <div className="h-4 w-32 bg-slate-100 dark:bg-slate-800/60 rounded animate-pulse" />
+              <div className="h-4 w-24 bg-slate-100 dark:bg-slate-800/60 rounded animate-pulse" />
             </div>
-            <div className="h-6 w-3/4 bg-slate-200 rounded animate-pulse" />
+            <div className="h-6 w-3/4 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
             <div className="flex gap-2">
-              <div className="h-6 w-20 bg-slate-100 rounded-full animate-pulse" />
-              <div className="h-6 w-24 bg-slate-100 rounded-full animate-pulse" />
-              <div className="h-6 w-16 bg-slate-100 rounded-full animate-pulse" />
+              <div className="h-6 w-20 bg-slate-100 dark:bg-slate-800/60 rounded-full animate-pulse" />
+              <div className="h-6 w-24 bg-slate-100 dark:bg-slate-800/60 rounded-full animate-pulse" />
+              <div className="h-6 w-16 bg-slate-100 dark:bg-slate-800/60 rounded-full animate-pulse" />
             </div>
-            <div className="flex justify-between border-t border-slate-100 pt-4">
-              <div className="h-4 w-40 bg-slate-100 rounded animate-pulse" />
-              <div className="h-9 w-9 rounded-full bg-slate-100 animate-pulse" />
+            <div className="flex justify-between border-t border-slate-100 dark:border-slate-800 pt-4">
+              <div className="h-4 w-40 bg-slate-100 dark:bg-slate-800/60 rounded animate-pulse" />
+              <div className="h-9 w-9 rounded-full bg-slate-100 dark:bg-slate-800/60 animate-pulse" />
             </div>
           </div>
         ))}

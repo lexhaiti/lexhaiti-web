@@ -87,7 +87,7 @@ export default async function Page() {
   let runningIndex = 0
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       <StandardPageHeader
         title={isFr ? 'Thématiques' : 'Tèm yo'}
         subtitle={
@@ -110,14 +110,14 @@ export default async function Page() {
             {/* Section header — small label + thin rule + quiet
                 description on the right. No icon, no card. Reads
                 like a magazine section divider. */}
-            <header className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-x-12 gap-y-3 items-baseline mb-10 lg:mb-12 pb-5 border-b border-slate-200">
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-500">
-                <span className="inline-block tabular-nums text-slate-400 mr-3">
+            <header className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-x-12 gap-y-3 items-baseline mb-10 lg:mb-12 pb-5 border-b border-slate-200 dark:border-slate-800">
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+                <span className="inline-block tabular-nums text-slate-400 dark:text-slate-500 mr-3">
                   {String(sectionIdx + 1).padStart(2, '0')}
                 </span>
                 {t(section.titleKey)}
               </h2>
-              <p className="text-base lg:text-lg text-slate-600 leading-relaxed">
+              <p className="text-base lg:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
                 {t(section.descKey)}
               </p>
             </header>
@@ -140,7 +140,7 @@ export default async function Page() {
                           {String(seq).padStart(2, '0')}
                         </span>
                         <span className="flex-1 min-w-0">
-                          <h3 className="text-2xl lg:text-[1.65rem] font-bold leading-[1.2] text-slate-900 group-hover:text-red-600 transition-colors">
+                          <h3 className="text-2xl lg:text-[1.65rem] font-bold leading-[1.2] text-slate-900 dark:text-slate-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
                             <span className="bg-[length:0%_1px] group-hover:bg-[length:100%_1px] bg-gradient-to-r from-red-600 to-red-600 bg-no-repeat bg-left-bottom transition-[background-size] duration-300">
                               {t(item.labelKey)}
                             </span>
@@ -148,7 +148,7 @@ export default async function Page() {
                         </span>
                         <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-red-600 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all flex-shrink-0 mt-1.5" />
                       </div>
-                      <p className="mt-2 ml-9 text-sm text-slate-500 leading-relaxed max-w-prose">
+                      <p className="mt-2 ml-9 text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-prose">
                         {t(item.descKey)}
                       </p>
                     </Link>
@@ -162,15 +162,15 @@ export default async function Page() {
         {/* Foot — one quiet line out, not a gradient call-to-action.
             The destination is the all-texts page with no theme filter,
             for visitors who want to leave the thematic axis. */}
-        <div className="mt-28 lg:mt-32 pt-10 border-t border-slate-200 flex flex-wrap items-baseline justify-between gap-4">
-          <p className="text-sm text-slate-500 italic">
+        <div className="mt-28 lg:mt-32 pt-10 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-baseline justify-between gap-4">
+          <p className="text-sm text-slate-500 dark:text-slate-400 italic">
             {isFr
               ? 'Combinez plusieurs thématiques depuis la page de recherche.'
               : 'Konbine plizyè tèm depi paj rechèch la.'}
           </p>
           <Link
             href="/lois"
-            className="text-sm font-semibold text-slate-900 hover:text-red-600 transition-colors inline-flex items-center gap-1.5"
+            className="text-sm font-semibold text-slate-900 dark:text-slate-100 hover:text-red-600 dark:hover:text-red-400 transition-colors inline-flex items-center gap-1.5"
           >
             {isFr ? 'Tous les textes' : 'Tout tèks yo'}
             <ArrowUpRight className="w-4 h-4" />

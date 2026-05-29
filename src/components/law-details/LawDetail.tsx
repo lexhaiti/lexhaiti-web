@@ -7,7 +7,6 @@ import React, {
   useState,
 } from 'react'
 import dynamic from 'next/dynamic'
-import { Loader2 } from 'lucide-react'
 import {
   TooltipProvider,
 } from '@/components/ui/tooltip'
@@ -59,6 +58,7 @@ import { getLevelLabel } from '@/lib/legal/headingLabels'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useT } from '@/i18n/useT'
 import { TextNotFound } from '@/components/law-details/TextNotFound'
+import { LawDetailSkeleton } from '@/components/law-details/LawDetailSkeleton'
 import { useToast } from '@/components/ui/toast-simple'
 import { useEditorMode } from '@/lib/hooks/useEditorMode'
 import type { ArticleEmbed } from '@/lib/api/endpoints'
@@ -152,7 +152,7 @@ export default function LawDetail() {
   // (entering preview wiped the mode, switching mode dropped preview).
   const isPublicPreview = searchParams?.get('apercu') === '1'
   const isEditor = actuallyIsEditor && !isPublicPreview
-  const { data: law, isLoading, isError, refetch } = useLawDetail(slug)
+  const { data: law, status, isLoading, isError, refetch } = useLawDetail(slug)
 
   // Find current article index
   const currentArticleIndex = useMemo(() => {
@@ -538,12 +538,18 @@ export default function LawDetail() {
   const [preambleExpanded, setPreambleExpanded] = useState(false)
   const [introExpanded, setIntroExpanded] = useState(false)
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-12 h-12 animate-spin text-red-600" />
-      </div>
-    )
+  // Render the skeleton for BOTH the initial ``idle`` state (before the
+  // fetch effect has run — useLawDetail starts at 'idle', not 'loading')
+  // AND the in-flight ``loading`` state. Gating only on ``isLoading`` let
+  // the very first paint fall through to ``TextNotFound`` (a short page),
+  // which then jumped to the tall skeleton a frame later — that bounce
+  // shoved the site footer down from inside the viewport and was the
+  // dominant CLS contributor on this route. The shape-matched skeleton
+  // (dark hero band + two-column body) now paints from frame one, so the
+  // loaded page swaps in without reflowing the above-the-fold layout.
+  // See LawDetailSkeleton for more.
+  if (isLoading || (status === 'idle' && !law)) {
+    return <LawDetailSkeleton />
   }
 
   if (isError || !law) {

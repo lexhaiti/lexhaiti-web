@@ -67,7 +67,7 @@ export default async function Page() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Dark hero — same navy treatment used across the site so the
           donate page reads as part of the institutional surface. */}
       <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
@@ -112,7 +112,7 @@ export default async function Page() {
           <p className="text-xs font-bold uppercase tracking-widest text-primary/65 mb-3">
             {isFr ? 'Où va l’argent' : 'Kote lajan an ale'}
           </p>
-          <h2 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight">
+          <h2 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight">
             {isFr
               ? 'Trois lignes de coût, rien d’autre.'
               : 'Twa liy depans, pa gen lòt.'}
@@ -128,10 +128,10 @@ export default async function Page() {
               <div className="mb-5 inline-flex p-3.5 rounded-xl bg-primary/[0.06] border border-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:border-primary group-hover:shadow-md">
                 <item.icon className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold mb-3 text-slate-900 leading-tight">
+              <h3 className="text-xl font-bold mb-3 text-slate-900 dark:text-slate-100 leading-tight">
                 {item.title}
               </h3>
-              <p className="text-slate-600 leading-relaxed">{item.body}</p>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{item.body}</p>
             </div>
           ))}
         </div>
@@ -140,19 +140,19 @@ export default async function Page() {
       {/* Channels — what to do RIGHT NOW. Bank transfer to Ayiti Dijital is the
           one channel that works today; the Stripe / card row is a
           deliberate placeholder so the visitor can see the roadmap. */}
-      <div className="border-y bg-slate-50/40">
+      <div className="border-y dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/40">
         <div className="container py-16 lg:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-primary/65 mb-3">
                 {isFr ? 'Comment donner' : 'Kijan pou bay'}
               </p>
-              <h2 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight mb-5">
+              <h2 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight mb-5">
                 {isFr
                   ? 'Deux canaux, l’un opérationnel, l’autre bientôt.'
                   : 'De kanal — youn ki mache, lòt la byento.'}
               </h2>
-              <p className="text-slate-600 leading-relaxed text-lg">
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg">
                 {isFr
                   ? "Les dons sont reçus par Ayiti Dijital e.V., l’association allemande sans but lucratif qui édite LexHaïti. Ayiti Dijital publie son rapport annuel sur demande — chaque euro alloué à la plateforme est traçable."
                   : "Don yo resevwa pa Ayiti Dijital e.V., asosiyasyon alman san bi likratif ki edite LexHaïti. Ayiti Dijital pibliye rapò chak ane sou demand — chak ewo ki alwe nan platfòm nan ka swiv."}
@@ -161,21 +161,21 @@ export default async function Page() {
 
             <div className="space-y-4">
               {/* Bank transfer — the channel that actually works today. */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:p-7">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 lg:p-7">
                 <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 p-2.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <div className="flex-shrink-0 p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
                     <Landmark className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline gap-3 flex-wrap mb-1">
-                      <h3 className="text-lg font-bold text-slate-900">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                         {isFr ? 'Virement bancaire' : 'Vìreman bankè'}
                       </h3>
-                      <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
                         {isFr ? 'Disponible' : 'Disponib'}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-600 mb-4">
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                       {isFr
                         ? "Le canal historique : virement SEPA vers le compte de Ayiti Dijital e.V. Contactez-nous pour recevoir l’IBAN et le reçu fiscal."
                         : "Kanal istorik la : vìreman SEPA nan kont Ayiti Dijital e.V. Kontakte nou pou resevwa IBAN ak resi taks la."}
@@ -192,21 +192,21 @@ export default async function Page() {
               </div>
 
               {/* Card / Stripe — placeholder. Honest "coming soon". */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:p-7">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 lg:p-7">
                 <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 p-2.5 rounded-lg bg-slate-100 text-slate-500 border border-slate-200">
+                  <div className="flex-shrink-0 p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                     <Heart className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline gap-3 flex-wrap mb-1">
-                      <h3 className="text-lg font-bold text-slate-900">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                         {isFr ? 'Carte bancaire' : 'Kat bankè'}
                       </h3>
-                      <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                      <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                         {isFr ? 'Bientôt' : 'Byento'}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
                       {isFr
                         ? "L’intégration Stripe est en cours. En attendant, le virement bancaire ci-dessus est le moyen le plus rapide."
                         : "Entegrasyon Stripe ap fèt kounye a. Antretan, vìreman bankè anlè a se mwayen ki pi rapid."}
@@ -227,12 +227,12 @@ export default async function Page() {
           <p className="text-xs font-bold uppercase tracking-widest text-primary/65 mb-3">
             {isFr ? 'Partenariats institutionnels' : 'Patenarya enstitisyonèl'}
           </p>
-          <h2 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight mb-5">
+          <h2 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight mb-5">
             {isFr
               ? 'Financer une vague de numérisation ?'
               : 'Finanse yon vag nimerizasyon?'}
           </h2>
-          <p className="text-slate-600 leading-relaxed text-lg mb-4">
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg mb-4">
             {isFr
               ? "Universités, fondations, ministères, ONG : Ayiti Dijital accepte des financements ciblés sur un axe spécifique — un Code en entier, un demi-siècle du Moniteur, la traduction kreyòl d’un corpus existant. Le livrable est défini en amont, l’avancement publié sur la plateforme."
               : "Inivèsite, fondasyon, ministè, ONG : Ayiti Dijital aksepte finansman ki vize yon liy espesifik — yon Kòd antye, mwatye yon syèk Moniteur, tradiksyon kreyòl yon kòpis ki egziste. Liv ki gen pou bay defini davans, avansman an pibliye sou platfòm nan."}

@@ -22,7 +22,7 @@ export function PartyBlock({ party, compact = false, className }: Props) {
   return (
     <div
       className={cn(
-        'flex items-start gap-3 rounded-xl border border-slate-200 bg-white',
+        'flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900',
         compact ? 'p-3' : 'p-4',
         className,
       )}
@@ -35,21 +35,21 @@ export function PartyBlock({ party, compact = false, className }: Props) {
       </div>
       <div className="min-w-0 flex-1">
         {role && (
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-0.5">
             {role}
           </p>
         )}
-        <p className="text-sm font-bold text-slate-900 break-words">
+        <p className="text-sm font-bold text-slate-900 dark:text-slate-100 break-words">
           {party.name}
           {party.qualifier && (
-            <span className="font-normal text-slate-500">
+            <span className="font-normal text-slate-500 dark:text-slate-400">
               {' '}
               — {party.qualifier}
             </span>
           )}
         </p>
         {party.counsel && (
-          <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
             <Scale className="h-3 w-3" aria-hidden />
             {party.counsel}
           </p>

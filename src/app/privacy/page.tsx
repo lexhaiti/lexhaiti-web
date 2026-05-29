@@ -50,7 +50,7 @@ export default async function Page() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       <StandardPageHeader
         title={t('privacy.title', {
           fallback: isFr
@@ -75,7 +75,7 @@ export default async function Page() {
           {policies.map((policy, idx) => (
             <section
               key={idx}
-              className="rounded-xl border border-slate-200 bg-white p-6 lg:p-8 animate-in fade-in slide-in-from-bottom-2 duration-500"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 lg:p-8 animate-in fade-in slide-in-from-bottom-2 duration-500"
             >
               <h2 className="flex items-start gap-4 text-xl lg:text-2xl font-bold text-primary leading-tight mb-4">
                 <span className="flex-shrink-0 inline-flex h-9 w-9 lg:h-10 lg:w-10 items-center justify-center rounded-lg bg-primary/5 border border-primary/10 text-primary text-xs font-bold tabular-nums">
@@ -84,7 +84,7 @@ export default async function Page() {
                 <span className="pt-1">{policy.title}</span>
               </h2>
               <div className="h-[3px] w-12 bg-amber-400 mb-5 ml-13 lg:ml-14" />
-              <p className="text-base lg:text-lg text-slate-600 leading-relaxed">
+              <p className="text-base lg:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
                 {policy.content}
               </p>
             </section>

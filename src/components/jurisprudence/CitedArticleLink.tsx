@@ -51,16 +51,16 @@ export function CitedArticleLink({ citation, className }: Props) {
             <BookText className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors">
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors">
               Article {citation.article_number}
             </p>
             {textTitle && (
-              <p className="text-xs text-slate-500 line-clamp-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
                 {textTitle}
               </p>
             )}
             {context && (
-              <p className="mt-1 text-xs italic text-slate-400 line-clamp-2">
+              <p className="mt-1 text-xs italic text-slate-400 dark:text-slate-500 line-clamp-2">
                 « {context} »
               </p>
             )}
@@ -77,7 +77,7 @@ export function CitedArticleLink({ citation, className }: Props) {
   )
 
   const baseCls = cn(
-    'group block rounded-xl border border-slate-200 bg-white p-4',
+    'group block rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4',
     'transition-all duration-200',
     isLinked && 'hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5',
     className,

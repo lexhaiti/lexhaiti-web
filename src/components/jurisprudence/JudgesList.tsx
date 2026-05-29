@@ -83,14 +83,14 @@ export function JudgesList({ judges, className }: Props) {
       {GROUP_ORDER.filter((g) => groups[g].length > 0).map((groupKey, gi) => (
         <section
           key={groupKey}
-          className={gi === 0 ? '' : 'mt-8 pt-8 border-t border-slate-200'}
+          className={gi === 0 ? '' : 'mt-8 pt-8 border-t border-slate-200 dark:border-slate-800'}
         >
           {/* Group eyebrow + thin rule */}
           <div className="mb-4">
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-amber-700">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-400">
               {GROUP_TITLES[groupKey][lang]}
             </p>
-            <div className="mt-2 h-px bg-gradient-to-r from-amber-200 via-slate-200 to-transparent"></div>
+            <div className="mt-2 h-px bg-gradient-to-r from-amber-200 via-slate-200 to-transparent dark:from-amber-500/40 dark:via-slate-700 dark:to-transparent"></div>
           </div>
 
           {/* Two-column layout: name on the left, role on the right */}
@@ -100,10 +100,10 @@ export function JudgesList({ judges, className }: Props) {
                 key={judge.id ?? `${judge.name}-${i}`}
                 className="grid grid-cols-[1fr_auto] items-baseline gap-x-6 gap-y-0.5"
               >
-                <span className="font-serif text-base font-medium text-slate-900 leading-snug">
+                <span className="font-serif text-base font-medium text-slate-900 dark:text-slate-100 leading-snug">
                   {judge.name}
                 </span>
-                <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500 whitespace-nowrap">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap">
                   {judgeRoleLabel(t, judge.role)}
                 </span>
               </li>

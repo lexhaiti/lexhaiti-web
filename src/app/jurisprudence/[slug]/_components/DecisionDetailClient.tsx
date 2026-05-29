@@ -120,7 +120,7 @@ export default function DecisionDetailClient({ decision }: Props) {
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50/30">
+    <div className="min-h-screen bg-slate-50/30 dark:bg-slate-950">
       <DecisionHero decision={decision} />
 
       <div className="container py-10 lg:py-14">
@@ -136,17 +136,17 @@ export default function DecisionDetailClient({ decision }: Props) {
                 title={t('jurisprudence.sections.summaryTitle')}
               >
                 {hasHeadnotes && (
-                  <div className="mb-6 rounded-2xl border-l-4 border-amber-400 bg-amber-50/40 p-5">
-                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-amber-700">
+                  <div className="mb-6 rounded-2xl border-l-4 border-amber-400 bg-amber-50/40 dark:bg-amber-500/10 p-5">
+                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400">
                       {t('jurisprudence.sections.headnotesTitle')}
                     </p>
-                    <p className="text-sm leading-relaxed text-slate-800 whitespace-pre-line">
+                    <p className="text-sm leading-relaxed text-slate-800 dark:text-slate-200 whitespace-pre-line">
                       {headnotes}
                     </p>
                   </div>
                 )}
                 {hasSummary && (
-                  <p className="text-base leading-relaxed text-slate-700 whitespace-pre-line">
+                  <p className="text-base leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-line">
                     {summary}
                   </p>
                 )}
@@ -201,8 +201,8 @@ export default function DecisionDetailClient({ decision }: Props) {
                 title={t('jurisprudence.sections.dispositifTitle')}
                 intro={t('jurisprudence.sections.dispositifIntro')}
               >
-                <div className="rounded-2xl border border-primary/15 bg-primary/[0.03] p-6">
-                  <p className="text-sm leading-relaxed text-slate-800 whitespace-pre-line">
+                <div className="rounded-2xl border border-primary/15 dark:border-primary/30 bg-primary/[0.03] dark:bg-primary/10 p-6">
+                  <p className="text-sm leading-relaxed text-slate-800 dark:text-slate-200 whitespace-pre-line">
                     {(lang === 'ht' && decision.dispositif_ht) ||
                       decision.dispositif_fr}
                   </p>
@@ -215,7 +215,7 @@ export default function DecisionDetailClient({ decision }: Props) {
                 id="section-magistrates"
                 title={t('jurisprudence.sections.magistratesTitle')}
               >
-                <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
                   <JudgesList judges={decision.judges!} />
                 </div>
               </Section>
@@ -284,10 +284,10 @@ function Section({ id, title, intro, children }: SectionProps) {
   return (
     <section id={id} className="mb-12 scroll-mt-28">
       <header className="mb-5">
-        <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+        <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
           {title}
         </h2>
-        {intro && <p className="mt-1 text-sm text-slate-500">{intro}</p>}
+        {intro && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{intro}</p>}
       </header>
       {children}
     </section>
@@ -301,14 +301,14 @@ function CollapsibleFullText({ text }: { text: string }) {
   const { t } = useT()
   const [open, setOpen] = useState(false)
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white">
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         className={cn(
-          'flex w-full items-center justify-between px-5 py-4 text-left text-sm font-bold text-slate-800 transition-colors',
-          open ? 'border-b border-slate-100' : 'hover:bg-slate-50',
+          'flex w-full items-center justify-between px-5 py-4 text-left text-sm font-bold text-slate-800 dark:text-slate-200 transition-colors',
+          open ? 'border-b border-slate-100 dark:border-slate-800' : 'hover:bg-slate-50 dark:hover:bg-slate-800',
         )}
       >
         <span>
@@ -318,7 +318,7 @@ function CollapsibleFullText({ text }: { text: string }) {
         </span>
         <ChevronDown
           className={cn(
-            'h-4 w-4 text-slate-500 transition-transform',
+            'h-4 w-4 text-slate-500 dark:text-slate-400 transition-transform',
             open && 'rotate-180',
           )}
         />
@@ -336,7 +336,7 @@ function CollapsibleFullText({ text }: { text: string }) {
             style={{ overflow: 'hidden' }}
           >
             <div className="px-5 py-6">
-              <pre className="whitespace-pre-wrap break-words font-serif text-sm leading-relaxed text-slate-800">
+              <pre className="whitespace-pre-wrap break-words font-serif text-sm leading-relaxed text-slate-800 dark:text-slate-200">
                 {text}
               </pre>
             </div>

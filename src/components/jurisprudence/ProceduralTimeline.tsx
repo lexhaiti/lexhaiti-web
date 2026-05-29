@@ -28,7 +28,7 @@ export function ProceduralTimeline({ steps }: Props) {
       {/* Vertical line. */}
       <span
         aria-hidden
-        className="absolute left-2.5 top-2 bottom-2 w-px bg-gradient-to-b from-slate-200 via-slate-300 to-slate-200"
+        className="absolute left-2.5 top-2 bottom-2 w-px bg-gradient-to-b from-slate-200 via-slate-300 to-slate-200 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700"
       />
       {steps.map((step, i) => {
         const label =
@@ -40,29 +40,29 @@ export function ProceduralTimeline({ steps }: Props) {
           >
             <span
               aria-hidden
-              className="absolute -left-[1.4rem] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white ring-2 ring-primary/40"
+              className="absolute -left-[1.4rem] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white dark:bg-slate-900 ring-2 ring-primary/40"
             >
               <Landmark className="h-2.5 w-2.5 text-primary" />
             </span>
-            <div className="rounded-xl border border-slate-200 bg-white p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
                 {courtLabel(t, step.court)}
               </p>
-              <p className="text-sm font-bold text-slate-900">
+              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 {label ?? formatLongDate(step.date, lang, step.date)}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                 {label
                   ? formatLongDate(step.date, lang, step.date)
                   : null}
                 {step.case_number && (
-                  <span className="ml-2 inline-flex items-center gap-1 text-slate-400">
+                  <span className="ml-2 inline-flex items-center gap-1 text-slate-400 dark:text-slate-500">
                     · N° {step.case_number}
                   </span>
                 )}
               </p>
               {step.outcome && (
-                <p className="mt-2 text-xs text-slate-600 italic">
+                <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 italic">
                   {step.outcome}
                 </p>
               )}

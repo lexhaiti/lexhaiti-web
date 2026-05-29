@@ -72,7 +72,7 @@ export default async function Page() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Dark hero band — matches the rest of the site */}
       <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
         <div className="absolute inset-0 z-0">
@@ -104,7 +104,7 @@ export default async function Page() {
 
       {/* Stats — full-width band, no max-width on the row so the three
           numbers stretch comfortably on big screens too. */}
-      <div className="border-b bg-gradient-to-b from-slate-50/60 to-white">
+      <div className="border-b dark:border-slate-800 bg-gradient-to-b from-slate-50/60 to-white dark:from-slate-900 dark:to-slate-950">
         <div className="container py-14 lg:py-16">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             {stats.map((stat, idx) => (
@@ -113,14 +113,14 @@ export default async function Page() {
                 className="text-center sm:text-left animate-in fade-in slide-in-from-bottom-2 duration-500"
                 style={{ animationDelay: `${idx * 80}ms` }}
               >
-                <p className="text-5xl lg:text-6xl font-black text-slate-900 leading-none tabular-nums">
+                <p className="text-5xl lg:text-6xl font-black text-slate-900 dark:text-slate-100 leading-none tabular-nums">
                   {stat.value}
                 </p>
-                <p className="text-sm text-slate-700 mt-3 font-bold uppercase tracking-wider">
+                <p className="text-sm text-slate-700 dark:text-slate-300 mt-3 font-bold uppercase tracking-wider">
                   {stat.label}
                 </p>
                 {stat.hint && (
-                  <p className="text-xs text-slate-500 mt-1">{stat.hint}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{stat.hint}</p>
                 )}
               </div>
             ))}
@@ -136,7 +136,7 @@ export default async function Page() {
           <p className="text-xs font-bold uppercase tracking-widest text-primary/65 mb-3">
             {isFr ? 'Engagements' : 'Angajman'}
           </p>
-          <h2 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight">
+          <h2 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight">
             {isFr
               ? 'Deux principes qui guident chaque décision technique.'
               : 'De prensip ki gide chak desizyon teknik.'}
@@ -152,10 +152,10 @@ export default async function Page() {
               <div className="mb-5 inline-flex p-3.5 rounded-xl bg-primary/[0.06] border border-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:border-primary group-hover:shadow-md">
                 <value.icon className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold mb-3 text-slate-900 leading-tight">
+              <h3 className="text-xl font-bold mb-3 text-slate-900 dark:text-slate-100 leading-tight">
                 {value.title}
               </h3>
-              <p className="text-slate-600 leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                 {value.description}
               </p>
             </div>
@@ -166,19 +166,19 @@ export default async function Page() {
       {/* What the corpus contains — concrete, scrollable list rather
           than abstract values. Helps the visitor know what they'll
           find before they go look. */}
-      <div className="border-y bg-slate-50/40">
+      <div className="border-y dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/40">
         <div className="container py-16 lg:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-primary/65 mb-3">
                 {isFr ? 'Le corpus' : 'Kòpis la'}
               </p>
-              <h2 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight mb-5">
+              <h2 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight mb-5">
                 {isFr
                   ? 'Du premier acte fondateur aux lois en vigueur.'
                   : 'Depi premye akt fondatè a jiska lwa ki an vigè yo.'}
               </h2>
-              <p className="text-slate-600 leading-relaxed text-lg max-w-xl">
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg max-w-xl">
                 {isFr
                   ? "Acte de l'Indépendance, Constitutions de 1801 à 1987, Codes, lois et décrets — chaque texte est ingéré depuis sa source officielle, structuré, cité et lié à son journal d'origine."
                   : "Akt Endepandans la, Konstitisyon 1801 jiska 1987, Kòd, lwa ak dekrè — chak tèks soti nan sous ofisyèl li, estriktire, site epi lye ak jounal orijinal li."}
@@ -217,16 +217,16 @@ export default async function Page() {
               ].map((item, idx) => (
                 <li
                   key={idx}
-                  className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5"
+                  className="flex items-start gap-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5"
                 >
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary/[0.06] border border-primary/10 text-primary">
                     <item.icon className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-slate-900 leading-tight">
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight">
                       {isFr ? item.fr : item.ht}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                       {isFr ? item.hint_fr : item.hint_ht}
                     </p>
                   </div>
@@ -246,17 +246,17 @@ export default async function Page() {
           <Users className="w-3.5 h-3.5" />
           {isFr ? 'Gouvernance' : 'Gouvènans'}
         </p>
-        <h2 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight mb-5">
+        <h2 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight mb-5">
           {isFr
             ? "Une association au service de l'accès au droit."
             : 'Yon asosiyasyon pou ouvri aksè dwa.'}
         </h2>
-        <p className="text-slate-600 leading-relaxed text-lg mb-4">
+        <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg mb-4">
           {isFr
             ? "LexHaïti est édité par Ayiti Dijital e.V., une association sans but lucratif de droit allemand dont la mission est de bâtir l'infrastructure numérique publique d'Haïti — en commençant par le droit."
             : "LexHaïti edite pa Ayiti Dijital e.V., yon asosiyasyon san bi likratif dwa alman ki gen pou misyon bati enfrastrikti nimerik piblik Ayiti — kòmanse ak dwa."}
         </p>
-        <p className="text-slate-600 leading-relaxed text-lg">
+        <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg">
           {isFr
             ? 'La plateforme reste gratuite, ouverte à toutes les juridictions, et financée par des partenariats institutionnels — pas par la publicité ou les abonnements.'
             : 'Platfòm nan rete gratis, ouvè pou tout jiridiksyon, ak finanse pa patenarya enstitisyonèl — pa pa piblisite oswa abònman.'}

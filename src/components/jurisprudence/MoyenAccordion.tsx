@@ -63,10 +63,10 @@ export function MoyenAccordion({ moyen, defaultOpen = false }: Props) {
   return (
     <div
       className={cn(
-        'rounded-xl border bg-white overflow-hidden transition-all duration-200',
+        'rounded-xl border bg-white dark:bg-slate-900 overflow-hidden transition-all duration-200',
         isOpen
           ? 'border-primary/30 shadow-[0_6px_16px_-8px_rgba(13,27,76,0.12)]'
-          : 'border-slate-200 hover:border-slate-300',
+          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700',
       )}
     >
       <button
@@ -75,14 +75,14 @@ export function MoyenAccordion({ moyen, defaultOpen = false }: Props) {
         aria-expanded={isOpen}
         className={cn(
           'flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors',
-          isOpen ? 'bg-primary/[0.03]' : 'hover:bg-slate-50',
+          isOpen ? 'bg-primary/[0.03] dark:bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800',
         )}
       >
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white text-xs font-bold tabular-nums">
             {moyen.number}
           </span>
-          <span className="text-sm font-bold text-slate-900 line-clamp-2">
+          <span className="text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2">
             {title}
           </span>
         </div>
@@ -100,7 +100,7 @@ export function MoyenAccordion({ moyen, defaultOpen = false }: Props) {
           )}
           <ChevronDown
             className={cn(
-              'h-4 w-4 text-slate-400 transition-transform duration-200',
+              'h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200',
               isOpen && 'rotate-180',
             )}
           />
@@ -119,24 +119,24 @@ export function MoyenAccordion({ moyen, defaultOpen = false }: Props) {
             }}
             style={{ overflow: 'hidden' }}
           >
-            <div className="border-t border-slate-100 px-5 pb-5 pt-5">
+            <div className="border-t border-slate-100 dark:border-slate-800 px-5 pb-5 pt-5">
               <div className="grid gap-5 md:grid-cols-2">
                 {argument && (
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">
                       {t('jurisprudence.moyen.petitionerArgument')}
                     </p>
-                    <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-line">
+                    <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-line">
                       {argument}
                     </p>
                   </div>
                 )}
                 {response && (
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary dark:text-primary mb-2">
                       {t('jurisprudence.moyen.courtResponse')}
                     </p>
-                    <p className="text-sm leading-relaxed text-slate-800 whitespace-pre-line">
+                    <p className="text-sm leading-relaxed text-slate-800 dark:text-slate-200 whitespace-pre-line">
                       {response}
                     </p>
                   </div>
