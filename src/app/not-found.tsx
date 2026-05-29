@@ -84,7 +84,7 @@ export default async function NotFound() {
             {t('notFound.eyebrow')}
           </p>
 
-          <h1 className="text-3xl lg:text-5xl font-black tracking-tight text-primary leading-tight mb-4">
+          <h1 className="text-3xl lg:text-5xl font-black tracking-tight text-primary dark:text-white leading-tight mb-4">
             {t('notFound.title')}
           </h1>
 

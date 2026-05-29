@@ -73,8 +73,8 @@ export default function EditorialJsonEditClient({ slug }: Props) {
   if (!isEditor) {
     return (
       <div className="container py-12">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 max-w-3xl">
-          <p className="text-sm text-slate-700">
+        <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-6 max-w-3xl">
+          <p className="text-sm text-slate-700 dark:text-slate-200">
             {t('decisionEditor.list.requiresEditor')}
           </p>
           <Link
@@ -89,8 +89,8 @@ export default function EditorialJsonEditClient({ slug }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
+      <div className="relative bg-primary dark:bg-slate-900 text-white overflow-hidden border-b border-white/5 dark:border-slate-800">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px]" />
         </div>
@@ -120,12 +120,12 @@ export default function EditorialJsonEditClient({ slug }: Props) {
       <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10 py-6 lg:py-8 space-y-4">
         <BackToListLink />
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+          <div className="rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-4 text-sm text-red-900 dark:text-red-300">
             {error}
           </div>
         )}
         {json === null && !error && (
-          <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 text-sm text-slate-500 dark:text-slate-400">
             <Loader2 className="inline w-4 h-4 animate-spin mr-2" />
             {t('decisionEditor.list.loading')}
           </div>

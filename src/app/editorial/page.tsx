@@ -173,8 +173,8 @@ export default function EditorialDashboardPage() {
   if (!isEditor) {
     return (
       <div className="container py-12">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 max-w-3xl">
-          <p className="text-sm text-slate-700">
+        <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-6 max-w-3xl">
+          <p className="text-sm text-slate-700 dark:text-slate-200">
             {isFr
               ? 'Cette page est réservée aux éditeurs connectés.'
               : 'Paj sa a pou editè ki konekte sèlman.'}
@@ -191,8 +191,8 @@ export default function EditorialDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
+      <div className="relative bg-primary dark:bg-slate-900 text-white overflow-hidden border-b border-white/5 dark:border-slate-800">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
@@ -368,8 +368,8 @@ export default function EditorialDashboardPage() {
       {((drafts && drafts.length > 0) || (pendingReview && pendingReview.length > 0)) && (
         <section className="space-y-3">
           <header className="flex items-center gap-2">
-            <FilePen className="w-4 h-4 text-slate-400" />
-            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500">
+            <FilePen className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
               {isFr ? 'Textes à traiter' : 'Tèks pou trete'}
             </h2>
           </header>
@@ -402,12 +402,12 @@ export default function EditorialDashboardPage() {
       {recentTexts && recentTexts.length > 0 && (
         <section className="space-y-3">
           <header className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-slate-400" />
-            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500">
+            <Clock className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
               {isFr ? 'Dernières modifications' : 'Dènye modifikasyon'}
             </h2>
           </header>
-          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden divide-y divide-slate-100">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
             {recentTexts.map((law) => {
               const title =
                 (isFr ? law.title_fr : law.title_ht || law.title_fr) || law.slug
@@ -416,18 +416,18 @@ export default function EditorialDashboardPage() {
                 <Link
                   key={law.id}
                   href={`/loi/${law.slug}`}
-                  className="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors group"
+                  className="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
                 >
                   <span
                     className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider flex-shrink-0 ${categoryBadgeClass(law.category)}`}
                   >
                     {categoryLabel(law.category, isFr ? 'fr' : 'ht')}
                   </span>
-                  <span className="flex-1 min-w-0 text-sm font-medium text-slate-700 group-hover:text-primary truncate transition-colors">
+                  <span className="flex-1 min-w-0 text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary truncate transition-colors">
                     {title}
                   </span>
                   {date && (
-                    <span className="text-[11px] text-slate-400 tabular-nums flex-shrink-0">
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 tabular-nums flex-shrink-0">
                       {new Date(date).toLocaleDateString(isFr ? 'fr-FR' : 'fr-FR', {
                         day: 'numeric',
                         month: 'short',
@@ -446,8 +446,8 @@ export default function EditorialDashboardPage() {
 
       <section className="space-y-3">
         <header className="flex items-center gap-2">
-          <Languages className="w-4 h-4 text-slate-400" />
-          <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500">
+          <Languages className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+          <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
             {isFr ? 'Couverture des traductions' : 'Kouvèti tradiksyon yo'}
           </h2>
         </header>
@@ -500,7 +500,7 @@ export default function EditorialDashboardPage() {
             />
           </div>
         ) : (
-          <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 text-sm text-slate-500 dark:text-slate-400">
             <Loader2 className="inline w-4 h-4 animate-spin mr-2" />
             {isFr ? 'Chargement…' : 'Chaje…'}
           </div>
@@ -509,13 +509,13 @@ export default function EditorialDashboardPage() {
 
       {/* Pending pointers callout — only when there are entries to fix */}
       {stats && stats.moniteur_entries_pending_translation > 0 && (
-        <section className="rounded-xl border border-amber-200 bg-amber-50/60 p-5">
+        <section className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50/60 dark:bg-amber-500/10 p-5">
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-amber-800 mb-1">
+              <p className="text-xs font-bold uppercase tracking-widest text-amber-800 dark:text-amber-300 mb-1">
                 {isFr ? 'En attente d’une source HT' : 'Ap tann sous HT'}
               </p>
-              <p className="text-sm text-amber-900">
+              <p className="text-sm text-amber-900 dark:text-amber-200">
                 {isFr
                   ? `${stats.moniteur_entries_pending_translation} entrée(s) du Moniteur ont été promues mais n'ont pas encore de source de traduction.`
                   : `${stats.moniteur_entries_pending_translation} antre Moniteur pwomòte san sous tradiksyon.`}
@@ -539,12 +539,12 @@ export default function EditorialDashboardPage() {
           block for instant title lookup. */}
       <section className="space-y-3">
         <header className="flex items-center gap-2">
-          <CalendarRange className="w-4 h-4 text-slate-400" />
-          <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500">
+          <CalendarRange className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+          <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
             {isFr ? 'Tous les textes par année' : 'Tout tèks pa ane'}
           </h2>
           {allLaws && (
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 tabular-nums">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 tabular-nums">
               {allLaws.length}
             </span>
           )}
@@ -552,7 +552,7 @@ export default function EditorialDashboardPage() {
         {/* Search filter — purely client-side, hits title_fr / title_ht
             / slug. Active query also force-opens every accordion. */}
         <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="search"
             value={lawsQuery}
@@ -562,13 +562,13 @@ export default function EditorialDashboardPage() {
                 ? 'Filtrer par titre ou slug…'
                 : 'Filtre pa tit oswa slug…'
             }
-            className="w-full pl-9 pr-9 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full pl-9 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
           {lawsQuery && (
             <button
               type="button"
               onClick={() => setLawsQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 p-1"
               aria-label={isFr ? 'Effacer le filtre' : 'Efase filtè'}
             >
               <X className="w-4 h-4" />
@@ -576,12 +576,12 @@ export default function EditorialDashboardPage() {
           )}
         </div>
         {lawsByYear === null ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 text-sm text-slate-500 dark:text-slate-400">
             <Loader2 className="inline w-4 h-4 animate-spin mr-2" />
             {isFr ? 'Chargement…' : 'Chaje…'}
           </div>
         ) : lawsByYear.length === 0 ? (
-          <p className="text-sm text-slate-400 italic px-1">
+          <p className="text-sm text-slate-400 dark:text-slate-500 italic px-1">
             {lawsQuery.trim()
               ? isFr
                 ? 'Aucun texte ne correspond à ce filtre.'
@@ -597,7 +597,7 @@ export default function EditorialDashboardPage() {
               return (
                 <div
                   key={year}
-                  className="rounded-lg border border-slate-200 bg-white overflow-hidden"
+                  className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden"
                 >
                   <button
                     type="button"
@@ -605,20 +605,20 @@ export default function EditorialDashboardPage() {
                     aria-expanded={isOpen}
                     className={cn(
                       'w-full flex items-center gap-3 px-4 py-3 text-left',
-                      'hover:bg-slate-50 transition-colors',
-                      isOpen && 'bg-slate-50/60',
+                      'hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors',
+                      isOpen && 'bg-slate-50/60 dark:bg-slate-800/40',
                     )}
                   >
                     <ChevronDown
                       className={cn(
-                        'w-4 h-4 text-slate-400 transition-transform',
+                        'w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform',
                         !isOpen && '-rotate-90',
                       )}
                     />
-                    <span className="text-xl font-black text-slate-300 tabular-nums leading-none">
+                    <span className="text-xl font-black text-slate-300 dark:text-slate-600 tabular-nums leading-none">
                       {year}
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 tabular-nums">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 tabular-nums">
                       {items.length}{' '}
                       {items.length === 1
                         ? isFr
@@ -638,15 +638,15 @@ export default function EditorialDashboardPage() {
                         transition={{ duration: 0.18 }}
                         className="overflow-hidden"
                       >
-                        <ul className="divide-y divide-slate-100 border-t border-slate-100">
+                        <ul className="divide-y divide-slate-100 dark:divide-slate-800 border-t border-slate-100 dark:border-slate-800">
                           {items.map((law) => (
                             <li
                               key={law.id}
-                              className="px-4 py-2.5 text-sm leading-relaxed hover:bg-slate-50/50 transition-colors"
+                              className="px-4 py-2.5 text-sm leading-relaxed hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors"
                             >
                               <Link
                                 href={`/loi/${law.slug}`}
-                                className="text-slate-700 hover:text-primary hover:underline underline-offset-2"
+                                className="text-slate-700 dark:text-slate-300 hover:text-primary hover:underline underline-offset-2"
                               >
                                 {(isFr
                                   ? law.title_fr
@@ -684,14 +684,14 @@ function DashboardCard({
   return (
     <Link
       href={href}
-      className="group rounded-xl border border-slate-200 bg-white p-5 hover:border-primary/30 hover:shadow-md transition-all"
+      className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:border-primary/30 hover:shadow-md transition-all"
     >
       <div className="flex items-start justify-between mb-3">
-        <Icon className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors" />
-        <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+        <Icon className="w-5 h-5 text-slate-400 dark:text-slate-500 group-hover:text-primary transition-colors" />
+        <ArrowRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
       </div>
-      <h3 className="text-base font-bold text-slate-900 mb-0.5">{title}</h3>
-      <p className="text-xs text-slate-500">{subtitle}</p>
+      <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-0.5">{title}</h3>
+      <p className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>
     </Link>
   )
 }
@@ -712,35 +712,35 @@ function StatCard({
   return (
     <div
       className={cn(
-        'rounded-xl border bg-white p-4',
+        'rounded-xl border bg-white dark:bg-slate-900 p-4',
         accent === 'emerald'
-          ? 'border-emerald-100'
+          ? 'border-emerald-100 dark:border-emerald-500/20'
           : accent === 'amber'
-            ? 'border-amber-100'
-            : 'border-slate-200',
+            ? 'border-amber-100 dark:border-amber-500/20'
+            : 'border-slate-200 dark:border-slate-800',
       )}
     >
       <div className="flex items-center justify-between gap-2 mb-2">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 leading-tight">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 leading-tight">
           {label}
         </p>
-        {Icon && <Icon className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />}
+        {Icon && <Icon className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 flex-shrink-0" />}
       </div>
       <p className="flex items-baseline gap-2">
         <span
           className={cn(
             'text-2xl font-black tabular-nums leading-none',
             accent === 'emerald'
-              ? 'text-emerald-700'
+              ? 'text-emerald-700 dark:text-emerald-400'
               : accent === 'amber'
-                ? 'text-amber-700'
-                : 'text-slate-900',
+                ? 'text-amber-700 dark:text-amber-400'
+                : 'text-slate-900 dark:text-slate-100',
           )}
         >
           {value.toLocaleString('fr-FR')}
         </span>
         {hint && (
-          <span className="text-xs font-semibold text-slate-500 tabular-nums">
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 tabular-nums">
             {hint}
           </span>
         )}
@@ -792,14 +792,14 @@ function PipelineCard({
   items: LegalTextListItem[]
   lang: 'fr' | 'ht'
 }) {
-  const borderCls = accent === 'amber' ? 'border-amber-200' : 'border-blue-200'
-  const bgCls = accent === 'amber' ? 'bg-amber-50/60' : 'bg-blue-50/60'
-  const countCls = accent === 'amber' ? 'text-amber-700 bg-amber-100' : 'text-blue-700 bg-blue-100'
+  const borderCls = accent === 'amber' ? 'border-amber-200 dark:border-amber-500/30' : 'border-blue-200 dark:border-blue-500/30'
+  const bgCls = accent === 'amber' ? 'bg-amber-50/60 dark:bg-amber-500/10' : 'bg-blue-50/60 dark:bg-blue-500/10'
+  const countCls = accent === 'amber' ? 'text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-500/20' : 'text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-500/20'
   return (
     <div className={cn('rounded-xl border p-5', borderCls, bgCls)}>
       <div className="flex items-center gap-2 mb-3">
-        <Icon className="w-4 h-4 text-slate-500" />
-        <h3 className="text-sm font-bold text-slate-800">{title}</h3>
+        <Icon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">{title}</h3>
         <span className={cn('ml-auto text-[10px] font-bold rounded-full px-2 py-0.5 tabular-nums', countCls)}>
           {count}
         </span>
@@ -809,7 +809,7 @@ function PipelineCard({
           <li key={law.id}>
             <Link
               href={`/loi/${law.slug}`}
-              className="text-sm text-slate-700 hover:text-primary hover:underline underline-offset-2 line-clamp-1"
+              className="text-sm text-slate-700 dark:text-slate-300 hover:text-primary hover:underline underline-offset-2 line-clamp-1"
             >
               {(lang === 'fr' ? law.title_fr : law.title_ht || law.title_fr) || law.slug}
             </Link>

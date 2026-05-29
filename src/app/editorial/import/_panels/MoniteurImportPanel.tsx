@@ -527,15 +527,15 @@ export default function MoniteurImportPanel() {
           )}
 
           {sommaireRows.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/40 px-5 py-6 text-center">
-              <p className="text-sm text-slate-500 mb-3">
+            <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60/40 px-5 py-6 text-center">
+              <p className="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 mb-3">
                 {t('editorial.import.moniteur.skipSommaire')}
               </p>
               <button
                 type="button"
                 onClick={addSommaireRow}
                 disabled={phase !== 'review' && phase !== 'idle'}
-                className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:border-primary/40 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-primary/40 disabled:opacity-50"
               >
                 <Plus className="w-3.5 h-3.5" />
                 {t('editorial.import.moniteur.addEntry')}
@@ -559,7 +559,7 @@ export default function MoniteurImportPanel() {
                 type="button"
                 onClick={addSommaireRow}
                 disabled={phase !== 'review' && phase !== 'idle'}
-                className="self-start inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:border-primary/40 disabled:opacity-50"
+                className="self-start inline-flex items-center gap-1.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-primary/40 disabled:opacity-50"
               >
                 <Plus className="w-3.5 h-3.5" />
                 {t('editorial.import.moniteur.addEntry')}
@@ -611,7 +611,7 @@ export default function MoniteurImportPanel() {
                   successWithCandidates(candidatesCount)}
               </span>
               {candidatesCount === 0 && (
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
                   {t('editorial.import.moniteur.parsingHint')}
                 </span>
               )}
@@ -623,7 +623,7 @@ export default function MoniteurImportPanel() {
                 <button
                   type="button"
                   onClick={reset}
-                  className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-primary/40"
+                  className="inline-flex items-center gap-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-primary/40"
                 >
                   {t('editorial.import.moniteur.reset')}
                 </button>
@@ -666,7 +666,7 @@ export default function MoniteurImportPanel() {
 }
 
 const inputCls =
-  'w-full h-11 px-3 rounded-md border border-slate-300 bg-white text-sm text-slate-900 outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:bg-slate-50 disabled:text-slate-400'
+  'w-full h-11 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:bg-slate-50 dark:bg-slate-800/60 disabled:text-slate-400 dark:text-slate-500'
 
 // Shared label style for the sommaire-row form. ``whitespace-nowrap``
 // keeps multi-word labels on a single line so the input baselines
@@ -706,9 +706,9 @@ function SommaireRowEditor({
   // label length — the previous "N° (facultatif)" label wrapped and
   // pushed its input below the others.
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 sm:p-5">
       <div className="flex items-center justify-between mb-4">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 tabular-nums">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 tabular-nums">
           #{String(index + 1).padStart(2, '0')}
         </span>
         <button
@@ -716,7 +716,7 @@ function SommaireRowEditor({
           onClick={onRemove}
           disabled={disabled}
           aria-label={t('editorial.import.moniteur.removeEntry')}
-          className="text-slate-400 hover:text-red-600 disabled:opacity-50 transition-colors"
+          className="text-slate-400 dark:text-slate-500 hover:text-red-600 disabled:opacity-50 transition-colors"
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>
@@ -738,7 +738,7 @@ function SommaireRowEditor({
             }
           >
             <SelectTrigger
-              className="w-full data-[size=default]:h-11 bg-white border-slate-300 hover:border-slate-400 focus-visible:border-primary focus-visible:ring-primary/30 data-[state=open]:border-primary"
+              className="w-full data-[size=default]:h-11 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:border-slate-400 focus-visible:border-primary focus-visible:ring-primary/30 data-[state=open]:border-primary"
             >
               <SelectValue />
             </SelectTrigger>
@@ -786,7 +786,7 @@ function SommaireRowEditor({
             disabled={disabled}
             onChange={(e) => onChange({ detected_number: e.target.value })}
             placeholder={lang === 'ht' ? 'opsyonèl' : 'facultatif'}
-            className={cn(inputCls, 'text-center placeholder:italic placeholder:text-slate-300')}
+            className={cn(inputCls, 'text-center placeholder:italic placeholder:text-slate-300 dark:text-slate-600')}
           />
         </label>
         {/* Date — auto-prefilled from the issue publication date when
@@ -827,7 +827,7 @@ function SommaireRowEditor({
               onChange={(v) => onChange({ page_from: v })}
               aria-label={t('editorial.import.moniteur.sommairePageFrom')}
             />
-            <span className="text-slate-300 text-xs flex-shrink-0">→</span>
+            <span className="text-slate-300 dark:text-slate-600 text-xs flex-shrink-0">→</span>
             <PageInput
               value={row.page_to ?? 1}
               disabled={disabled}
@@ -927,19 +927,19 @@ function FileSlot({
       <p className="text-[10px] font-bold uppercase tracking-widest text-primary/65">
         {label}
       </p>
-      <p className="text-xs text-slate-500 leading-relaxed">{help}</p>
+      <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 leading-relaxed">{help}</p>
       {!file ? (
         <label
           className={cn(
             'flex flex-col items-center justify-center gap-2 cursor-pointer rounded-lg border-2 border-dashed px-4 py-6 transition-colors text-center',
             disabled
-              ? 'border-slate-200 bg-slate-50 cursor-not-allowed opacity-60'
-              : 'border-slate-300 bg-slate-50/40 hover:border-primary/40 hover:bg-primary/[0.02]',
+              ? 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 cursor-not-allowed opacity-60'
+              : 'border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60/40 hover:border-primary/40 hover:bg-primary/[0.02]',
           )}
         >
-          <Upload className="w-5 h-5 text-slate-400" />
-          <span className="text-sm text-slate-600">{dropPrompt}</span>
-          <span className="text-[10px] text-slate-400 uppercase tracking-wide">{formatHint}</span>
+          <Upload className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+          <span className="text-sm text-slate-600 dark:text-slate-300 dark:text-slate-600">{dropPrompt}</span>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide">{formatHint}</span>
           <input
             ref={inputRef}
             type="file"
@@ -957,10 +957,10 @@ function FileSlot({
           <div className="flex items-center gap-3 min-w-0">
             <FileText className="w-5 h-5 text-emerald-700 flex-shrink-0" />
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-slate-900 truncate">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
                 {file.name}
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
                 {(file.size / 1024).toFixed(0)} KB
               </p>
             </div>
@@ -969,7 +969,7 @@ function FileSlot({
             <button
               type="button"
               onClick={onRemove}
-              className="text-slate-400 hover:text-red-600 ml-2"
+              className="text-slate-400 dark:text-slate-500 hover:text-red-600 ml-2"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -1000,12 +1000,12 @@ function StepCard({
   return (
     <section
       className={cn(
-        'rounded-xl border bg-white p-6 lg:p-7 transition-colors',
+        'rounded-xl border bg-white dark:bg-slate-900 p-6 lg:p-7 transition-colors',
         done
           ? 'border-emerald-200 bg-emerald-50/30'
           : active
             ? 'border-primary/40 shadow-sm'
-            : 'border-slate-200 opacity-60',
+            : 'border-slate-200 dark:border-slate-700 opacity-60',
       )}
     >
       <header className="flex items-start gap-3 mb-4">
@@ -1016,20 +1016,20 @@ function StepCard({
               ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
               : active
                 ? 'bg-primary text-white border-primary'
-                : 'bg-slate-100 text-slate-500 border-slate-200',
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700',
           )}
         >
           {done ? '✓' : n}
         </span>
         <div className="flex-1 min-w-0">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
             {stepLabel} {n}
           </span>
           <h2 className="text-base lg:text-lg font-bold text-primary leading-tight">
             {title}
           </h2>
           {help && (
-            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1 leading-relaxed">
               {help}
             </p>
           )}

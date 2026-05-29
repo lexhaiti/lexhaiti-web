@@ -220,11 +220,11 @@ export default function NewLegalTextPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-24">
+    <div className="min-h-screen bg-white dark:bg-slate-950 pb-24">
       {/* Navy hero — same surface as /editorial and the law-detail
           pages so the editor reads as part of one app. The
           ``pt-28 lg:pt-36`` clears the fixed site header. */}
-      <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
+      <div className="relative bg-primary dark:bg-slate-900 text-white overflow-hidden border-b border-white/5 dark:border-slate-800">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
@@ -456,7 +456,7 @@ function IdentitySection({
           className="block w-full rounded-md border-slate-300 bg-white text-sm font-mono focus:border-slate-500 focus:ring-slate-500"
         />
         {effectiveSlug && (
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
             URL publique :{' '}
             <span className="font-mono">
               /loi/{effectiveSlug}
@@ -556,7 +556,7 @@ function BlocksSection({
 }) {
   return (
     <div className="space-y-6">
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-slate-600 dark:text-slate-300">
         Tous ces blocs sont optionnels à la création. Vous pourrez les
         compléter, les éditer en HTML enrichi et y ajouter la traduction
         créole sur la page d&apos;édition après avoir créé le brouillon.
@@ -685,7 +685,7 @@ function ReviewSection({
   return (
     <div className="space-y-6">
       <div className="rounded-md bg-slate-50 ring-1 ring-slate-200 p-5 space-y-3">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 dark:text-slate-500">
           Aperçu
         </h3>
         <div className="space-y-1">
@@ -694,7 +694,7 @@ function ReviewSection({
           </div>
           <div className="text-xl font-bold text-slate-900">
             {draft.title_fr || (
-              <span className="italic text-slate-400">Sans titre</span>
+              <span className="italic text-slate-400 dark:text-slate-500">Sans titre</span>
             )}
           </div>
           {draft.title_ht && (
@@ -777,7 +777,7 @@ function ActionBar({
             <button
               type="button"
               onClick={onPrev}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-400"
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-400"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Précédent
@@ -830,12 +830,12 @@ function FieldGroup({
 }) {
   return (
     <div>
-      <label className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1">
+      <label className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center gap-1">
         {label}
         {required && <span className="text-amber-600">*</span>}
       </label>
       <div className="mt-1.5">{children}</div>
-      {help && <p className="mt-1 text-xs text-slate-500">{help}</p>}
+      {help && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">{help}</p>}
     </div>
   )
 }

@@ -186,7 +186,7 @@ export default function TranslateLegalTextPage() {
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 flex items-start gap-4 max-w-3xl">
           <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-slate-700 dark:text-slate-300">
               {isFr
                 ? 'Cette page est réservée aux éditeurs connectés.'
                 : 'Paj sa a pou editè ki konekte sèlman.'}
@@ -243,15 +243,15 @@ export default function TranslateLegalTextPage() {
           <p className="text-xs font-bold uppercase tracking-widest text-red-500 mb-2">
             {isFr ? 'Éditeur de traduction' : 'Editè tradiksyon'}
           </p>
-          <h1 className="text-2xl lg:text-3xl font-black text-slate-900 leading-tight">
+          <h1 className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-slate-100 leading-tight">
             {text.title_fr}
           </h1>
-          <p className="mt-2 text-sm text-slate-500">
-            <span className="tabular-nums font-bold text-slate-900">
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500">
+            <span className="tabular-nums font-bold text-slate-900 dark:text-slate-100">
               {totalHt}
             </span>
-            <span className="text-slate-400"> / </span>
-            <span className="tabular-nums font-bold text-slate-900">
+            <span className="text-slate-400 dark:text-slate-500"> / </span>
+            <span className="tabular-nums font-bold text-slate-900 dark:text-slate-100">
               {totalFr}
             </span>{' '}
             {isFr
@@ -261,7 +261,7 @@ export default function TranslateLegalTextPage() {
         </div>
         <Link
           href={`/loi/${text.slug}`}
-          className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-300"
+          className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 dark:border-slate-700 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:border-slate-300"
         >
           <ArrowLeft className="w-4 h-4" />
           {isFr ? 'Retour au texte' : 'Retounen nan tèks la'}
@@ -269,15 +269,15 @@ export default function TranslateLegalTextPage() {
       </header>
 
       {/* Mode toggle */}
-      <div className="inline-flex p-1 rounded-md bg-slate-100">
+      <div className="inline-flex p-1 rounded-md bg-slate-100 dark:bg-slate-800">
         <button
           type="button"
           onClick={() => setMode('upload')}
           className={cn(
             'px-3.5 py-1.5 rounded text-sm font-semibold transition-all',
             mode === 'upload'
-              ? 'bg-white shadow-sm text-slate-900'
-              : 'text-slate-500 hover:text-slate-700',
+              ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-slate-100 dark:text-slate-100'
+              : 'text-slate-500 dark:text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:text-slate-300',
           )}
         >
           <Upload className="inline w-3.5 h-3.5 -mt-0.5 mr-1.5" />
@@ -289,8 +289,8 @@ export default function TranslateLegalTextPage() {
           className={cn(
             'px-3.5 py-1.5 rounded text-sm font-semibold transition-all',
             mode === 'inline'
-              ? 'bg-white shadow-sm text-slate-900'
-              : 'text-slate-500 hover:text-slate-700',
+              ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-slate-100 dark:text-slate-100'
+              : 'text-slate-500 dark:text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:text-slate-300',
           )}
         >
           <Languages className="inline w-3.5 h-3.5 -mt-0.5 mr-1.5" />
@@ -300,12 +300,12 @@ export default function TranslateLegalTextPage() {
 
       {/* ── Mode 1: DOCX upload ─────────────────────────────────────── */}
       {mode === 'upload' && !preview && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-5">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 dark:text-slate-500 mb-2">
               {isFr ? 'Fichier de traduction Kreyòl' : 'Fichye tradiksyon Kreyòl'}
             </p>
-            <p className="text-sm text-slate-600 mb-4">
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
               {isFr
                 ? "Déposez le document Kreyòl. Les articles seront alignés sur les numéros existants ; vous reverrez chaque appariement avant de confirmer."
                 : 'Depoze dokiman Kreyòl la. Atik yo ap aliyen sou nimewo ki egziste yo; w ap revize chak apariman anvan ou konfime.'}
@@ -347,18 +347,18 @@ export default function TranslateLegalTextPage() {
       {/* ── Mode 1 preview (after parse) ─────────────────────────────── */}
       {mode === 'upload' && preview && (
         <div className="space-y-5">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
             <div className="flex items-center gap-3 flex-wrap mb-3">
               <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-              <h2 className="text-base font-bold text-slate-900">
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 {isFr ? 'Aperçu de l’alignement' : 'Apèsi alyman an'}
               </h2>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold tabular-nums bg-slate-100 text-slate-700">
-                <span className="text-slate-900">{preview.fr_article_count}</span>
-                <span className="text-slate-400">FR</span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold tabular-nums bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                <span className="text-slate-900 dark:text-slate-100">{preview.fr_article_count}</span>
+                <span className="text-slate-400 dark:text-slate-500">FR</span>
                 <span className="text-slate-300">·</span>
-                <span className="text-slate-900">{preview.parsed_ht_count}</span>
-                <span className="text-slate-400">HT</span>
+                <span className="text-slate-900 dark:text-slate-100">{preview.parsed_ht_count}</span>
+                <span className="text-slate-400 dark:text-slate-500">HT</span>
                 <span className="text-slate-300">·</span>
                 <span
                   className={cn(
@@ -369,7 +369,7 @@ export default function TranslateLegalTextPage() {
                 >
                   {preview.matched_count}
                 </span>
-                <span className="text-slate-400">{isFr ? 'appariés' : 'aliyen'}</span>
+                <span className="text-slate-400 dark:text-slate-500">{isFr ? 'appariés' : 'aliyen'}</span>
               </span>
             </div>
             {preview.warnings.length > 0 && (
@@ -394,7 +394,7 @@ export default function TranslateLegalTextPage() {
                   setApplied(new Set())
                   setApplyError(null)
                 }}
-                className="text-xs font-semibold text-slate-500 hover:text-slate-800"
+                className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 hover:text-slate-800"
               >
                 {isFr ? 'Recommencer' : 'Rekòmanse'}
               </button>
@@ -432,7 +432,7 @@ export default function TranslateLegalTextPage() {
                         ? 'border-amber-200 bg-amber-50/30'
                         : willOverwrite
                           ? 'border-amber-200'
-                          : 'border-slate-200',
+                          : 'border-slate-200 dark:border-slate-700',
                   )}
                 >
                   <div className="flex items-center gap-3 mb-3">
@@ -475,25 +475,25 @@ export default function TranslateLegalTextPage() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm leading-relaxed">
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
                         FR
                       </p>
-                      <p className="text-slate-700 line-clamp-6">
+                      <p className="text-slate-700 dark:text-slate-300 line-clamp-6">
                         {m.existing_text_fr ?? (
-                          <em className="text-slate-400">{isFr ? '(vide)' : '(vid)'}</em>
+                          <em className="text-slate-400 dark:text-slate-500">{isFr ? '(vide)' : '(vid)'}</em>
                         )}
                       </p>
                     </div>
                     <div className="md:border-l md:pl-4 md:border-slate-100">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
                         HT
                       </p>
                       {hasHt ? (
-                        <p className="text-slate-700 line-clamp-6">
+                        <p className="text-slate-700 dark:text-slate-300 line-clamp-6">
                           {m.parsed_content_ht}
                         </p>
                       ) : (
-                        <p className="text-slate-400 italic">
+                        <p className="text-slate-400 dark:text-slate-500 italic">
                           {isFr
                             ? 'Aucune traduction trouvée pour ce numéro.'
                             : 'Pa jwenn tradiksyon pou nimewo sa a.'}
@@ -526,7 +526,7 @@ export default function TranslateLegalTextPage() {
             return (
               <li
                 key={a.id}
-                className="rounded-xl border border-slate-200 bg-white p-4"
+                className="rounded-xl border border-slate-200 dark:border-slate-700 dark:border-slate-800 bg-white dark:bg-slate-900 p-4"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-sm font-bold text-primary tabular-nums">
@@ -537,7 +537,7 @@ export default function TranslateLegalTextPage() {
                       {isFr ? 'Traduit' : 'Tradui'}
                     </span>
                   ) : (
-                    <span className="inline-flex items-center px-1.5 py-px rounded text-[9px] font-bold uppercase tracking-widest bg-slate-100 text-slate-600 border border-slate-200">
+                    <span className="inline-flex items-center px-1.5 py-px rounded text-[9px] font-bold uppercase tracking-widest bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                       {isFr ? 'À traduire' : 'Pou tradui'}
                     </span>
                   )}
@@ -565,17 +565,17 @@ export default function TranslateLegalTextPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
                       FR
                     </p>
-                    <p className="text-slate-700 leading-relaxed whitespace-pre-wrap line-clamp-[12]">
+                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap line-clamp-[12]">
                       {a.content_fr ?? (
-                        <em className="text-slate-400">{isFr ? '(vide)' : '(vid)'}</em>
+                        <em className="text-slate-400 dark:text-slate-500">{isFr ? '(vide)' : '(vid)'}</em>
                       )}
                     </p>
                   </div>
                   <div className="md:border-l md:pl-4 md:border-slate-100">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
                       HT
                     </p>
                     <textarea

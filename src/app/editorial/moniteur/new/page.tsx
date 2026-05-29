@@ -189,10 +189,10 @@ export default function NewMoniteurPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-24">
+    <div className="min-h-screen bg-white dark:bg-slate-950 pb-24">
       {/* Same navy hero band as /editorial/loi/new + the editorial
           dashboard so the wizards read as one surface. */}
-      <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
+      <div className="relative bg-primary dark:bg-slate-900 text-white overflow-hidden border-b border-white/5 dark:border-slate-800">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
@@ -447,7 +447,7 @@ function SommaireSection({
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
-        <p className="text-sm text-slate-600 max-w-xl">
+        <p className="text-sm text-slate-600 dark:text-slate-300 max-w-xl">
           Le sommaire est la liste des actes publiés dans ce numéro. Vous
           pouvez lier un texte juridique déjà saisi dans LexHaïti, ou bien
           déclarer une entrée sans lien pour la compléter plus tard.
@@ -458,7 +458,7 @@ function SommaireSection({
         <button
           type="button"
           onClick={add}
-          className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-400 shrink-0"
+          className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-400 shrink-0"
         >
           <Plus className="w-3.5 h-3.5" />
           Ajouter une entrée
@@ -515,13 +515,13 @@ function SommaireRow({
   const canMoveUp = index > 0
   const canMoveDown = index < total - 1
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
+    <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
           <div className="text-xs font-bold uppercase tracking-widest text-slate-400">
             Entrée #{index + 1}
           </div>
-          <div className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50">
+          <div className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 dark:bg-slate-800/60">
             <button
               type="button"
               onClick={onMoveUp}
@@ -742,7 +742,7 @@ function LegalTextPicker({
     <>
       <div className="flex items-stretch gap-2">
         <div className="relative flex-1">
-          <div className="flex items-center gap-2 rounded-md border border-slate-300 bg-white px-2 focus-within:border-slate-500 h-full">
+          <div className="flex items-center gap-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-2 focus-within:border-slate-500 h-full">
             <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             <input
               value={q}
@@ -762,7 +762,7 @@ function LegalTextPicker({
           {open && (q || results.length > 0) && (
             <div className="absolute top-full left-0 right-0 mt-1 z-20 max-h-72 overflow-y-auto rounded-md border border-slate-200 bg-white shadow-lg">
               {results.length === 0 ? (
-                <div className="px-3 py-2 text-xs text-slate-500">
+                <div className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
                   {loading ? 'Recherche…' : 'Aucun résultat.'}
                 </div>
               ) : (
@@ -779,7 +779,7 @@ function LegalTextPicker({
                           setOpen(false)
                           setQ('')
                         }}
-                        className="block w-full text-left px-3 py-2 hover:bg-slate-50 border-b border-slate-100 last:border-b-0"
+                        className="block w-full text-left px-3 py-2 hover:bg-slate-50 dark:bg-slate-800/60 dark:hover:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 last:border-b-0"
                       >
                         <div className="text-sm font-medium text-slate-800 truncate">
                           {it.title_fr}
@@ -903,7 +903,7 @@ function QuickCreateLegalTextModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-          <h2 className="text-base font-bold text-slate-900">
+          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
             Créer un texte juridique
           </h2>
           <button
@@ -916,7 +916,7 @@ function QuickCreateLegalTextModal({
           </button>
         </div>
         <div className="px-6 py-5 space-y-4 text-sm">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Brouillon rapide pré-rempli depuis cette entrée du sommaire.
             Vous pourrez compléter les blocs (visas, considérants,
             articles, signataires) sur la page d&apos;édition après la
@@ -970,7 +970,7 @@ function QuickCreateLegalTextModal({
               className="block w-full rounded-md border-slate-300 bg-white text-sm font-mono focus:border-slate-500 focus:ring-slate-500"
             />
             {slug && (
-              <p className="mt-1 text-xs text-slate-500 font-mono">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-mono">
                 /loi/{slug}
               </p>
             )}
@@ -991,12 +991,12 @@ function QuickCreateLegalTextModal({
             </div>
           )}
         </div>
-        <div className="flex items-center justify-end gap-2 px-6 py-3 border-t border-slate-200 bg-slate-50 rounded-b-xl">
+        <div className="flex items-center justify-end gap-2 px-6 py-3 border-t border-slate-200 bg-slate-50 dark:bg-slate-800/60 rounded-b-xl">
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-400 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-400 disabled:opacity-50"
           >
             Annuler
           </button>
@@ -1049,8 +1049,8 @@ function ReviewSection({
   )
   return (
     <div className="space-y-6">
-      <div className="rounded-md bg-slate-50 ring-1 ring-slate-200 p-5 space-y-2">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">
+      <div className="rounded-md bg-slate-50 dark:bg-slate-800/60 ring-1 ring-slate-200 p-5 space-y-2">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
           Aperçu
         </h3>
         <div className="text-xl font-bold text-slate-900">
@@ -1059,7 +1059,7 @@ function ReviewSection({
             <span className="italic text-slate-400">…</span>
           )}
         </div>
-        <div className="text-sm text-slate-600">
+        <div className="text-sm text-slate-600 dark:text-slate-300">
           {issue.publication_date || (
             <span className="italic text-slate-400">Sans date</span>
           )}
@@ -1067,7 +1067,7 @@ function ReviewSection({
           {issue.director ? ` · ${issue.director}` : ''}
         </div>
         <div className="mt-3">
-          <div className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+          <div className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">
             Sommaire ({nonEmpty.length})
           </div>
           {nonEmpty.length === 0 ? (
@@ -1163,7 +1163,7 @@ function ActionBar({
             <button
               type="button"
               onClick={onPrev}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-400"
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-400"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Précédent
@@ -1212,12 +1212,12 @@ function Field({
 }) {
   return (
     <div>
-      <label className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1">
+      <label className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center gap-1">
         {label}
         {required && <span className="text-amber-600">*</span>}
       </label>
       <div className="mt-1.5">{children}</div>
-      {help && <p className="mt-1 text-xs text-slate-500">{help}</p>}
+      {help && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{help}</p>}
     </div>
   )
 }

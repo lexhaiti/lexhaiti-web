@@ -195,8 +195,8 @@ export default function EditorialAmendPage() {
   if (!isEditor) {
     return (
       <div className="container py-12">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 max-w-3xl">
-          <p className="text-sm text-slate-700">
+        <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-6 max-w-3xl">
+          <p className="text-sm text-slate-700 dark:text-slate-200">
             {isFr
               ? 'Cette page est réservée aux éditeurs connectés.'
               : 'Paj sa a pou editè ki konekte sèlman.'}
@@ -213,9 +213,9 @@ export default function EditorialAmendPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Hero — matches the editorial console */}
-      <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
+      <div className="relative bg-primary dark:bg-slate-900 text-white overflow-hidden border-b border-white/5 dark:border-slate-800">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
@@ -271,14 +271,14 @@ export default function EditorialAmendPage() {
         </section>
 
         {/* Amendments JSON */}
-        <section className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
+        <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
-              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <GitMerge className="w-4 h-4 text-primary" />
                 {isFr ? 'Amendements (JSON)' : 'Amandman yo (JSON)'}
               </h2>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {isFr
                   ? 'Un objet par amendement. La loi modifiée sélectionnée ci-dessus s’applique à chaque ligne (pas besoin de répéter le slug).'
                   : 'Yon objè pa amandman. Lwa ki modifye chwazi anwo a aplike pou chak liy (pa bezwen repete slug la).'}
@@ -299,8 +299,8 @@ export default function EditorialAmendPage() {
               className={cn(
                 'inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest',
                 parsed.ok
-                  ? 'bg-emerald-100 text-emerald-700'
-                  : 'bg-amber-100 text-amber-800',
+                  ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+                  : 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300',
               )}
             >
               {parsed.ok ? (
@@ -324,17 +324,17 @@ export default function EditorialAmendPage() {
             onChange={(e) => setJson(e.target.value)}
             placeholder={PLACEHOLDER}
             spellCheck={false}
-            className="w-full min-h-[360px] rounded-lg border border-slate-200 bg-slate-50 p-3 font-mono text-xs leading-relaxed text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full min-h-[360px] rounded-lg border border-slate-200 bg-slate-50 dark:bg-slate-800 p-3 font-mono text-xs leading-relaxed text-slate-800 dark:text-slate-200 placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
 
           {/* Status legend — small reminder of what target_status maps to */}
-          <details className="text-xs text-slate-500 group">
-            <summary className="cursor-pointer font-semibold text-slate-600 hover:text-primary">
+          <details className="text-xs text-slate-500 dark:text-slate-400 group">
+            <summary className="cursor-pointer font-semibold text-slate-600 dark:text-slate-300 hover:text-primary">
               {isFr
                 ? 'Statuts disponibles + comportement'
                 : 'Estati ki disponib + konpòtman'}
             </summary>
-            <ul className="mt-2 space-y-1 pl-4 border-l-2 border-slate-200">
+            <ul className="mt-2 space-y-1 pl-4 border-l-2 border-slate-200 dark:border-slate-700">
               <li>
                 <code className="text-primary">in_force</code> + new_version →{' '}
                 {isFr
@@ -364,7 +364,7 @@ export default function EditorialAmendPage() {
 
         {/* Submit + result */}
         <section className="flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             {amendingLaw && amendedLaw && parsed?.ok
               ? isFr
                 ? `Prêt à appliquer ${parsed.data.amendments.length} amendement(s) sur ${amendedLaw.title_fr || amendedLaw.slug}.`
@@ -381,7 +381,7 @@ export default function EditorialAmendPage() {
               'inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-semibold transition-colors',
               canSubmit
                 ? 'bg-primary text-white hover:bg-primary/90'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed',
+                : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed',
             )}
           >
             {submitting ? (
@@ -469,20 +469,20 @@ function LawPicker({
   }, [])
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-2">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-2">
       <label className="block text-xs font-bold uppercase tracking-widest text-primary/65">
         {label}
       </label>
-      <p className="text-xs text-slate-500 leading-relaxed">{help}</p>
+      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{help}</p>
 
       {value ? (
         <div className="flex items-start justify-between gap-3 rounded-lg border border-primary/20 bg-primary/[0.04] p-3">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-slate-900 leading-tight">
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight">
               {(isFr ? value.title_fr : value.title_ht || value.title_fr) ||
                 value.slug}
             </p>
-            <p className="text-[11px] text-slate-500 font-mono mt-0.5 truncate">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 truncate">
               {value.slug}
             </p>
           </div>
@@ -493,7 +493,7 @@ function LawPicker({
               setQuery('')
               setResults([])
             }}
-            className="text-slate-400 hover:text-red-600 flex-shrink-0"
+            className="text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 flex-shrink-0"
             aria-label={isFr ? 'Changer' : 'Chanje'}
           >
             <X className="w-4 h-4" />
@@ -501,7 +501,7 @@ function LawPicker({
         </div>
       ) : (
         <div ref={containerRef} className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="search"
             value={query}
@@ -513,19 +513,19 @@ function LawPicker({
             placeholder={
               isFr ? 'Rechercher par titre ou slug…' : 'Chèche pa tit oswa slug…'
             }
-            className="w-full pl-9 pr-9 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full pl-9 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
           {loading && (
-            <Loader2 className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 animate-spin" />
+            <Loader2 className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 dark:text-slate-600 animate-spin" />
           )}
           {open && query.trim().length >= 2 && (
-            <div className="absolute z-10 mt-1 left-0 right-0 max-h-72 overflow-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+            <div className="absolute z-10 mt-1 left-0 right-0 max-h-72 overflow-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg">
               {results.length === 0 && !loading ? (
-                <p className="px-3 py-2.5 text-xs text-slate-400 italic">
+                <p className="px-3 py-2.5 text-xs text-slate-400 dark:text-slate-500 italic">
                   {isFr ? 'Aucun résultat' : 'Pa gen rezilta'}
                 </p>
               ) : (
-                <ul className="divide-y divide-slate-100">
+                <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                   {results.map((r) => (
                     <li key={r.id}>
                       <button
@@ -535,13 +535,13 @@ function LawPicker({
                           setOpen(false)
                           setQuery('')
                         }}
-                        className="w-full text-left px-3 py-2 hover:bg-primary/[0.04] transition-colors"
+                        className="w-full text-left px-3 py-2 hover:bg-primary/[0.04] dark:hover:bg-primary/[0.15] transition-colors"
                       >
-                        <p className="text-sm text-slate-800 leading-tight line-clamp-2">
+                        <p className="text-sm text-slate-800 dark:text-slate-200 leading-tight line-clamp-2">
                           {(isFr ? r.title_fr : r.title_ht || r.title_fr) ||
                             r.slug}
                         </p>
-                        <p className="text-[10px] text-slate-400 font-mono mt-0.5 truncate">
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-0.5 truncate">
                           {r.slug}
                         </p>
                       </button>
@@ -574,15 +574,15 @@ function ResultPanel({
   const appliedDup = result.applied.filter((a) => a.already_applied)
 
   return (
-    <div className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-5 space-y-3">
+    <div className="rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50/40 dark:bg-emerald-500/10 p-5 space-y-3">
       <div className="flex items-center gap-2">
-        <Check className="w-4 h-4 text-emerald-700" />
-        <h3 className="text-sm font-bold text-emerald-900">
+        <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
+        <h3 className="text-sm font-bold text-emerald-900 dark:text-emerald-200">
           {isFr
             ? `${appliedFresh.length} amendement(s) appliqué(s)`
             : `${appliedFresh.length} amandman aplike`}
           {appliedDup.length > 0 && (
-            <span className="ml-2 text-xs font-semibold text-amber-700">
+            <span className="ml-2 text-xs font-semibold text-amber-700 dark:text-amber-400">
               {isFr
                 ? `+ ${appliedDup.length} déjà appliqué(s)`
                 : `+ ${appliedDup.length} deja aplike`}
@@ -600,19 +600,19 @@ function ResultPanel({
               className={cn(
                 'inline-flex items-center justify-center text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full',
                 row.already_applied
-                  ? 'bg-amber-100 text-amber-800'
-                  : 'bg-emerald-100 text-emerald-800',
+                  ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300'
+                  : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300',
               )}
             >
               {row.change_kind}
             </span>
-            <span className="text-slate-700">
+            <span className="text-slate-700 dark:text-slate-300">
               art. {row.target_article_number}
             </span>
-            <span className="text-slate-400">→</span>
-            <span className="text-slate-700">{row.target_status}</span>
+            <span className="text-slate-400 dark:text-slate-500">→</span>
+            <span className="text-slate-700 dark:text-slate-300">{row.target_status}</span>
             {row.new_version_id && (
-              <span className="text-[10px] text-slate-400">
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">
                 (v#{row.new_version_id})
               </span>
             )}

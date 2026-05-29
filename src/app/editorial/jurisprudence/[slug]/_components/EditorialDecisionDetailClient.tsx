@@ -81,8 +81,8 @@ export default function EditorialDecisionDetailClient({ slug }: Props) {
   if (!isEditor) {
     return (
       <div className="container py-12">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 max-w-3xl">
-          <p className="text-sm text-slate-700">
+        <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-6 max-w-3xl">
+          <p className="text-sm text-slate-700 dark:text-slate-200">
             {t('decisionEditor.list.requiresEditor')}
           </p>
           <Link
@@ -107,8 +107,8 @@ export default function EditorialDecisionDetailClient({ slug }: Props) {
   if (error || !decision) {
     return (
       <div className="container py-12">
-        <div className="rounded-xl border border-red-200 bg-red-50 p-6 max-w-3xl">
-          <p className="text-sm text-red-900">{error ?? t('jurisprudence.notFound.title')}</p>
+        <div className="rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-6 max-w-3xl">
+          <p className="text-sm text-red-900 dark:text-red-300">{error ?? t('jurisprudence.notFound.title')}</p>
           <Link
             href="/editorial/jurisprudence"
             className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"

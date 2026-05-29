@@ -70,7 +70,7 @@ export default async function Page() {
     <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Dark hero — same navy treatment used across the site so the
           donate page reads as part of the institutional surface. */}
-      <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
+      <div className="relative bg-primary dark:bg-slate-900 text-white overflow-hidden border-b border-white/5 dark:border-slate-800">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />

@@ -56,27 +56,27 @@ const STATUS_PILL: Record<
   { cls: string; label_fr: string; label_ht: string }
 > = {
   unknown: {
-    cls: 'bg-slate-100 text-slate-700 border-slate-200',
+    cls: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700',
     label_fr: 'Inconnu',
     label_ht: 'Pa konnen',
   },
   in_force: {
-    cls: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    cls: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30',
     label_fr: 'En vigueur',
     label_ht: 'Anvigè',
   },
   abrogated: {
-    cls: 'bg-rose-50 text-rose-700 border-rose-200',
+    cls: 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-500/30',
     label_fr: 'Abrogé',
     label_ht: 'Aboli',
   },
   superseded: {
-    cls: 'bg-amber-50 text-amber-700 border-amber-200',
+    cls: 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-500/30',
     label_fr: 'Remplacé',
     label_ht: 'Ranplase',
   },
   modified: {
-    cls: 'bg-blue-50 text-blue-700 border-blue-200',
+    cls: 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-500/30',
     label_fr: 'Modifié',
     label_ht: 'Modifye',
   },
@@ -243,7 +243,7 @@ export default function ChronologiePage() {
   // signed-out visitor still sees what the page is about (and can
   // click ``Se connecter`` from the gate below).
   const PageHeader = (
-    <section className="relative w-full bg-gradient-to-br from-primary via-primary to-slate-900 text-white pt-24 pb-10 overflow-hidden">
+    <section className="relative w-full bg-gradient-to-br from-primary via-primary to-slate-900 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 text-white pt-24 pb-10 overflow-hidden">
       {/* Decorative date-ring on the right */}
       <div
         aria-hidden
@@ -318,8 +318,8 @@ export default function ChronologiePage() {
       <Fragment>
         {PageHeader}
         <div className="container py-12">
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 max-w-3xl">
-            <p className="text-sm text-slate-700">
+          <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-6 max-w-3xl">
+            <p className="text-sm text-slate-700 dark:text-slate-200">
               {isFr
                 ? 'Cette page est réservée aux éditeurs connectés.'
                 : 'Paj sa a pou editè ki konekte sèlman.'}
@@ -336,9 +336,9 @@ export default function ChronologiePage() {
       <div className="container py-8 lg:py-10 space-y-6">
 
       {/* In-force status caveat — central to the editorial brief. */}
-      <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-amber-900">
+      <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50/60 dark:bg-amber-500/10 p-4 flex items-start gap-3">
+        <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+        <div className="text-sm text-amber-900 dark:text-amber-200">
           <p className="font-semibold mb-1">
             {isFr
               ? 'Statut « en vigueur » : vérification éditoriale en cours.'
@@ -392,11 +392,11 @@ export default function ChronologiePage() {
       )}
 
       {/* Filters */}
-      <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-3">
         <div className="flex flex-wrap gap-3 items-end">
           {/* Chapter — the 5 top-level divisions */}
           <div className="flex-1 min-w-[220px]">
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
               {isFr ? 'Chapitre' : 'Chapit'}
             </label>
             <select
@@ -406,7 +406,7 @@ export default function ChronologiePage() {
                 // Drop section when chapter changes — they're tied.
                 setSection(undefined)
               }}
-              className="w-full h-9 px-3 rounded-md border border-slate-200 bg-white text-sm"
+              className="w-full h-9 px-3 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100"
             >
               <option value="">
                 {isFr ? 'Tous les chapitres' : 'Tout chapit yo'}
@@ -420,13 +420,13 @@ export default function ChronologiePage() {
           </div>
           {/* Section — sub-divisions */}
           <div className="flex-1 min-w-[260px]">
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
               {isFr ? 'Section' : 'Seksyon'}
             </label>
             <select
               value={section ?? ''}
               onChange={(e) => setSection(e.target.value || undefined)}
-              className="w-full h-9 px-3 rounded-md border border-slate-200 bg-white text-sm"
+              className="w-full h-9 px-3 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100"
             >
               <option value="">
                 {isFr ? 'Toutes les sections' : 'Tout seksyon yo'}
@@ -441,7 +441,7 @@ export default function ChronologiePage() {
           </div>
           {/* Status */}
           <div className="min-w-[160px]">
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
               {isFr ? 'Statut' : 'Estati'}
             </label>
             <select
@@ -453,7 +453,7 @@ export default function ChronologiePage() {
                     | undefined,
                 )
               }
-              className="w-full h-9 px-3 rounded-md border border-slate-200 bg-white text-sm"
+              className="w-full h-9 px-3 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100"
             >
               <option value="">{isFr ? 'Tous' : 'Tout'}</option>
               {STATUS_OPTIONS.map((s) => (
@@ -465,7 +465,7 @@ export default function ChronologiePage() {
           </div>
           {/* Year range */}
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
               {isFr ? 'Année — de' : 'Ane — depi'}
             </label>
             <input
@@ -473,11 +473,11 @@ export default function ChronologiePage() {
               placeholder="1804"
               value={yearFrom}
               onChange={(e) => setYearFrom(e.target.value)}
-              className="w-24 h-9 px-3 rounded-md border border-slate-200 text-sm tabular-nums"
+              className="w-24 h-9 px-3 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100 tabular-nums"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
               {isFr ? 'à' : 'rive'}
             </label>
             <input
@@ -485,12 +485,12 @@ export default function ChronologiePage() {
               placeholder="2000"
               value={yearTo}
               onChange={(e) => setYearTo(e.target.value)}
-              className="w-24 h-9 px-3 rounded-md border border-slate-200 text-sm tabular-nums"
+              className="w-24 h-9 px-3 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100 tabular-nums"
             />
           </div>
           {/* Imported toggle */}
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
               {isFr ? 'Importé ?' : 'Enpòte ?'}
             </label>
             <select
@@ -505,7 +505,7 @@ export default function ChronologiePage() {
                 const v = e.target.value
                 setOnlyImported(v === '' ? undefined : v === 'yes')
               }}
-              className="h-9 px-3 rounded-md border border-slate-200 bg-white text-sm"
+              className="h-9 px-3 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100"
             >
               <option value="">{isFr ? 'Tous' : 'Tout'}</option>
               <option value="yes">{isFr ? 'Oui' : 'Wi'}</option>
@@ -514,11 +514,11 @@ export default function ChronologiePage() {
           </div>
           {/* Search */}
           <div className="flex-1 min-w-[220px]">
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
               {isFr ? 'Recherche' : 'Rechèch'}
             </label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
               <input
                 type="search"
                 value={q}
@@ -528,7 +528,7 @@ export default function ChronologiePage() {
                     ? 'ex : impôt, séparation des biens, …'
                     : 'eg : taks, separasyon byen, …'
                 }
-                className="w-full h-9 pl-9 pr-3 rounded-md border border-slate-200 text-sm"
+                className="w-full h-9 pl-9 pr-3 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100"
               />
             </div>
           </div>
@@ -537,11 +537,11 @@ export default function ChronologiePage() {
 
       {/* Result list */}
       {items === null ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-12 text-center">
-          <Loader2 className="inline w-6 h-6 animate-spin text-slate-300" />
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center">
+          <Loader2 className="inline w-6 h-6 animate-spin text-slate-300 dark:text-slate-600" />
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-10 text-center text-sm text-slate-600">
+        <div className="rounded-xl border border-slate-200 bg-slate-50/50 dark:bg-slate-900/40 p-10 text-center text-sm text-slate-600 dark:text-slate-300">
           {isFr ? 'Aucune entrée.' : 'Pa gen antre.'}
         </div>
       ) : (
@@ -564,9 +564,9 @@ export default function ChronologiePage() {
             }}
           />
 
-          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+              <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 <tr>
                   <th className="text-left px-3 py-2 font-semibold">
                     #
@@ -592,36 +592,36 @@ export default function ChronologiePage() {
                 {items.map((it) => (
                   <tr
                     key={it.id}
-                    className="border-t border-slate-100 hover:bg-slate-50/50"
+                    className="border-t border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/40"
                   >
-                    <td className="px-3 py-2 text-xs text-slate-400 tabular-nums">
+                    <td className="px-3 py-2 text-xs text-slate-400 dark:text-slate-500 tabular-nums">
                       {it.display_order + 1}
                     </td>
                     <td className="px-3 py-2 align-top">
                       <p className="text-slate-800">{it.description_fr}</p>
                       {it.section && (
-                        <p className="text-[10px] uppercase tracking-widest text-slate-400 mt-1">
+                        <p className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 mt-1">
                           {it.section}
                         </p>
                       )}
                     </td>
-                    <td className="px-3 py-2 align-top text-slate-700 whitespace-nowrap text-xs tabular-nums">
+                    <td className="px-3 py-2 align-top text-slate-700 dark:text-slate-300 whitespace-nowrap text-xs tabular-nums">
                       {it.act_date ? (
                         new Date(it.act_date).toLocaleDateString(
                           isFr ? 'fr-FR' : 'fr-FR',
                         )
                       ) : (
-                        <span className="text-slate-400">
-                          {it.act_date_raw ?? '—'}
+                        <span className="text-slate-400 dark:text-slate-500">
+  {it.act_date_raw ?? '—'}
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-2 align-top text-xs text-slate-600 whitespace-nowrap">
+                    <td className="px-3 py-2 align-top text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
                       {it.moniteur_number ? (
                         <>
                           N° {it.moniteur_number}
                           {it.moniteur_date && (
-                            <span className="block text-slate-400">
+                            <span className="block text-slate-400 dark:text-slate-500">
                               {new Date(it.moniteur_date).toLocaleDateString(
                                 'fr-FR',
                               )}
@@ -629,7 +629,7 @@ export default function ChronologiePage() {
                           )}
                         </>
                       ) : (
-                        <span className="text-slate-400">—</span>
+                        <span className="text-slate-400 dark:text-slate-500">—</span>
                       )}
                     </td>
                     <td className="px-3 py-2 align-top">
@@ -666,7 +666,7 @@ export default function ChronologiePage() {
                           <ExternalLink className="w-3 h-3" />
                         </Link>
                       ) : (
-                        <span className="text-slate-300 text-xs">—</span>
+                        <span className="text-slate-300 dark:text-slate-600 text-xs">—</span>
                       )}
                     </td>
                   </tr>
@@ -730,27 +730,27 @@ function PaginationBar({
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-2.5">
-      <div className="text-sm text-slate-600">
-        <span className="font-semibold text-slate-900 tabular-nums">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5">
+      <div className="text-sm text-slate-600 dark:text-slate-300">
+        <span className="font-semibold text-slate-900 dark:text-slate-100 tabular-nums">
           {(offset + 1).toLocaleString()}–
           {(offset + itemCount).toLocaleString()}
         </span>{' '}
         / {total.toLocaleString()}{' '}
-        <span className="text-slate-400">
-          ({isFr ? 'page' : 'paj'}{' '}
+        <span className="text-slate-400 dark:text-slate-500">
+  ({isFr ? 'page' : 'paj'}{' '}
           <span className="tabular-nums">{pageNumber}</span>/
           <span className="tabular-nums">{totalPages}</span>)
         </span>
       </div>
 
       <div className="flex items-center gap-3">
-        <label className="text-xs text-slate-500 flex items-center gap-1.5">
+        <label className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
           {isFr ? 'Par page :' : 'Pa paj :'}
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="h-8 px-2 rounded-md border border-slate-200 bg-white text-sm tabular-nums"
+            className="h-8 px-2 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100 tabular-nums"
           >
             {PAGE_SIZE_OPTIONS.map((n) => (
               <option key={n} value={n}>
@@ -760,14 +760,14 @@ function PaginationBar({
           </select>
         </label>
 
-        <div className="inline-flex shadow-sm rounded-md border border-slate-200 overflow-hidden">
+        <div className="inline-flex shadow-sm rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden">
           <button
             type="button"
             onClick={onFirst}
             disabled={atStart}
             aria-label={isFr ? 'Première page' : 'Premye paj'}
             className={cn(
-              'h-8 w-8 inline-flex items-center justify-center bg-white hover:bg-slate-50 border-r border-slate-200',
+              'h-8 w-8 inline-flex items-center justify-center bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200',
               'disabled:opacity-30 disabled:cursor-not-allowed',
             )}
           >
@@ -778,7 +778,7 @@ function PaginationBar({
             onClick={onPrev}
             disabled={atStart}
             className={cn(
-              'h-8 px-3 inline-flex items-center justify-center text-sm font-semibold bg-white hover:bg-slate-50 border-r border-slate-200',
+              'h-8 px-3 inline-flex items-center justify-center text-sm font-semibold bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200',
               'disabled:opacity-30 disabled:cursor-not-allowed',
             )}
           >
@@ -790,7 +790,7 @@ function PaginationBar({
             disabled={atEnd}
             className={cn(
               'h-8 px-3 inline-flex items-center justify-center text-sm font-semibold bg-primary text-white hover:bg-primary/90',
-              'disabled:opacity-30 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500',
+              'disabled:opacity-30 disabled:cursor-not-allowed disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-500 dark:disabled:text-slate-400',
             )}
           >
             {isFr ? 'Suivant' : 'Pwochen'} →
@@ -801,7 +801,7 @@ function PaginationBar({
             disabled={atEnd}
             aria-label={isFr ? 'Dernière page' : 'Dènye paj'}
             className={cn(
-              'h-8 w-8 inline-flex items-center justify-center bg-white hover:bg-slate-50 border-l border-slate-200',
+              'h-8 w-8 inline-flex items-center justify-center bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border-l border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200',
               'disabled:opacity-30 disabled:cursor-not-allowed',
             )}
           >
@@ -825,19 +825,19 @@ function StatTile({
   tone?: 'slate' | 'emerald' | 'amber'
 }) {
   const tones = {
-    slate: 'text-slate-500',
+    slate: 'text-slate-500 dark:text-slate-400',
     emerald: 'text-emerald-600',
     amber: 'text-amber-600',
   } as const
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3">
+    <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3">
       <div className={cn('flex items-center gap-1.5', tones[tone])}>
         <Icon className="w-3.5 h-3.5" />
         <span className="text-[10px] font-bold uppercase tracking-widest">
           {label}
         </span>
       </div>
-      <p className="mt-1 text-xl font-black text-slate-900 tabular-nums">
+      <p className="mt-1 text-xl font-black text-slate-900 dark:text-slate-100 tabular-nums">
         {value}
       </p>
     </div>

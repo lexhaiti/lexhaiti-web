@@ -37,9 +37,9 @@ export default function EditorialImportPage() {
   const [tab, setTab] = useState<Tab>(initialTab)
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Page header */}
-      <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
+      <div className="relative bg-primary dark:bg-slate-900 text-white overflow-hidden border-b border-white/5 dark:border-slate-800">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
@@ -122,7 +122,7 @@ export default function EditorialImportPage() {
           <div className="mt-10 flex justify-end">
             <Link
               href="/editorial/moniteur"
-              className="group inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:border-primary/40 hover:text-primary transition-colors"
+              className="group inline-flex items-center gap-2 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-primary/40 hover:text-primary transition-colors"
             >
               <LayoutDashboard className="w-4 h-4" />
               {t('editorial.import.chooser.moniteurDashboard')}
@@ -157,8 +157,8 @@ function ChooserButton({
         'group flex items-start gap-4 rounded-xl border p-5 lg:p-6 text-left',
         'transition-all duration-200',
         active
-          ? 'border-primary bg-primary/[0.04] shadow-sm'
-          : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm',
+          ? 'border-primary bg-primary/[0.04] dark:bg-primary/[0.12] shadow-sm'
+          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm',
       )}
     >
       <div
@@ -166,7 +166,7 @@ function ChooserButton({
           'flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg border transition-colors',
           active
             ? 'bg-primary text-white border-primary'
-            : 'bg-primary/5 text-primary border-primary/10 group-hover:bg-primary/10',
+            : 'bg-primary/5 dark:bg-primary/15 text-primary border-primary/10 group-hover:bg-primary/10 dark:group-hover:bg-primary/20',
         )}
       >
         <Icon className="w-5 h-5" />
@@ -180,7 +180,7 @@ function ChooserButton({
         >
           {label}
         </p>
-        <p className="text-sm text-slate-600 leading-relaxed">{desc}</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{desc}</p>
       </div>
     </button>
   )

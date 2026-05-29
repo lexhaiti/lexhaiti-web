@@ -294,7 +294,7 @@ export default function LegalTextImportPanel() {
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 flex items-start gap-4 max-w-3xl">
             <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm text-slate-700 leading-relaxed mb-4">
+              <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed mb-4">
                 {t('editorial.import.legalText.requiresEditor')}
               </p>
               <Link
@@ -364,7 +364,7 @@ export default function LegalTextImportPanel() {
                     value={form.category}
                     onValueChange={(v) => setField('category', v as FormState['category'])}
                   >
-                    <SelectTrigger className="!h-11 w-full bg-white">
+                    <SelectTrigger className="!h-11 w-full bg-white dark:bg-slate-900">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -382,7 +382,7 @@ export default function LegalTextImportPanel() {
                     value={form.status}
                     onValueChange={(v) => setField('status', v as FormState['status'])}
                   >
-                    <SelectTrigger className="!h-11 w-full bg-white">
+                    <SelectTrigger className="!h-11 w-full bg-white dark:bg-slate-900">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -454,7 +454,7 @@ export default function LegalTextImportPanel() {
             >
               <div className="space-y-4">
                 <div>
-                  <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 dark:text-slate-500">
                     Version française <span className="text-red-500">*</span>
                   </p>
                   <Dropzone
@@ -470,8 +470,8 @@ export default function LegalTextImportPanel() {
                   />
                 </div>
                 <div>
-                  <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
-                    Version kreyòl <span className="text-slate-400 font-medium normal-case">(optionnelle — alignée par numéro d'article)</span>
+                  <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 dark:text-slate-500">
+                    Version kreyòl <span className="text-slate-400 dark:text-slate-500 font-medium normal-case">(optionnelle — alignée par numéro d'article)</span>
                   </p>
                   <Dropzone
                     file={form.document_file_ht}
@@ -509,7 +509,7 @@ export default function LegalTextImportPanel() {
               <p className="text-sm text-red-600">{submitError}</p>
             )}
 
-            <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-6">
+            <div className="flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-700 pt-6">
               <Button
                 type="button"
                 variant="outline"
@@ -596,10 +596,10 @@ interface ParsingStateProps {
 
 function ParsingState({ title, help }: ParsingStateProps) {
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 max-w-2xl rounded-2xl border border-slate-200 bg-white p-10 text-center">
+    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 max-w-2xl rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-10 text-center">
       <Loader2 className="w-10 h-10 mx-auto text-primary animate-spin mb-5" />
-      <h2 className="text-xl font-bold text-slate-900 mb-3">{title}</h2>
-      <p className="text-sm text-slate-600 leading-relaxed max-w-md mx-auto">{help}</p>
+      <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">{title}</h2>
+      <p className="text-sm text-slate-600 dark:text-slate-300 dark:text-slate-600 leading-relaxed max-w-md mx-auto">{help}</p>
     </div>
   )
 }
@@ -687,19 +687,19 @@ function PreviewState({
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-6 w-full">
         {/* Header strip */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6">
           <div className="flex items-start gap-4">
             <CheckCircle2 className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-slate-900 mb-2">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">
                 {t('editorial.import.legalText.resultTitle')}
               </h2>
-              <p className="text-sm text-slate-600 leading-relaxed mb-4">
+              <p className="text-sm text-slate-600 dark:text-slate-300 dark:text-slate-600 leading-relaxed mb-4">
                 {t('editorial.import.legalText.resultIntro')}
               </p>
               <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                  <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 dark:text-slate-500">
                     {t('editorial.import.legalText.confidence')}
                   </span>
                   <span
@@ -721,16 +721,16 @@ function PreviewState({
                     by article number. */}
                 {result.ht_article_count > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                    <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 dark:text-slate-500">
                       Alignement
                     </span>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold tabular-nums bg-slate-100 text-slate-700">
-                      <span className="text-slate-900">{result.fr_article_count}</span>
-                      <span className="text-slate-400">FR</span>
-                      <span className="text-slate-300">·</span>
-                      <span className="text-slate-900">{result.ht_article_count}</span>
-                      <span className="text-slate-400">HT</span>
-                      <span className="text-slate-300">·</span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold tabular-nums bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+                      <span className="text-slate-900 dark:text-slate-100">{result.fr_article_count}</span>
+                      <span className="text-slate-400 dark:text-slate-500">FR</span>
+                      <span className="text-slate-300 dark:text-slate-600">·</span>
+                      <span className="text-slate-900 dark:text-slate-100">{result.ht_article_count}</span>
+                      <span className="text-slate-400 dark:text-slate-500">HT</span>
+                      <span className="text-slate-300 dark:text-slate-600">·</span>
                       <span
                         className={cn(
                           result.matched_count === result.fr_article_count
@@ -740,7 +740,7 @@ function PreviewState({
                       >
                         {result.matched_count}
                       </span>
-                      <span className="text-slate-400">appariés</span>
+                      <span className="text-slate-400 dark:text-slate-500">appariés</span>
                     </span>
                   </div>
                 )}
@@ -754,8 +754,8 @@ function PreviewState({
 
         {/* Headings */}
         {result.headings.length > 0 && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 dark:text-slate-500 mb-4">
               {t('editorial.import.legalText.headingsLabel')}
             </h3>
             <ol className="space-y-1">
@@ -764,14 +764,14 @@ function PreviewState({
                   key={h.key}
                   className={cn(
                     'flex items-baseline gap-2 text-sm',
-                    h.level === 'book' && 'font-bold text-slate-900',
-                    h.level === 'title' && 'pl-0 font-semibold text-slate-900',
-                    h.level === 'chapter' && 'pl-6 text-slate-700',
-                    h.level === 'section' && 'pl-12 text-slate-600',
-                    h.level === 'subsection' && 'pl-16 text-slate-500',
+                    h.level === 'book' && 'font-bold text-slate-900 dark:text-slate-100',
+                    h.level === 'title' && 'pl-0 font-semibold text-slate-900 dark:text-slate-100',
+                    h.level === 'chapter' && 'pl-6 text-slate-700 dark:text-slate-200',
+                    h.level === 'section' && 'pl-12 text-slate-600 dark:text-slate-300 dark:text-slate-600',
+                    h.level === 'subsection' && 'pl-16 text-slate-500 dark:text-slate-400 dark:text-slate-500',
                   )}
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 tabular-nums">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 tabular-nums">
                     {LEVEL_LABELS[h.level] ?? h.level} {h.number}
                   </span>
                   <span>· {h.title_fr}</span>
@@ -782,12 +782,12 @@ function PreviewState({
         )}
 
         {/* Articles — editable */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6">
-          <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6">
+          <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 dark:text-slate-500 mb-4">
             {t('editorial.import.legalText.articlesLabel')}
-            <span className="text-slate-400 tabular-nums">({result.articles.length})</span>
+            <span className="text-slate-400 dark:text-slate-500 tabular-nums">({result.articles.length})</span>
           </h3>
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-100 dark:divide-slate-800">
             {result.articles.map((a, i) => (
               <li key={`${a.number}-${i}`} className="py-4 first:pt-0 last:pb-0">
                 {editIdx === i ? (
@@ -801,7 +801,7 @@ function PreviewState({
                     {/* Heading reassignment */}
                     {result.headings.length > 0 && (
                       <label className="block">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 block">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1 block">
                           {t('editorial.import.legalText.reassignHeading')}
                         </span>
                         <div className="relative">
@@ -810,7 +810,7 @@ function PreviewState({
                             onChange={(e) =>
                               setEditHeadingKey(e.target.value || null)
                             }
-                            className="w-full h-9 pl-3 pr-8 rounded-md border border-slate-300 bg-white text-sm text-slate-700 appearance-none focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none"
+                            className="w-full h-9 pl-3 pr-8 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-200 appearance-none focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none"
                           >
                             <option value="">{t('editorial.import.legalText.noHeading')}</option>
                             {result.headings.map((h) => (
@@ -819,7 +819,7 @@ function PreviewState({
                               </option>
                             ))}
                           </select>
-                          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
                         </div>
                       </label>
                     )}
@@ -828,7 +828,7 @@ function PreviewState({
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
                       rows={6}
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 leading-relaxed outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                      className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-800 dark:text-slate-200 leading-relaxed outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                     />
                     <div className="flex items-center gap-2">
                       <button
@@ -842,7 +842,7 @@ function PreviewState({
                       <button
                         type="button"
                         onClick={cancelEdit}
-                        className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-400"
+                        className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 dark:text-slate-600 hover:border-slate-400"
                       >
                         {t('editorial.import.legalText.cancelEdit')}
                       </button>
@@ -855,7 +855,7 @@ function PreviewState({
                       <span className="text-sm font-bold text-primary tabular-nums">
                         Art. {a.number}
                       </span>
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500">
                         {a.heading_path.join(' › ')}
                       </span>
                       {result.ht_article_count > 0 && (
@@ -874,7 +874,7 @@ function PreviewState({
                         <button
                           type="button"
                           onClick={() => startEdit(i)}
-                          className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-semibold text-slate-500 hover:text-primary hover:bg-primary/5"
+                          className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 hover:text-primary hover:bg-primary/5"
                         >
                           <Pencil className="w-3 h-3" />
                           {t('editorial.import.legalText.editArticle')}
@@ -882,7 +882,7 @@ function PreviewState({
                         <button
                           type="button"
                           onClick={() => removeArticle(i)}
-                          className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50"
+                          className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 hover:text-red-600 hover:bg-red-50"
                         >
                           <Trash2 className="w-3 h-3" />
                           {t('editorial.import.legalText.deleteArticle')}
@@ -891,15 +891,15 @@ function PreviewState({
                     </div>
                     {a.content_ht ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-1">
-                        <p className="text-sm text-slate-700 leading-relaxed line-clamp-3">
+                        <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed line-clamp-3">
                           {a.content_fr}
                         </p>
-                        <p className="text-sm text-slate-700 leading-relaxed line-clamp-3 md:border-l md:pl-5 md:border-slate-100">
+                        <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed line-clamp-3 md:border-l md:pl-5 md:border-slate-100 dark:border-slate-800">
                           {a.content_ht}
                         </p>
                       </div>
                     ) : (
-                      <p className="text-sm text-slate-700 leading-relaxed line-clamp-2">
+                      <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed line-clamp-2">
                         {a.content_fr}
                       </p>
                     )}

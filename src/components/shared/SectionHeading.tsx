@@ -66,7 +66,7 @@ export function SectionHeading({
         )}
         <h2
           className={cn(
-            'text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-primary leading-tight',
+            'text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-primary dark:text-white leading-tight',
             eyebrow && 'mt-3',
             titleMaxWidth,
           )}

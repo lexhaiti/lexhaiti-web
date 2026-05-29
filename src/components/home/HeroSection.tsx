@@ -118,7 +118,7 @@ export default function HeroSection() {
               two horizontal bands. Strip the punctuation off the
               i18n string so the dot reads as the actual punctuation
               instead of stacking next to one. */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.05] text-primary">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.05] text-primary dark:text-white">
             {t('home.hero.tagline').replace(/\.$/, '')}
             <span
               aria-hidden

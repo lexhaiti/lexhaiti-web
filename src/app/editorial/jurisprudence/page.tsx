@@ -47,10 +47,10 @@ import { formatLongDate } from '@/lib/format/date'
 const PAGE_SIZE = 25
 
 const STATUS_TONE: Record<EditorialStatus, string> = {
-  draft: 'bg-amber-100 text-amber-900 border-amber-200',
-  pending_review: 'bg-blue-100 text-blue-900 border-blue-200',
-  published: 'bg-emerald-100 text-emerald-900 border-emerald-200',
-  rejected: 'bg-red-100 text-red-900 border-red-200',
+  draft: 'bg-amber-100 dark:bg-amber-500/20 text-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-500/30',
+  pending_review: 'bg-blue-100 dark:bg-blue-500/20 text-blue-900 dark:text-blue-300 border-blue-200 dark:border-blue-500/30',
+  published: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30',
+  rejected: 'bg-red-100 dark:bg-red-500/20 text-red-900 dark:text-red-300 border-red-200 dark:border-red-500/30',
 }
 
 const STATUS_FILTERS: Array<{ value: 'all' | EditorialStatus; labelKey: string }> = [
@@ -187,8 +187,8 @@ export default function EditorialJurisprudencePage() {
   if (!isEditor) {
     return (
       <div className="container py-12">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 max-w-3xl">
-          <p className="text-sm text-slate-700">
+        <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-6 max-w-3xl">
+          <p className="text-sm text-slate-700 dark:text-slate-200">
             {t('decisionEditor.list.requiresEditor')}
           </p>
           <Link
@@ -203,8 +203,8 @@ export default function EditorialJurisprudencePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
+      <div className="relative bg-primary dark:bg-slate-900 text-white overflow-hidden border-b border-white/5 dark:border-slate-800">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px]" />
@@ -260,7 +260,7 @@ export default function EditorialJurisprudencePage() {
                   'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
                   active
                     ? 'bg-primary text-white'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200',
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700',
                 )}
               >
                 {t(f.labelKey)}
@@ -270,7 +270,7 @@ export default function EditorialJurisprudencePage() {
                       'rounded-full text-[10px] px-1.5 py-0.5 tabular-nums',
                       active
                         ? 'bg-white/20 text-white'
-                        : 'bg-white text-slate-600',
+                        : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300',
                     )}
                   >
                     {count}
@@ -283,7 +283,7 @@ export default function EditorialJurisprudencePage() {
 
         {/* Search */}
         <div className="relative max-w-xl">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="search"
             value={query}
@@ -292,7 +292,7 @@ export default function EditorialJurisprudencePage() {
               setPage(1)
             }}
             placeholder={t('decisionEditor.list.searchPlaceholder')}
-            className="w-full pl-9 pr-9 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full pl-9 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
           {query && (
             <button
@@ -301,7 +301,7 @@ export default function EditorialJurisprudencePage() {
                 setQuery('')
                 setPage(1)
               }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 p-1"
               aria-label="Clear"
             >
               <X className="w-4 h-4" />
@@ -311,27 +311,27 @@ export default function EditorialJurisprudencePage() {
 
         {/* Error / loading / empty */}
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+          <div className="rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-4 text-sm text-red-900 dark:text-red-300">
             {error}
           </div>
         )}
 
         {items === null && !error && (
-          <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 text-sm text-slate-500 dark:text-slate-400">
             <Loader2 className="inline w-4 h-4 animate-spin mr-2" />
             {t('decisionEditor.list.loading')}
           </div>
         )}
 
         {items !== null && items.length === 0 && !error && (
-          <p className="text-sm text-slate-400 italic px-1">
+          <p className="text-sm text-slate-400 dark:text-slate-500 italic px-1">
             {t('decisionEditor.list.empty')}
           </p>
         )}
 
         {/* Rows */}
         {items && items.length > 0 && (
-          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden divide-y divide-slate-100">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
             {items.map((d) => {
               const status =
                 (d.editorial_status as EditorialStatus | undefined) ?? 'draft'
@@ -351,7 +351,7 @@ export default function EditorialJurisprudencePage() {
               return (
                 <div
                   key={d.id}
-                  className="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-slate-50 transition-colors group"
+                  className="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
                 >
                   <span
                     className={cn(
@@ -371,10 +371,10 @@ export default function EditorialJurisprudencePage() {
                     )}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-800 truncate">
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
                       {title}
                     </p>
-                    <p className="text-[11px] text-slate-500 truncate">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                       {courtLabel} · {dateStr}
                       {d.case_number ? ` · N° ${d.case_number}` : ''}
                     </p>
@@ -382,7 +382,7 @@ export default function EditorialJurisprudencePage() {
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <Link
                       href={`/editorial/jurisprudence/${d.slug}`}
-                      className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                      className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
                       title={t('decisionEditor.list.edit')}
                     >
                       <Pencil className="w-3.5 h-3.5" />
@@ -406,7 +406,7 @@ export default function EditorialJurisprudencePage() {
                       <button
                         type="button"
                         onClick={() => setDeleteTarget(d)}
-                        className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
+                        className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
                         title={t('decisionEditor.list.delete')}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -422,7 +422,7 @@ export default function EditorialJurisprudencePage() {
         {/* Pagination + total */}
         {items && items.length > 0 && (
           <div className="flex items-center justify-between gap-3 flex-wrap pt-2">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {t('decisionEditor.list.total').replace('{n}', String(total))}
             </p>
             {totalPages > 1 && (
@@ -435,7 +435,7 @@ export default function EditorialJurisprudencePage() {
                 >
                   {t('jurisprudence.previous')}
                 </Button>
-                <span className="text-xs text-slate-500 tabular-nums">
+                <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                   {t('jurisprudence.page')} {page} {t('jurisprudence.of')}{' '}
                   {totalPages}
                 </span>
@@ -467,7 +467,7 @@ export default function EditorialJurisprudencePage() {
               <>
                 <br />
                 <br />
-                <span className="font-semibold text-slate-900 font-mono text-xs">
+                <span className="font-semibold text-slate-900 dark:text-slate-100 font-mono text-xs">
                   {deleteTarget.slug}
                 </span>
               </>

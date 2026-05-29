@@ -33,8 +33,8 @@ export default function NewDecisionPage() {
   if (!isEditor) {
     return (
       <div className="container py-12">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 max-w-3xl">
-          <p className="text-sm text-slate-700">
+        <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-6 max-w-3xl">
+          <p className="text-sm text-slate-700 dark:text-slate-200">
             {t('decisionEditor.list.requiresEditor')}
           </p>
           <Link
@@ -49,8 +49,8 @@ export default function NewDecisionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
+      <div className="relative bg-primary dark:bg-slate-900 text-white overflow-hidden border-b border-white/5 dark:border-slate-800">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px]" />
         </div>
