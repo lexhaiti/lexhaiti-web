@@ -35,7 +35,7 @@ export function DecisionHero({ decision }: Props) {
   const homeLabel = lang === 'fr' ? 'Accueil' : 'Akèy'
 
   return (
-    <div className="relative bg-primary text-white overflow-hidden border-b border-white/5">
+    <div className="relative bg-primary dark:bg-slate-900 text-white overflow-hidden border-b border-white/5 dark:border-slate-800">
       {/* Background decorative elements — copied verbatim from LawHero
           so the page reads as a sibling surface. */}
       <div className="absolute inset-0 z-0">

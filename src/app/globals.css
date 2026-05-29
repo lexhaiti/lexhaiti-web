@@ -355,6 +355,15 @@ button:focus-visible {
         background: #f8fafc; /* slate-50 */
         font-weight: 600;
     }
+    /* Dark mode: dark cell borders + header fill so rich-text tables
+       (rare — signature grids etc.) stay legible on the dark page. */
+    .dark table.rt-table td,
+    .dark table.rt-table th {
+        border-color: #334155; /* slate-700 */
+    }
+    .dark table.rt-table th {
+        background: #1e293b; /* slate-800 */
+    }
     /* Editor affordances — usable cell size + visible cell selection. */
     .ProseMirror table.rt-table td,
     .ProseMirror table.rt-table th {
