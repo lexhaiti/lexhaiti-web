@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, FileEdit, Loader2 } from 'lucide-react'
+import { ArrowRight, ChevronDown, FileEdit, Loader2 } from 'lucide-react'
 
 import {
   listChangesMadeBy,
@@ -95,6 +95,13 @@ export function ChangesMadePanel({ lawSlug, lang }: Props) {
   const [rows, setRows] = useState<LegalChangeMadeRead[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  // Closed by default — editors expand when they want to see the
+  // outbound-change list. Persists for the session but resets on slug
+  // change so each amending-law page starts collapsed.
+  const [open, setOpen] = useState(false)
+  useEffect(() => {
+    setOpen(false)
+  }, [lawSlug])
 
   useEffect(() => {
     let cancelled = false
@@ -125,26 +132,44 @@ export function ChangesMadePanel({ lawSlug, lang }: Props) {
 
   return (
     <section className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800">
-      <div className="flex items-baseline justify-between mb-5 gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          <FileEdit className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-          <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-slate-600 dark:text-slate-300">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls="changes-made-panel-body"
+        className="w-full text-left group cursor-pointer"
+      >
+        <div className="flex items-baseline justify-between mb-5 gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <FileEdit className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-slate-600 dark:text-slate-300">
+              {lang === 'fr'
+                ? 'Modifications apportées'
+                : 'Modifikasyon yo te fè'}
+            </h2>
+            {rows && rows.length > 0 && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                {rows.length}
+              </span>
+            )}
+            <ChevronDown
+              className={cn(
+                'w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200',
+                open ? 'rotate-0' : '-rotate-90',
+                'group-hover:text-slate-600 dark:group-hover:text-slate-300',
+              )}
+              aria-hidden
+            />
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 italic">
             {lang === 'fr'
-              ? 'Modifications apportées'
-              : 'Modifikasyon yo te fè'}
-          </h2>
-          {rows && rows.length > 0 && (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-              {rows.length}
-            </span>
-          )}
+              ? 'Articles modifiés par ce texte dans d’autres lois.'
+              : 'Atik tèks sa modifye nan lòt lwa yo.'}
+          </p>
         </div>
-        <p className="text-xs text-slate-500 dark:text-slate-400 italic">
-          {lang === 'fr'
-            ? 'Articles modifiés par ce texte dans d’autres lois.'
-            : 'Atik tèks sa modifye nan lòt lwa yo.'}
-        </p>
-      </div>
+      </button>
+      {open && (
+      <div id="changes-made-panel-body">
 
       {loading && (
         <div className="flex items-center gap-2 text-xs text-slate-500">
@@ -182,13 +207,17 @@ export function ChangesMadePanel({ lawSlug, lang }: Props) {
                   href: `/loi/${r.amended_text_slug}`,
                 }
               : {
-                  // Article edit — label like "Article 1444".
+                  // Article edit — label like "Article 1444". Uses
+                  // ?article=N so the destination law's windowed
+                  // article list auto-expands ancestor accordions and
+                  // scrolls to the row (vs the legacy #slug hash which
+                  // only worked when the article was already rendered).
                   label:
                     (lang === 'fr' ? 'Article ' : 'Atik ') +
                     (r.amended_article_number ?? '—'),
                   versionNumber: r.new_version_number,
-                  href: r.amended_article_slug
-                    ? `/loi/${r.amended_text_slug}#${r.amended_article_slug}`
+                  href: r.amended_article_number
+                    ? `/loi/${r.amended_text_slug}?article=${encodeURIComponent(r.amended_article_number)}`
                     : `/loi/${r.amended_text_slug}`,
                 }
             return (
@@ -235,6 +264,8 @@ export function ChangesMadePanel({ lawSlug, lang }: Props) {
             )
           })}
         </ul>
+      )}
+      </div>
       )}
     </section>
   )

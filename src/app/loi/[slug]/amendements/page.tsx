@@ -420,6 +420,7 @@ export default function AmendementsPage() {
             count={modified.length}
             accent="emerald"
             Icon={FileText}
+            forceOpen={filter === 'modified'}
           >
             <div className="space-y-5">
               {modified.map((row) => (
@@ -454,6 +455,7 @@ export default function AmendementsPage() {
             count={added.length}
             accent="sky"
             Icon={Sparkles}
+            forceOpen={filter === 'added'}
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {added.map((row) => (
@@ -474,6 +476,7 @@ export default function AmendementsPage() {
             count={abrogated.length}
             accent="rose"
             Icon={XCircle}
+            forceOpen={filter === 'abrogated'}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {abrogated.map((row) => (
@@ -560,6 +563,7 @@ function Section({
   accent,
   Icon,
   children,
+  forceOpen = false,
 }: {
   id: string
   title: string
@@ -568,7 +572,20 @@ function Section({
   accent: 'emerald' | 'sky' | 'rose'
   Icon: React.ComponentType<{ className?: string }>
   children: React.ReactNode
+  /** When a single-section filter is active (?filter=modified|added|abrogated)
+   *  the section is the only thing on the page — always-open + no toggle. */
+  forceOpen?: boolean
 }) {
+  // Default-closed accordion — opens on user click. Forced open when the
+  // page-level filter has narrowed the view to just this section. The
+  // ?article=N deep-link case is handled by the parent (auto-opening
+  // the section containing the target article).
+  const [open, setOpen] = useState(forceOpen)
+  // Keep state in sync if the filter prop flips at runtime.
+  useEffect(() => {
+    if (forceOpen) setOpen(true)
+  }, [forceOpen])
+
   const accentTextCls = {
     emerald: 'text-emerald-700 dark:text-emerald-300',
     sky: 'text-sky-700 dark:text-sky-300',
@@ -579,27 +596,52 @@ function Section({
     sky: 'bg-sky-50 border-sky-200 dark:bg-sky-500/10 dark:border-sky-500/30',
     rose: 'bg-rose-50 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/30',
   }[accent]
+
+  const panelId = `${id}-panel`
+
   return (
     <section id={id} className="scroll-mt-24">
-      <div className="flex items-center gap-3 mb-1">
-        <span
-          className={cn(
-            'inline-flex items-center justify-center w-8 h-8 rounded-full border',
-            accentBgCls,
-            accentTextCls,
+      <button
+        type="button"
+        onClick={() => !forceOpen && setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls={panelId}
+        disabled={forceOpen}
+        className={cn(
+          'w-full text-left group',
+          !forceOpen && 'cursor-pointer',
+        )}
+      >
+        <div className="flex items-center gap-3 mb-1">
+          <span
+            className={cn(
+              'inline-flex items-center justify-center w-8 h-8 rounded-full border',
+              accentBgCls,
+              accentTextCls,
+            )}
+          >
+            <Icon className="w-4 h-4" />
+          </span>
+          <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+            {title}
+          </h2>
+          <span className="ml-1 inline-flex items-center text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 tabular-nums">
+            {count}
+          </span>
+          {!forceOpen && (
+            <ChevronDown
+              className={cn(
+                'ml-auto w-5 h-5 text-slate-400 dark:text-slate-500 transition-transform duration-200',
+                open ? 'rotate-0' : '-rotate-90',
+                'group-hover:text-slate-600 dark:group-hover:text-slate-300',
+              )}
+              aria-hidden
+            />
           )}
-        >
-          <Icon className="w-4 h-4" />
-        </span>
-        <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-          {title}
-        </h2>
-        <span className="ml-1 inline-flex items-center text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 tabular-nums">
-          {count}
-        </span>
-      </div>
-      <p className="text-sm text-slate-500 dark:text-slate-400 mb-5 max-w-3xl">{subtitle}</p>
-      {children}
+        </div>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-5 max-w-3xl">{subtitle}</p>
+      </button>
+      {open && <div id={panelId}>{children}</div>}
     </section>
   )
 }
