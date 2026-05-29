@@ -78,7 +78,7 @@ export default async function MoniteurRecentSection() {
           <div className="mt-8 text-center">
             <Link
               href="/moniteur"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-primary hover:border-primary/40 hover:shadow-sm transition-all"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-5 py-2.5 text-sm font-semibold text-primary hover:border-primary/40 hover:shadow-sm dark:hover:bg-slate-800 transition-all"
             >
               {t('home.moniteurRecent.cta')}
               <ArrowRight className="w-4 h-4" />

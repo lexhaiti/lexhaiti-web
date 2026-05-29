@@ -79,10 +79,11 @@ export function MoniteurIssueCard({
         className,
       )}
     >
-      {/* Header band — navy, with subtle diagonal sheen. */}
+      {/* Header band — navy in light, dark slate in dark with subtle
+          diagonal sheen so the band still reads as a distinct frame. */}
       <div
         className={cn(
-          'relative bg-primary text-white overflow-hidden',
+          'relative bg-primary dark:bg-slate-800/80 text-white overflow-hidden border-b border-transparent dark:border-slate-700/60',
           isCompact ? 'px-5 py-4' : 'px-6 py-5',
         )}
       >
