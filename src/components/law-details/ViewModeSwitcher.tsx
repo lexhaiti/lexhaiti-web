@@ -78,7 +78,10 @@ export function ViewModeSwitcher({
             aria-selected={isActive}
             onClick={() => onChange(m)}
             className={cn(
-              'group inline-flex items-center gap-1.5 rounded-full px-2.5 sm:px-3 py-1.5 text-[12px] font-semibold transition-all',
+              // px-4 on mobile / px-3 at sm+ — mobile segments breathe
+              // a bit more so the switcher fills more of the row
+              // alongside the Sommaire pill without squashing labels.
+              'group inline-flex items-center gap-1.5 rounded-full px-4 sm:px-3 py-1.5 text-[12px] font-semibold transition-all',
               isActive
                 ? 'bg-primary dark:bg-slate-700 text-white shadow-sm'
                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100',

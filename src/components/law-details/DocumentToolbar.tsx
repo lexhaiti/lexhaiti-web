@@ -24,14 +24,24 @@
 import {
   CalendarClock,
   CalendarDays,
+  Check,
+  ChevronDown,
   Copy,
   Eye,
   EyeOff,
   LinkIcon,
   Maximize2,
   Minimize2,
+  SlidersHorizontal,
 } from 'lucide-react'
 import { useToast } from '@/components/ui/toast-simple'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 
 export type ViewAsOfDate = 'today' | 'initial'
@@ -122,17 +132,134 @@ export function DocumentToolbar({
   const activeChip =
     'bg-primary dark:bg-slate-700 text-white border-primary dark:border-slate-600 hover:bg-primary/90 dark:hover:bg-slate-600'
 
+  // Mobile: collapse the 7-chip strip into a single "Outils" /
+  // "Zouti" dropdown so the user doesn't have to swipe horizontally
+  // through a one-line scroll buffet to find the right action. The
+  // active states (Aujourd'hui vs Initiale, Masquer abrogés on/off)
+  // are surfaced inline via a check icon on the active row.
+  const abrogatedLabel = isFr
+    ? hideAbrogated
+      ? 'Afficher les articles abrogés'
+      : 'Masquer les articles et sections abrogés'
+    : hideAbrogated
+      ? 'Afiche atik abwoje yo'
+      : 'Kache atik ak seksyon abwoje yo'
+
   return (
-    // Mobile: horizontal scroll strip so the chrono panel + article
-    // content underneath aren't buried beneath a 7-row button stack.
-    // Desktop/tablet: wrap to the existing 1–2 row layout. Scrollbar
-    // hidden so the chip strip reads cleanly without an underline.
-    <div
-      className={cn(
-        'flex items-center gap-2 text-[12px]',
-        'flex-nowrap sm:flex-wrap mt-3 mb-5 overflow-x-auto sm:overflow-visible -mx-2 px-2 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-      )}
-    >
+    <>
+      {/* Mobile (below sm): single dropdown trigger that opens the
+          stacked action list. Removes the horizontal-scroll strip
+          per user feedback — easier to find an action when each row
+          is full-width and tap-sized. */}
+      <div className="sm:hidden mt-3 mb-5">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className={cn(
+                'inline-flex items-center gap-2 rounded-full border h-9 px-4',
+                'text-[12px] font-medium',
+                'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300',
+                'hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors',
+              )}
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" aria-hidden />
+              {isFr ? 'Outils' : 'Zouti'}
+              <ChevronDown className="w-3.5 h-3.5 opacity-60" aria-hidden />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="min-w-[260px]">
+            {showViewAsOf && (
+              <>
+                <DropdownMenuItem
+                  onClick={() => onChangeViewAsOfDate('today')}
+                >
+                  <CalendarDays className="w-4 h-4" aria-hidden />
+                  <span className="flex-1">
+                    {isFr
+                      ? "Version à la date d'aujourd'hui"
+                      : "Vèsyon nan dat jodi a"}
+                  </span>
+                  {viewAsOfDate === 'today' && (
+                    <Check className="w-4 h-4 text-primary" aria-hidden />
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => onChangeViewAsOfDate('initial')}
+                >
+                  <LinkIcon className="w-4 h-4" aria-hidden />
+                  <span className="flex-1">
+                    {isFr
+                      ? 'Accéder à la version initiale'
+                      : 'Ale nan vèsyon orijinal la'}
+                  </span>
+                  {viewAsOfDate === 'initial' && (
+                    <Check className="w-4 h-4 text-primary" aria-hidden />
+                  )}
+                </DropdownMenuItem>
+                {(showChrono || showAbrogatedToggle || showCollapseAll) && (
+                  <DropdownMenuSeparator />
+                )}
+              </>
+            )}
+            {showChrono && (
+              <DropdownMenuItem onClick={onToggleChrono}>
+                <CalendarClock className="w-4 h-4" aria-hidden />
+                <span className="flex-1">
+                  {isFr
+                    ? 'Voir les versions dans le temps'
+                    : 'Wè vèsyon yo nan tan'}
+                </span>
+                {chronoOpen && (
+                  <Check className="w-4 h-4 text-primary" aria-hidden />
+                )}
+              </DropdownMenuItem>
+            )}
+            {showAbrogatedToggle && (
+              <DropdownMenuItem onClick={onToggleHideAbrogated}>
+                {hideAbrogated ? (
+                  <Eye className="w-4 h-4" aria-hidden />
+                ) : (
+                  <EyeOff className="w-4 h-4" aria-hidden />
+                )}
+                <span className="flex-1">{abrogatedLabel}</span>
+              </DropdownMenuItem>
+            )}
+            {showCollapseAll && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onExpandAll}>
+                  <Maximize2 className="w-4 h-4" aria-hidden />
+                  <span className="flex-1">
+                    {isFr ? 'Tout ouvrir' : 'Louvri tout'}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onCollapseAll}>
+                  <Minimize2 className="w-4 h-4" aria-hidden />
+                  <span className="flex-1">
+                    {isFr ? 'Tout fermer' : 'Fèmen tout'}
+                  </span>
+                </DropdownMenuItem>
+              </>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={copyLink}>
+              <Copy className="w-4 h-4" aria-hidden />
+              <span className="flex-1">
+                {isFr ? 'Copier le lien' : 'Kopye lyen'}
+              </span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Tablet / desktop (sm+): existing chip strip. */}
+      <div
+        className={cn(
+          'hidden sm:flex items-center gap-2 text-[12px]',
+          'flex-wrap mt-3 mb-5',
+        )}
+      >
       {showViewAsOf && (
         <>
           <button
@@ -232,5 +359,6 @@ export function DocumentToolbar({
         {isFr ? 'Copier le lien' : 'Kopye lyen'}
       </button>
     </div>
+    </>
   )
 }
