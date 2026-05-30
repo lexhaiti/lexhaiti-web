@@ -24,11 +24,20 @@ export function isHtmlEffectivelyEmpty(html: string): boolean {
 /**
  * Heuristic: does this body string look like HTML?
  *
- * True for anything starting with an HTML tag — what Tiptap emits.
- * False for legacy plain-text bodies imported before Tiptap shipped,
- * so the existing paragraph splitter stays in charge of those.
+ * True for any string that contains at least one HTML tag (opening
+ * OR closing). Before, the regex only matched strings that *started*
+ * with a tag — which broke linkified content like
+ * ``"Vu les articles <a class=\"rt-art-ref\">282</a>, ..."`` (starts
+ * with prose, has tags mid-string). Those were falling through to
+ * the plain-text branch and rendering with the angle brackets
+ * escaped.
+ *
+ * The new regex requires a tag with a letter immediately after ``<``
+ * (so prose like ``"x < 5"`` doesn't false-positive). False for
+ * legacy plain-text bodies imported before Tiptap shipped, so the
+ * existing paragraph splitter stays in charge of those.
  */
-const HTML_BODY_RE = /^\s*<[a-z][^>]*>/i
+const HTML_BODY_RE = /<\/?[a-z][a-z0-9]*(?:\s[^>]*)?>/i
 
 export function looksLikeHtml(value: string | null | undefined): boolean {
   if (!value) return false
