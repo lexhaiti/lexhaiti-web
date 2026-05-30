@@ -21,7 +21,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { Check, Monitor, Moon, Sun, SunMoon } from 'lucide-react'
+import { Check, Cog, Moon, Sun, SunMoon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
 import { useT } from '@/i18n/useT'
@@ -52,7 +52,7 @@ const OPTIONS: ReadonlyArray<{
     value: 'system',
     labelKey: 'theme.options.system.label',
     descKey: 'theme.options.system.description',
-    Icon: Monitor,
+    Icon: Cog,
   },
 ]
 

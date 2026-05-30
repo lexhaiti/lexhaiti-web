@@ -1367,18 +1367,18 @@ export const ht = {
         invalidNumber: 'Nimewo atik la pa valab. Li dwe gen omwen yon chif.',
       },
     },
-    theme: {
-      openSettings: 'Paramèt afichaj',
-      dialogTitle: 'Paramèt afichaj',
-      dialogDescription:
-        'Chwazi yon tèm pou pèsonalize aparans sit la.',
-      options: {
-        light: { label: 'Tèm klè' },
-        dark: { label: 'Tèm fonse' },
-        system: {
-          label: 'Sistèm',
-          description: 'Sèvi ak paramèt sistèm yo',
-        },
+  },
+
+  theme: {
+    openSettings: 'Paramèt afichaj',
+    dialogTitle: 'Paramèt afichaj',
+    dialogDescription: 'Chwazi yon tèm pou pèsonalize aparans sit la.',
+    options: {
+      light: { label: 'Tèm klè' },
+      dark: { label: 'Tèm fonse' },
+      system: {
+        label: 'Sistèm',
+        description: 'Sèvi ak paramèt sistèm yo',
       },
     },
   },
