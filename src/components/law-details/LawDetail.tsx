@@ -393,23 +393,29 @@ export default function LawDetail() {
 
   // Dynamic label for the "Par chapitre" switcher segment — follows the
   // law's HIGHEST heading level (the level of the root headings). A
-  // Titre-rooted text reads "Par titre", a Livre-rooted one "Par livre",
-  // etc. Falls back to "Par chapitre" when there are no headings or the
-  // level is unknown. The « N° » suffix on the Code-civil "Loi N°"
-  // override is stripped so it reads "Par loi".
+  // Titre-rooted text reads "Titre", a Livre-rooted one "Livre", etc.
+  // Falls back to "Chapitre" when there are no headings or the level
+  // is unknown. The « N° » suffix on the Code-civil "Loi N°" override
+  // is stripped so the chip reads "Loi" rather than "Loi N°". The
+  // leading "Par " / "Pa " is dropped — at switcher-pill scale the
+  // single-noun reads as a segmented choice without the preposition.
   const chapitreLabel = useMemo(() => {
     const codeSubcategory = law?.code_subcategory ?? null
     const tops = (law?.headings ?? []).filter((h) => h.parent_id == null)
     const level = tops[0]?.level
-    // Lowercase, then drop a trailing « N° » / « Nº » numéro indicator
-    // (the Code-civil "Loi N°" override) so the chip reads "Par loi".
+    const titleCase = (s: string | null) =>
+      s ? s.charAt(0).toUpperCase() + s.slice(1) : null
+    // Lowercase, then drop a trailing « N° » / « Nº » numéro indicator,
+    // then re-title-case so "Loi" / "Titre" / "Livre" all render with
+    // the same capitalization rhythm as the surrounding "Tous" /
+    // "Article" segments.
     const clean = (s: string | null) =>
-      s ? s.toLowerCase().replace(/\s*n[°º].*$/i, '').trim() : null
+      s ? titleCase(s.toLowerCase().replace(/\s*n[°º].*$/i, '').trim()) : null
     const fr = clean(getLevelLabel(level, 'fr', codeSubcategory))
     const ht = clean(getLevelLabel(level, 'ht', codeSubcategory))
     return {
-      fr: fr ? `Par ${fr}` : 'Par chapitre',
-      ht: ht ? `Pa ${ht}` : 'Pa chapit',
+      fr: fr ?? 'Chapitre',
+      ht: ht ?? 'Chapit',
     }
   }, [law?.headings, law?.code_subcategory])
 
@@ -1030,7 +1036,7 @@ export default function LawDetail() {
             <div
               ref={articleViewerRef}
               className={cn(
-                'mb-8 scroll-mt-24 transition-opacity duration-150',
+                'mb-2 scroll-mt-24 transition-opacity duration-150',
                 // Dim the outgoing view for the brief beat while the
                 // deferred render builds the incoming one.
                 isViewSwitching && 'opacity-50',

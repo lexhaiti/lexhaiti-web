@@ -32,8 +32,13 @@ interface Props {
 
 const LABELS: Record<ViewMode, { fr: string; ht: string; Icon: typeof Layers }> = {
   tous: { fr: 'Tous', ht: 'Tout', Icon: Layers },
-  chapitre: { fr: 'Par chapitre', ht: 'Pa chapit', Icon: BookOpen },
-  article: { fr: 'Un article', ht: 'Yon atik', Icon: FileText },
+  // ``chapitre`` label is almost always overridden by ``chapitreLabel``
+  // (resolved from the law's highest heading level — Titre, Livre,
+  // Loi, …). The defaults here only kick in for texts with no headings
+  // at all. Stripped of the "Par " preposition to match the
+  // single-noun rhythm of "Tous" and "Article".
+  chapitre: { fr: 'Chapitre', ht: 'Chapit', Icon: BookOpen },
+  article: { fr: 'Article', ht: 'Atik', Icon: FileText },
 }
 
 export function ViewModeSwitcher({

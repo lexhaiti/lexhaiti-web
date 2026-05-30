@@ -110,9 +110,11 @@ export function SearchPanel({
 
         {/* Mobile / tablet row for the view-mode switcher + sommaire
             toggle — same controls as the desktop right-edge cluster,
-            just stacked. Hidden at lg+ to avoid duplication. */}
+            just stacked. ``justify-between`` so the switcher anchors
+            left and the Sommaire pill anchors right, claiming the
+            full row width. Hidden at lg+ to avoid duplication. */}
         {(rightControls || showSidebarToggle) && (
-          <div className="flex flex-wrap items-center gap-2 lg:hidden">
+          <div className="flex flex-wrap items-center justify-between gap-2 lg:hidden">
             {rightControls}
             {showSidebarToggle && (
               <button
