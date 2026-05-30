@@ -18,9 +18,25 @@
  *
  * Selecting an option applies immediately and closes the dialog —
  * no separate "Save" button; the change IS the confirmation.
+ *
+ * Accessibility
+ * -------------
+ * The three options are a WAI-ARIA radio group: container has
+ * ``role="radiogroup"``, each option ``role="radio"`` +
+ * ``aria-checked``. Arrow keys (Up/Down + Left/Right) move focus
+ * *and* select, matching the platform radio convention; Tab moves
+ * focus into and out of the group as a single stop. Each option
+ * has a visible focus-visible ring so keyboard users can see where
+ * they are.
+ *
+ * Responsive
+ * ----------
+ * Dialog width is ``calc(100% - 2rem)`` below sm (16px margin per
+ * side on phones) and ``max-w-md`` above, so the cards never butt
+ * against the viewport edge.
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, Cog, Moon, Sun, SunMoon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
@@ -61,6 +77,7 @@ export function ThemeToggle({ className }: Props) {
   const { t } = useT()
   const [open, setOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const radioRefs = useRef<Array<HTMLButtonElement | null>>([])
 
   useEffect(() => setMounted(true), [])
 
@@ -71,6 +88,37 @@ export function ThemeToggle({ className }: Props) {
   const handleSelect = (value: ThemeValue) => {
     setTheme(value)
     setOpen(false)
+  }
+
+  // Radio-group keyboard navigation: Arrow keys move focus + select.
+  // Home/End jump to first/last. Space + Enter activate the focused
+  // option (browsers do Enter for free on <button>, but radios get
+  // both via this handler for consistency).
+  const onRadioKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, idx: number) => {
+    const n = OPTIONS.length
+    let nextIdx: number | null = null
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      nextIdx = (idx + 1) % n
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      nextIdx = (idx - 1 + n) % n
+    } else if (e.key === 'Home') {
+      nextIdx = 0
+    } else if (e.key === 'End') {
+      nextIdx = n - 1
+    } else if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault()
+      handleSelect(OPTIONS[idx].value)
+      return
+    }
+    if (nextIdx != null) {
+      e.preventDefault()
+      const target = radioRefs.current[nextIdx]
+      if (target) {
+        target.focus()
+        // Radio convention: arrow keys move + select in one step.
+        handleSelect(OPTIONS[nextIdx].value)
+      }
+    }
   }
 
   return (
@@ -86,6 +134,7 @@ export function ThemeToggle({ className }: Props) {
           'hover:border-primary hover:text-primary transition-colors',
           'dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200',
           'dark:hover:border-primary dark:hover:text-primary',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950',
           className,
         )}
       >
@@ -93,9 +142,9 @@ export function ThemeToggle({ className }: Props) {
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-2xl">
+            <DialogTitle className="text-xl sm:text-2xl">
               {t('theme.dialogTitle')}
             </DialogTitle>
             <DialogDescription>
@@ -103,18 +152,32 @@ export function ThemeToggle({ className }: Props) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-2 flex flex-col gap-3">
-            {OPTIONS.map((opt) => {
+          <div
+            role="radiogroup"
+            aria-label={t('theme.dialogTitle')}
+            className="mt-2 flex flex-col gap-3"
+          >
+            {OPTIONS.map((opt, idx) => {
               const isSelected = current === opt.value
               const Icon = opt.Icon
               return (
                 <button
                   key={opt.value}
+                  ref={(el) => {
+                    radioRefs.current[idx] = el
+                  }}
                   type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  // Roving tabindex: only the selected option is in
+                  // the Tab order; arrow keys move within the group.
+                  // Matches the WAI-ARIA radio-group pattern.
+                  tabIndex={isSelected ? 0 : -1}
                   onClick={() => handleSelect(opt.value)}
-                  aria-pressed={isSelected}
+                  onKeyDown={(e) => onRadioKeyDown(e, idx)}
                   className={cn(
                     'group flex items-center gap-3 rounded-xl border-2 px-4 py-3.5 text-left transition-all',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900',
                     isSelected
                       ? 'border-primary bg-primary/5 dark:bg-primary/10 ring-2 ring-primary/20'
                       : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50',
