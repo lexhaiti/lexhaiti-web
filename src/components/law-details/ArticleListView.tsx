@@ -218,8 +218,49 @@ export function ArticleListView({
   const deferredQuery = useDeferredValue(searchQuery ?? '')
   const q = normalize(deferredQuery.trim())
 
+  // Sort articles by HEADING HIERARCHY first, then by their own
+  // position. Without this, articles added by later amendments
+  // (e.g. art 207-2bis added to Titre VI by a 2012 amendment) end up
+  // appended to the end of the corpus by raw ``position`` — even
+  // though they semantically belong inside an earlier Titre. That
+  // makes the parent Titre's heading-row render twice: once in its
+  // proper place with the original articles, and once at the very
+  // end with just the amended-in article. Re-sorting by the heading
+  // path puts every amended-in article back where it reads.
+  //
+  // Sort key: ``[...heading_path_positions, article.position]``.
+  // Articles with no heading (orphans / pre-articles) get an empty
+  // path prefix so they sort by their own position relative to the
+  // first heading row.
+  const articlesByHeading = useMemo(() => {
+    const sortKey = (a: any): number[] => {
+      const path = getPath(a.heading_id)
+      // ``position`` on each ancestor heading + the article's own
+      // position. ``?? 0`` is a defensive fallback for headings that
+      // somehow lack a position (shouldn't happen in practice).
+      return [
+        ...path.map((h) => (h as any).position ?? 0),
+        a.position ?? 0,
+      ]
+    }
+    const cmp = (ka: number[], kb: number[]) => {
+      const n = Math.max(ka.length, kb.length)
+      for (let i = 0; i < n; i++) {
+        const va = ka[i] ?? -1
+        const vb = kb[i] ?? -1
+        if (va !== vb) return va - vb
+      }
+      return 0
+    }
+    const decorated = articles.map((a) => ({ a, k: sortKey(a) }))
+    decorated.sort((x, y) => cmp(x.k, y.k))
+    return decorated.map((d) => d.a)
+    // pathByHeadingId is the dep that matters; ``getPath`` reads it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [articles, pathByHeadingId])
+
   const filteredArticles = useMemo(() => {
-    let base = articles
+    let base = articlesByHeading
     if (hideAbrogated) {
       base = base.filter((a) => a.status !== 'abrogated')
     }
@@ -252,7 +293,7 @@ export function ArticleListView({
       return false
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [articles, q, searchScope, lang, pathByHeadingId, hideAbrogated])
+  }, [articlesByHeading, q, searchScope, lang, pathByHeadingId, hideAbrogated])
 
   // ─── Render windowing ────────────────────────────────────────────
   // Even with ``content-visibility:auto`` skipping off-screen *paint*,
