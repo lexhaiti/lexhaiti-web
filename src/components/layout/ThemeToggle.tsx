@@ -16,26 +16,24 @@
  * IGNORING the OS setting. Picking ``Système`` again clears the
  * explicit override and re-enables OS-following.
  *
- * Selecting an option applies immediately and closes the dialog —
- * no separate "Save" button; the change IS the confirmation.
+ * Selecting an option applies the theme immediately — the change
+ * IS the confirmation — and the dialog stays open as a control
+ * panel. The user dismisses it by clicking the "Fermer" button or
+ * pressing Escape. This mirrors the macOS / Légifrance pattern
+ * where appearance is a setting you tweak and observe, not a
+ * one-shot menu.
  *
  * Accessibility
  * -------------
  * The three options are a WAI-ARIA radio group: container has
  * ``role="radiogroup"``, each option ``role="radio"`` +
- * ``aria-checked``. Tab moves focus into and out of the group as a
- * single stop. Each option has a visible focus-visible ring so
- * keyboard users can see where they are.
- *
- * Arrow keys here MOVE FOCUS ONLY — the strict WAI-ARIA radio
- * convention is "arrow keys move + select", but that pattern
- * assumes the container stays open while the user browses. Our
- * dialog closes on every select; combining "auto-select on arrow"
- * with "close on select" would commit-and-close before the user
- * sees the highlighted option. Space / Enter (or click) commit
- * the focused option. This is the "explore then commit" pattern
- * recommended for radio groups that gate a destructive-feeling
- * action like switching the whole site theme.
+ * ``aria-checked``. Arrow keys (Up/Down + Left/Right) move focus
+ * *and* select, matching the strict WAI-ARIA radio convention.
+ * Home/End jump to first/last. Space and Enter commit the focused
+ * option (redundant with arrow-key auto-select, but expected by
+ * keyboard users). Tab moves focus into and out of the group as a
+ * single stop (roving tabindex anchors Tab to the selected option).
+ * Each option has a visible focus-visible ring.
  *
  * Responsive
  * ----------
@@ -93,15 +91,17 @@ export function ThemeToggle({ className }: Props) {
   // configured ``system`` default. Avoids hydration mismatch.
   const current: ThemeValue = mounted ? ((theme as ThemeValue) ?? 'system') : 'system'
 
+  // Selection applies the theme but doesn't dismiss the dialog —
+  // the user closes via the Fermer button or Escape.
   const handleSelect = (value: ThemeValue) => {
     setTheme(value)
-    setOpen(false)
   }
 
-  // Keyboard navigation: arrow keys MOVE FOCUS ONLY, Space / Enter
-  // commit. See module-level docs for why we diverge from the strict
-  // WAI-ARIA radio convention (auto-select would commit-and-close
-  // before the user can see the highlighted option).
+  // Keyboard navigation matches the strict WAI-ARIA radio convention:
+  // arrow keys move focus AND select (since the dialog stays open,
+  // arrow-browsing now safely previews each theme live). Space and
+  // Enter commit the currently-focused option (no-op if it was
+  // already selected by the arrow key, but expected behaviour).
   const onRadioKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, idx: number) => {
     const n = OPTIONS.length
     let nextIdx: number | null = null
@@ -121,6 +121,7 @@ export function ThemeToggle({ className }: Props) {
     if (nextIdx != null) {
       e.preventDefault()
       radioRefs.current[nextIdx]?.focus()
+      handleSelect(OPTIONS[nextIdx].value)
     }
   }
 
@@ -145,7 +146,10 @@ export function ThemeToggle({ className }: Props) {
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md">
+        <DialogContent
+          className="w-[calc(100%-2rem)] sm:max-w-md"
+          closeLabel={t('theme.closeButton')}
+        >
           <DialogHeader>
             <DialogTitle className="text-xl sm:text-2xl">
               {t('theme.dialogTitle')}

@@ -1373,6 +1373,7 @@ export const ht = {
     openSettings: 'Paramèt afichaj',
     dialogTitle: 'Paramèt afichaj',
     dialogDescription: 'Chwazi yon tèm pou pèsonalize aparans sit la.',
+    closeButton: 'Fèmen',
     options: {
       light: { label: 'Tèm klè' },
       dark: { label: 'Tèm fonse' },

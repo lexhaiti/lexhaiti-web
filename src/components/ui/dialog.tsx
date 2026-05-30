@@ -41,10 +41,20 @@ const DialogOverlay = React.forwardRef<
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
+type DialogContentProps = React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Content
+> & {
+  /** Optional visible label next to the close X (e.g. "Fermer").
+   *  When set, the label also overrides the close button's
+   *  ``aria-label``. When omitted, the default Légifrance-style
+   *  icon-only close is rendered with ``aria-label="Close"``. */
+  closeLabel?: string
+}
+
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  DialogContentProps
+>(({ className, children, closeLabel, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -62,9 +72,16 @@ const DialogContent = React.forwardRef<
     >
       {children}
       <DialogPrimitive.Close
-        className="absolute right-4 top-4 rounded-md opacity-60 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-        aria-label="Close"
+        className={cn(
+          'absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-md transition-opacity',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
+          closeLabel
+            ? 'text-sm font-semibold text-primary hover:opacity-80'
+            : 'opacity-60 hover:opacity-100',
+        )}
+        aria-label={closeLabel ?? 'Close'}
       >
+        {closeLabel && <span>{closeLabel}</span>}
         <X className="h-4 w-4" />
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>

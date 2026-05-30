@@ -1397,6 +1397,7 @@ export const fr = {
     dialogTitle: "Paramètres d'affichage",
     dialogDescription:
       "Choisissez un thème pour personnaliser l'apparence du site.",
+    closeButton: 'Fermer',
     options: {
       light: { label: 'Thème clair' },
       dark: { label: 'Thème sombre' },
