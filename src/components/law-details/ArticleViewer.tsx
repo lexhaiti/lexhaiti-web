@@ -884,14 +884,22 @@ export default function ArticleViewer({
            The article number is the article-level <h2> — gives screen
            readers a real heading per article so the 499-article reader
            has a usable document outline. Visually identical to before. */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+        {/* On mobile we ALWAYS stack the breadcrumb/article-number row
+            on top of the status+icons row — even when the row would
+            technically fit, the article number ends up visually
+            colliding with the status pill at narrow widths. ``items-
+            start`` on mobile aligns the breadcrumb to the left edge
+            so it doesn't drift below the status cluster's vertical
+            center. At sm+ we go back to the row layout with
+            ``justify-between``. */}
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3 mb-3">
           <nav
             aria-label={
               currentLang === 'fr'
                 ? 'Chemin dans le texte'
                 : 'Chemen nan tèks la'
             }
-            className="flex items-center gap-1.5 text-sm font-medium text-gray-500 dark:text-slate-400 min-w-0 flex-1"
+            className="flex items-center gap-1.5 text-sm font-medium text-gray-500 dark:text-slate-400 min-w-0 max-w-full sm:flex-1"
           >
             {/* Ancestors as ONE truncating string — shows leading text +
                 ellipsis on narrow screens instead of collapsing each label
@@ -973,7 +981,7 @@ export default function ArticleViewer({
             </h2>
           </nav>
 
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-3 flex-shrink-0 flex-wrap">
             {isEditor && article ? (
               /* Editor-only inline status flip — drops directly into
                   ``current_version.status`` without creating a new
