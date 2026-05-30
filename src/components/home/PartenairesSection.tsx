@@ -3,25 +3,16 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Building2, GraduationCap, Scale } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { SectionHeading } from '@/components/shared/SectionHeading'
 import { getT } from '@/i18n/server'
 
 // Copy lives at `home.partenaires.*` in i18n/{fr,ht}.ts.
-// Partner-type icons stay here — they're component references, not
-// translatable strings.
-const TYPES = [
-  { key: 'universities' as const, icon: GraduationCap },
-  { key: 'bars' as const, icon: Scale },
-  { key: 'ngos' as const, icon: Building2 },
-]
-
-// Active partner logos. The grid auto-balances 1/2/3 across mobile/
-// tablet/desktop so a single partner reads as intentional, and adding
-// more later doesn't require markup changes — just push a new entry.
-// ``logoMaxH`` lets each logo pick its own ceiling (logos with lots
-// of bottom whitespace can claim more vertical space without dwarfing
-// the tile).
+// Active partner logos. The grid flex-wraps and centers, so 1 / 2 /
+// 3+ partners all read as intentional layouts without touching
+// markup. ``logoMaxH`` lets each logo pick its own ceiling — wide
+// horizontal lockups (APRANN) want a short max so they don't overrun
+// the tile; squarer marks (Relève) get more vertical headroom.
 const PARTNERS = [
   {
     id: 'aprann',
@@ -31,6 +22,15 @@ const PARTNERS = [
     width: 1292,
     height: 413,
     logoMaxH: 'max-h-12 sm:max-h-14',
+  },
+  {
+    id: 'releve-leadership',
+    name: 'Relève Leadership',
+    href: 'https://releveleadership.org/',
+    logo: '/partners/releve-leadership-logo.png',
+    width: 522,
+    height: 401,
+    logoMaxH: 'max-h-16 sm:max-h-20',
   },
 ]
 
@@ -94,30 +94,7 @@ export default async function PartenairesSection() {
           </div>
         )}
 
-        {/* Partner-types grid — full-width stretch, the tiles share
-            the same gutter as the heading so the band reads as one
-            unified surface. Dashed border still signals "open to
-            partners, not yet filled with logos". */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-12 animate-in fade-in slide-in-from-bottom-2 duration-500">
-          {TYPES.map((type, i) => {
-            const Icon = type.icon
-            return (
-              <div
-                key={i}
-                className="group flex items-center gap-5 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 px-6 py-6 backdrop-blur-sm transition-all hover:border-primary/40 hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm"
-              >
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/[0.06] border border-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white group-hover:border-primary">
-                  <Icon className="w-5 h-5" />
-                </div>
-                <span className="text-sm lg:text-base font-semibold text-slate-700 dark:text-slate-200 leading-tight">
-                  {t(`home.partenaires.types.${type.key}`)}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-
-        <div className="flex justify-center sm:justify-start">
+        <div className="mt-12 flex justify-center sm:justify-start">
           <Link
             href="/contact"
             className="inline-flex items-center gap-2 rounded-full bg-primary dark:bg-slate-800 text-white px-7 py-3 text-sm font-semibold hover:bg-primary/90 dark:hover:bg-slate-700 transition-colors group shadow-sm"
