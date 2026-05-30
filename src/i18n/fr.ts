@@ -1390,5 +1390,19 @@ export const fr = {
           "Numéro d'article invalide. Doit contenir au moins un chiffre.",
       },
     },
+    theme: {
+      openSettings: "Paramètres d'affichage",
+      dialogTitle: "Paramètres d'affichage",
+      dialogDescription:
+        "Choisissez un thème pour personnaliser l'apparence du site.",
+      options: {
+        light: { label: 'Thème clair' },
+        dark: { label: 'Thème sombre' },
+        system: {
+          label: 'Système',
+          description: 'Utilise les paramètres système',
+        },
+      },
+    },
   },
 } as const
