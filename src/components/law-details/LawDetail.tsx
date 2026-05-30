@@ -600,6 +600,41 @@ export default function LawDetail() {
   // the matching article into view.
   const lawDetailRootRef = React.useRef<HTMLDivElement>(null)
 
+  // Defensive href upgrade for cross-text rt-art-ref anchors. The
+  // backend linkifier v4 emits ``?view=article&article=N`` directly,
+  // but pre-v4 rows that haven't been re-backfilled yet still have
+  // ``?article=N`` alone, AND the React click-handler intercept below
+  // hasn't been reliably firing in prod (Next.js's own anchor
+  // capture-phase handler may be intercepting first, swallowing
+  // bubble-phase listeners). Walking the DOM right after the law
+  // body renders and rewriting the hrefs in place makes the link
+  // correct *as a regular link* — no JS intercept, no backfill
+  // dependency. Idempotent (skips anchors already correct) and
+  // re-runs each time the law data changes so freshly-mounted
+  // articles get the same treatment.
+  useEffect(() => {
+    const root = lawDetailRootRef.current
+    if (!root) return
+    const anchors = root.querySelectorAll<HTMLAnchorElement>(
+      'a.rt-art-ref[data-target]',
+    )
+    anchors.forEach((a) => {
+      const href = a.getAttribute('href') || ''
+      // Skip anchors that already have view=article (v4 backfilled
+      // OR already upgraded by this hook on a previous render).
+      if (href.includes('view=article')) return
+      // Only rewrite cross-text shape (starts with /loi/).
+      if (!href.startsWith('/loi/')) return
+      try {
+        const url = new URL(href, window.location.origin)
+        url.searchParams.set('view', 'article')
+        a.setAttribute('href', url.pathname + url.search)
+      } catch {
+        // Malformed href — leave it untouched.
+      }
+    })
+  }, [law?.id, law?.articles])
+
   // Article-reference link interception.
   // The backend linkifier (services/text/linkify.py) rewrites every
   // inline "article 295" / "art. 1382" / "article 267.2" mention in
