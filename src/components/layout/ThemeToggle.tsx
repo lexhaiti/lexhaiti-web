@@ -23,11 +23,19 @@
  * -------------
  * The three options are a WAI-ARIA radio group: container has
  * ``role="radiogroup"``, each option ``role="radio"`` +
- * ``aria-checked``. Arrow keys (Up/Down + Left/Right) move focus
- * *and* select, matching the platform radio convention; Tab moves
- * focus into and out of the group as a single stop. Each option
- * has a visible focus-visible ring so keyboard users can see where
- * they are.
+ * ``aria-checked``. Tab moves focus into and out of the group as a
+ * single stop. Each option has a visible focus-visible ring so
+ * keyboard users can see where they are.
+ *
+ * Arrow keys here MOVE FOCUS ONLY — the strict WAI-ARIA radio
+ * convention is "arrow keys move + select", but that pattern
+ * assumes the container stays open while the user browses. Our
+ * dialog closes on every select; combining "auto-select on arrow"
+ * with "close on select" would commit-and-close before the user
+ * sees the highlighted option. Space / Enter (or click) commit
+ * the focused option. This is the "explore then commit" pattern
+ * recommended for radio groups that gate a destructive-feeling
+ * action like switching the whole site theme.
  *
  * Responsive
  * ----------
@@ -90,10 +98,10 @@ export function ThemeToggle({ className }: Props) {
     setOpen(false)
   }
 
-  // Radio-group keyboard navigation: Arrow keys move focus + select.
-  // Home/End jump to first/last. Space + Enter activate the focused
-  // option (browsers do Enter for free on <button>, but radios get
-  // both via this handler for consistency).
+  // Keyboard navigation: arrow keys MOVE FOCUS ONLY, Space / Enter
+  // commit. See module-level docs for why we diverge from the strict
+  // WAI-ARIA radio convention (auto-select would commit-and-close
+  // before the user can see the highlighted option).
   const onRadioKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, idx: number) => {
     const n = OPTIONS.length
     let nextIdx: number | null = null
@@ -112,12 +120,7 @@ export function ThemeToggle({ className }: Props) {
     }
     if (nextIdx != null) {
       e.preventDefault()
-      const target = radioRefs.current[nextIdx]
-      if (target) {
-        target.focus()
-        // Radio convention: arrow keys move + select in one step.
-        handleSelect(OPTIONS[nextIdx].value)
-      }
+      radioRefs.current[nextIdx]?.focus()
     }
   }
 
