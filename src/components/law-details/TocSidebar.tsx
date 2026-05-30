@@ -318,17 +318,22 @@ export function TocSidebar({
         title={currentLang === 'fr' ? 'Sommaire' : 'Somè'}
         tabIndex={stickyActive ? 0 : -1}
         className={cn(
-          'inline-flex items-center justify-center',
+          'inline-flex items-center justify-center gap-2',
           // Right edge, immediately to the LEFT of ScrollToTop.
-          // ScrollToTop sits at right-6/8 (24/32px from edge) and
-          // is 44px wide, so right-20/24 (80/96px) lands the FAB
-          // with a ~12-20px gap to ScrollToTop's left edge — the
-          // two read as a paired set anchored to the bottom-right
-          // corner. ``useFooterAvoidance`` lifts them in tandem
+          // ``right-20/24`` anchors the FAB's right edge ~80/96px
+          // from the viewport edge — with ScrollToTop (44px) sitting
+          // at right-6/8, that leaves a ~12-20px gap between them.
+          // The pill grows LEFTWARD as the label widens, so the
+          // gap to ScrollToTop stays stable regardless of label
+          // length. ``useFooterAvoidance`` lifts the pair in tandem
           // above the footer when the user scrolls to the bottom.
           'fixed z-40 right-20 sm:right-24',
           'bottom-6 sm:bottom-8',
-          'h-12 w-12 lg:h-11 lg:w-11 rounded-full',
+          // Mobile / tablet (<lg): pill with icon + visible label
+          // ("Voir le sommaire"). Desktop (lg+): circular icon-only
+          // since the inline Sommaire toggle in SearchPanel's
+          // right-cluster already labels the function.
+          'h-12 lg:h-11 px-4 lg:px-0 lg:w-11 rounded-full',
           'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-lg',
           'hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2',
@@ -345,6 +350,9 @@ export function TocSidebar({
         ) : (
           <PanelLeft className="w-5 h-5" aria-hidden />
         )}
+        <span className="lg:hidden text-sm font-semibold whitespace-nowrap">
+          {currentLang === 'fr' ? 'Voir le sommaire' : 'Wè somè a'}
+        </span>
       </button>
 
       {/* Desktop Sidebar */}
