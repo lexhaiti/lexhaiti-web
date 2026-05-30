@@ -1686,21 +1686,9 @@ export type LegalTextMetadataPatch = {
   preamble_fr?: string | null
   preamble_ht?: string | null
   /** Single combined "partie introductive" — visas + considérants +
-   *  mentions + enacting formula in one field. Supersedes the per-kind
-   *  columns below (kept for legacy data only). */
+   *  mentions + enacting formula in one field. Sole source post-0046. */
   intro_fr?: string | null
   intro_ht?: string | null
-  visas_fr?: string | null
-  visas_ht?: string | null
-  considerants_fr?: string | null
-  considerants_ht?: string | null
-  /** Procedural mentions — "Sur le rapport du …" / "Et après
-   *  délibération …". Sits between considérants and the dispositif
-   *  word. Editable bilingually via the same EditableFormalBlock. */
-  mentions_procedurales_fr?: string | null
-  mentions_procedurales_ht?: string | null
-  enacting_formula_fr?: string | null
-  enacting_formula_ht?: string | null
   /** 'left' (default) or 'center' — display alignment of the
    *  enacting-formula block on the reader page. */
   enacting_formula_align?: 'left' | 'center'

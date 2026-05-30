@@ -116,15 +116,8 @@ export function TocSidebar({
     preambleExpanded,
     introExpanded,
     // Single "Partie introductive" entry — true when the text has any
-    // introductory content (the combined intro_fr field, or the legacy
-    // flat columns as a fallback).
-    hasIntro: !!(
-      (law as any).intro_fr ||
-      (law as any).intro_ht ||
-      law.visas_fr ||
-      law.considerants_fr ||
-      law.enacting_formula_fr
-    ),
+    // introductory content (the combined intro_fr/ht field).
+    hasIntro: !!((law as any).intro_fr || (law as any).intro_ht),
     isEditor,
     activeHeadingIds: articleBreadcrumb.map((h: any) => h.id),
     onHeadingTitleSave: async (id: number, field: string, next: string) => {

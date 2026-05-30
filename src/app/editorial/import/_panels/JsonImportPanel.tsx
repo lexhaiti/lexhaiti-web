@@ -16,10 +16,10 @@
  * The detected shape is surfaced as a small badge above the textarea
  * so the editor sees what's about to be sent. Two placeholder
  * examples ("legal text" and "moniteur") let the editor seed the
- * textarea with a working template — both include a ``signers``
- * block at the bottom so the editor sees where it lives in each
- * shape. Idempotent on both endpoints (slug for LegalText,
- * (year, number) for Moniteur).
+ * textarea with a working template — both showcase the consolidated
+ * ``intro_*`` + ``closing_*`` rich-text fields and the new
+ * editor-managed ``sections[]`` ("partie finale") array. Idempotent
+ * on both endpoints (slug for LegalText, (year, number) for Moniteur).
  *
  * Counterpart to ``backend/scripts/import_moniteur_json.py`` and the
  * ``POST /editorial/legal-texts`` create endpoint.
@@ -48,8 +48,20 @@ import type { components } from '@/lib/api-types'
 type LegalTextRead = components['schemas']['LegalTextRead']
 
 // ──────────────────────────────────────────────────────────────────────
-// Example payloads (legal text + moniteur). Both end with a ``signers``
-// array so the editor sees where to put it in each shape.
+// Example payloads (legal text + moniteur). Both showcase the current
+// schema: bilingual ``intro_*`` / ``closing_*`` rich-text fields
+// (closing_fr supersedes the dropped signers[] + official_formula
+// columns — migration 0047) and the editor-managed ``sections[]``
+// "partie finale" array.
+//
+// ``amends_text_slug`` (optional, top-level) is an ingest-time hint
+// for the article-reference linkifier: when this text is an amending
+// act that modifies exactly one other law, name that law's slug here
+// and "article N" refs in the body resolve to absolute
+// ``/loi/{slug}?article=N`` hrefs at create time. Without it the
+// linkifier falls back to same-law refs — the ``LegalChange`` graph
+// rows it consults don't exist yet on first create. Omit (or set to
+// null) for self-contained laws.
 // ──────────────────────────────────────────────────────────────────────
 
 const EXAMPLE_LEGAL_TEXT = `{
@@ -67,8 +79,10 @@ const EXAMPLE_LEGAL_TEXT = `{
   "issuing_authority": "parlement",
   "status": "in_force",
   "editorial_status": "draft",
+  "amends_text_slug": null,
   "preamble_fr": "<p>Préambule…</p>",
   "intro_fr": "<p>Vu la Constitution ;</p><p>Considérant que… ;</p><p>La Chambre des Députés et le Sénat ont voté la loi suivante :</p>",
+  "intro_ht": "<p>Vu Konstitisyon an ;</p><p>Konsideran ke… ;</p><p>Chanm Depite yo ak Sena a vote lwa sa a :</p>",
   "headings": [
     {
       "key": "titre-i",
@@ -103,18 +117,38 @@ const EXAMPLE_LEGAL_TEXT = `{
       }
     }
   ],
-  "signers": [
+  "closing_fr": "<p>Votée en sa séance du 21 mai 2026.</p><p><strong>Donné au Palais Législatif, à Port-au-Prince, le 22 mai 2026, An 223<sup>e</sup> de l'Indépendance.</strong></p><p>Jane DOE, Présidente de la République<br/>John DOE, Premier Ministre</p>",
+  "closing_ht": "<p>Vote nan seyans li ki te fèt 21 me 2026 a.</p><p><strong>Bay nan Palè Lejislatif la, Pòtoprens, 22 me 2026, 223èm Ane Endepandans la.</strong></p><p>Jane DOE, Prezidan Repiblik la<br/>John DOE, Premye Minis</p>",
+  "sections": [
     {
-      "name": "Jane Doe",
-      "function_fr": "Président de la République",
-      "signing_capacity": "promulgating",
+      "section_type": "resolution",
+      "label_fr": "Résolution",
+      "content_fr": "<p>Le Sénat de la République adopte la résolution suivante…</p>",
       "position": 0
     },
     {
-      "name": "John Doe",
-      "function_fr": "Premier Ministre",
-      "signing_capacity": "countersigning",
+      "section_type": "ratification",
+      "label_fr": "Ratification",
+      "content_fr": "<p>La Chambre des Députés ratifie la présente loi…</p>",
       "position": 1
+    },
+    {
+      "section_type": "promulgation",
+      "label_fr": "Acte de promulgation",
+      "content_fr": "<p>Le Président de la République ordonne que la présente loi soit revêtue du sceau de la République…</p>",
+      "position": 2
+    },
+    {
+      "section_type": "approbation",
+      "label_fr": "Approbation",
+      "content_fr": "<p>Approuvé par le Conseil des Ministres en sa séance du 20 mai 2026.</p>",
+      "position": 3
+    },
+    {
+      "section_type": "autre",
+      "label_fr": "Disposition transitoire",
+      "content_fr": "<p>La présente loi entre en vigueur trente jours après sa publication au Moniteur.</p>",
+      "position": 4
     }
   ]
 }`
@@ -145,9 +179,10 @@ const EXAMPLE_MONITEUR = `{
         "slug": "loi-portant-exemple",
         "category": "loi",
         "title_fr": "Loi portant exemple",
-        "issuing_date": "2014-06-04",
         "promulgation_date": "2014-06-04",
         "publication_date": "2014-06-04",
+        "intro_fr": "<p>Vu la Constitution ;</p><p>La Chambre des Députés et le Sénat ont voté la loi suivante :</p>",
+        "intro_ht": "<p>Vu Konstitisyon an ;</p><p>Chanm Depite yo ak Sena a vote lwa sa a :</p>",
         "headings": [
           {
             "key": "titre-i",
@@ -166,11 +201,13 @@ const EXAMPLE_MONITEUR = `{
             }
           }
         ],
-        "signers": [
+        "closing_fr": "<p>Votée en sa séance du 4 juin 2014.</p><p><strong>Donné au Palais Législatif, à Port-au-Prince, le 4 juin 2014.</strong></p><p>Michel Joseph MARTELLY, Président de la République</p>",
+        "closing_ht": "<p>Vote nan seyans li ki te fèt 4 jen 2014 a.</p><p><strong>Bay nan Palè Lejislatif la, Pòtoprens, 4 jen 2014.</strong></p><p>Michel Joseph MARTELLY, Prezidan Repiblik la</p>",
+        "sections": [
           {
-            "name": "Michel Joseph MARTELLY",
-            "function_fr": "Président de la République",
-            "signing_capacity": "promulgating",
+            "section_type": "promulgation",
+            "label_fr": "Acte de promulgation",
+            "content_fr": "<p>Le Président de la République ordonne que la présente loi soit revêtue du sceau de la République…</p>",
             "position": 0
           }
         ]
@@ -358,7 +395,7 @@ export default function JsonImportPanel() {
                 <>
                   <strong>Texte légal</strong> :{' '}
                   <code className="font-mono text-xs">
-                    {'{slug, category, title_fr, headings[], articles[], signers[]}'}
+                    {'{slug, category, title_fr, intro_fr/ht, headings[], articles[], closing_fr/ht, sections[]}'}
                   </code>
                   {' '}→ POST /editorial/legal-texts
                 </>
@@ -366,7 +403,7 @@ export default function JsonImportPanel() {
                 <>
                   <strong>Tèks legal</strong> :{' '}
                   <code className="font-mono text-xs">
-                    {'{slug, category, title_fr, headings[], articles[], signers[]}'}
+                    {'{slug, category, title_fr, intro_fr/ht, headings[], articles[], closing_fr/ht, sections[]}'}
                   </code>
                   {' '}→ POST /editorial/legal-texts
                 </>
@@ -393,13 +430,18 @@ export default function JsonImportPanel() {
             </li>
             <li>
               {isFr
-                ? 'Les deux formes acceptent ``signers`` à la fin (texte légal : au top-level ; Moniteur : dans chaque entry.content).'
-                : "De fòm yo aksepte ``signers`` nan fen an (tèks legal: nan top-level; Moniteur: nan chak entry.content)."}
+                ? 'Partie introductive : un seul champ ``intro_fr`` / ``intro_ht`` (visas + considérants + formule d’adoption réunis). Les anciennes clés (visas_fr, considerants_fr, enacting_formula_fr…) restent acceptées et sont fusionnées automatiquement dans ``intro_fr``.'
+                : "Pati entwodiktif : yon sèl chan ``intro_fr`` / ``intro_ht`` (viza + konsideran + fòmil adopsyon ansanm). Ansyen kle yo (visas_fr, considerants_fr, enacting_formula_fr…) toujou aksepte epi yo rasanble otomatikman nan ``intro_fr``."}
             </li>
             <li>
               {isFr
-                ? 'Partie introductive : un seul champ ``intro_fr`` (visas + considérants + formule d’adoption réunis). Les anciennes clés (visas_fr, considerants_fr, enacting_formula_fr…) restent acceptées et sont fusionnées automatiquement dans ``intro_fr``.'
-                : "Pati entwodiktif : yon sèl chan ``intro_fr`` (viza + konsideran + fòmil adopsyon ansanm). Ansyen kle yo (visas_fr, considerants_fr, enacting_formula_fr…) toujou aksepte epi yo rasanble otomatikman nan ``intro_fr``."}
+                ? 'Partie finale : ``closing_fr`` / ``closing_ht`` (HTML — formule « Donné au Palais Législatif… » + signatures réunies) remplace l’ancien ``official_formula`` et le tableau ``signers[]`` (supprimés en migration 0047). Les anciennes clés restent acceptées et sont fusionnées automatiquement.'
+                : "Pati final : ``closing_fr`` / ``closing_ht`` (HTML — fòmil « Bay nan Palè Lejislatif… » + siyati yo ansanm) ranplase ansyen ``official_formula`` ak tablo ``signers[]`` la (yo te retire nan migrasyon 0047). Ansyen kle yo toujou aksepte epi yo rasanble otomatikman."}
+            </li>
+            <li>
+              {isFr
+                ? 'Sections « partie finale » : tableau ``sections[]`` (résolution / ratification / promulgation / adoption / approbation / autre), chaque entrée porte ``section_type``, ``label_fr`` (libellé optionnel — défaut selon le type, obligatoire pour ``autre``), ``content_fr`` (HTML), ``position`` (optionnelle). HT facultatif via ``label_ht`` / ``content_ht``.'
+                : "Seksyon « pati final » : tablo ``sections[]`` (rezolisyon / ratifikasyon / pwomilgasyon / adopsyon / apwobasyon / autre), chak antre gen ``section_type``, ``label_fr`` (libele opsyonèl — pa defo selon kalite a, obligatwa pou ``autre``), ``content_fr`` (HTML), ``position`` (opsyonèl). HT opsyonèl atravè ``label_ht`` / ``content_ht``."}
             </li>
             <li>
               {isFr

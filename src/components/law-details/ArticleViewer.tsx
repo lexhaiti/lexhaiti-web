@@ -39,24 +39,21 @@ import { useToast } from '@/components/ui/toast-simple'
 import { cn } from '@/lib/utils'
 import { getLevelLabel } from '@/lib/legal/headingLabels'
 import {
-  citationsFromArticle,
-  citationsToArticle,
   deleteArticle,
   deleteArticleVersion,
+  getArticleReferences,
   listArticleVersions,
-  resolveArticles,
   updateArticleContent,
   updateArticleVersionStatus,
   type ArticleContentPatch,
-  type ArticleResolved,
+  type ArticleRefItem,
   type ArticleVersionRead,
   type ArticleVersionStatusPatch,
 } from '@/lib/api/endpoints'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { EditableHeroField } from '@/components/law-details/_helpers/EditableHeroField'
 import {
-  mapCitations,
-  type CitationRow,
+  mapRefItems,
   type SiblingArticle,
 } from './citation-mapping'
 import dynamic from 'next/dynamic'
@@ -485,92 +482,42 @@ export default function ArticleViewer({
 
   // Citation state — outgoing (this article cites X) and incoming (X cites
   // this article). Re-fetched whenever the selected article changes.
-  const [outgoing, setOutgoing] = useState<CitationRow[]>([])
-  const [incoming, setIncoming] = useState<CitationRow[]>([])
+  //
+  // Single round-trip to ``/articles/{id}/references`` replaces the
+  // legacy (citationsFromArticle + citationsToArticle + resolveArticles)
+  // trio: the backend resolves cross-text article titles + hrefs
+  // server-side, so the local same-text/cross-text fan-out is no
+  // longer needed. 3 requests/article → 1.
+  const [refOutgoing, setRefOutgoing] = useState<ArticleRefItem[]>([])
+  const [refIncoming, setRefIncoming] = useState<ArticleRefItem[]>([])
   useEffect(() => {
     if (!article) return
     const articleId = article.id
     let cancelled = false
-    void Promise.all([
-      citationsFromArticle(articleId),
-      citationsToArticle(articleId),
-    ])
-      .then(([out, inc]) => {
+    void getArticleReferences(articleId)
+      .then((r) => {
         if (cancelled) return
-        setOutgoing(out.items)
-        setIncoming(inc.items)
+        setRefOutgoing(r.cites ?? [])
+        setRefIncoming(r.cited_by ?? [])
       })
       .catch(() => {
         // Citations are non-essential — fall back to empty if the request fails.
         if (cancelled) return
-        setOutgoing([])
-        setIncoming([])
+        setRefOutgoing([])
+        setRefIncoming([])
       })
     return () => {
       cancelled = true
     }
   }, [article?.id])
 
-  // Build a quick lookup from sibling article id -> {number, slug} so the
-  // citation panel can resolve same-text targets to "Article 192" with a
-  // proper permalink. Cross-text targets are resolved via the
-  // `/api/v1/articles/resolve` batch endpoint below.
-  const articleById = useMemo(() => {
-    const map = new Map<number, SiblingArticle>()
-    for (const a of siblingArticles ?? []) {
-      map.set(a.id, a)
-    }
-    return map
-  }, [siblingArticles])
-
-  // Cross-text resolver — for any cited article id we don't have in the
-  // siblings list, batch-fetch its parent-text title + slug so the panel
-  // can render "Code Civil — Article 1382" with a real permalink instead
-  // of "Article #1234".
-  const [resolvedById, setResolvedById] = useState<Map<number, ArticleResolved>>(
-    () => new Map(),
-  )
-  useEffect(() => {
-    const allTargets = [
-      ...outgoing.map((c) =>
-        c.target_node_type === 'article' ? c.target_node_id : null,
-      ),
-      ...incoming.map((c) =>
-        c.source_node_type === 'article' ? c.source_node_id : null,
-      ),
-    ].filter((x): x is number => x !== null)
-    const unknown = Array.from(
-      new Set(allTargets.filter((id) => !articleById.has(id))),
-    )
-    if (unknown.length === 0) {
-      setResolvedById(new Map())
-      return
-    }
-    let cancelled = false
-    void resolveArticles(unknown)
-      .then((rows) => {
-        if (cancelled) return
-        const m = new Map<number, ArticleResolved>()
-        for (const r of rows) m.set(r.id, r)
-        setResolvedById(m)
-      })
-      .catch(() => {
-        // Resolver failure is non-fatal — citations fall back to "Article #id".
-        if (cancelled) return
-        setResolvedById(new Map())
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [outgoing, incoming, articleById])
-
   const outboundEntries = useMemo(
-    () => mapCitations(outgoing, 'outbound', articleById, lawSlug, resolvedById),
-    [outgoing, articleById, lawSlug, resolvedById],
+    () => mapRefItems(refOutgoing),
+    [refOutgoing],
   )
   const inboundEntries = useMemo(
-    () => mapCitations(incoming, 'inbound', articleById, lawSlug, resolvedById),
-    [incoming, articleById, lawSlug, resolvedById],
+    () => mapRefItems(refIncoming),
+    [refIncoming],
   )
 
   // Map the backend ArticleVersionRead shape into the VersionEntry the

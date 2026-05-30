@@ -82,13 +82,19 @@ export default function HeroSection() {
         className="hidden md:block absolute inset-0 pointer-events-none select-none overflow-hidden z-0"
         aria-hidden
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/hero-bg.webp"
-          alt=""
-          loading="eager"
-          decoding="async"
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.13]"
+        {/* Backdrop painted as a CSS ``background-image`` on a hidden-
+            on-mobile layer. Two wins over a raw ``<img>``: (1) the
+            ``hidden`` parent on <md viewports means browsers never
+            fetch the file at all (200+KB saved on phones, which is
+            where bandwidth matters most); (2) on desktop the request
+            is non-blocking and decoupled from first paint — the H1
+            stays the LCP element. ``opacity-[0.13]`` lives on the
+            painted layer instead of the image because CSS backgrounds
+            don't accept an ``opacity`` attribute the way an ``<img>``
+            does. */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-[0.13]"
+          style={{ backgroundImage: 'url(/hero-bg.webp)' }}
         />
         {/* Centre wash — fully opaque PURE WHITE across the middle
             band of the width, matching the search card's

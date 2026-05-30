@@ -57,18 +57,15 @@ import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/toast-simple'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
-  citationsFromArticle,
-  citationsToArticle,
   deleteArticle,
+  getArticleReferences,
   listArticleVersions,
-  resolveArticles,
-  type ArticleResolved,
+  type ArticleRefItem,
   type ArticleVersionRead,
 } from '@/lib/api/endpoints'
 import {
-  mapCitations,
+  mapRefItems,
   type CitationEntry,
-  type CitationRow,
   type SiblingArticle,
 } from './citation-mapping'
 import { CitationColumn } from './_panels/CitationColumn'
@@ -170,46 +167,38 @@ export function ArticleAccordions({
   // ────────────────────────────────────────────────────────────────
   // Citations (Textes liés) — lazy
   // ────────────────────────────────────────────────────────────────
+  // Single round-trip to ``/articles/{id}/references`` replaces the
+  // legacy (citationsFromArticle + citationsToArticle + resolveArticles)
+  // trio: the backend now resolves cross-text article titles + hrefs
+  // server-side, so a same-text/cross-text fan-out is no longer needed.
+  // 3 requests/article → 1.
   const [citationsLoaded, setCitationsLoaded] = useState(false)
   const [citationsLoading, setCitationsLoading] = useState(false)
-  const [outgoing, setOutgoing] = useState<CitationRow[]>([])
-  const [incoming, setIncoming] = useState<CitationRow[]>([])
+  const [refOutgoing, setRefOutgoing] = useState<ArticleRefItem[]>([])
+  const [refIncoming, setRefIncoming] = useState<ArticleRefItem[]>([])
 
-  const articleById = useMemo(() => {
-    const m = new Map<number, SiblingArticle>()
-    for (const s of siblingArticles ?? []) m.set(s.id, s)
-    return m
-  }, [siblingArticles])
-
-  const [resolvedById, setResolvedById] = useState<
-    Map<number, ArticleResolved>
-  >(() => new Map())
-
-  // Trigger the citation fetch only when the "Textes liés" panel is
+  // Trigger the references fetch only when the "Textes liés" panel is
   // actually opened. Previously this ALSO fired eagerly in editor mode
   // (``|| isEditor``) so the chip count showed on first render — but
   // that made a signed-in editor fetch citations for EVERY article on
-  // page load (2 requests each), flooding the API and tripping its
-  // rate limiter (429) on large texts. On-demand loading keeps the
-  // page load to ~0 citation requests; the count fills in on open.
+  // page load, flooding the API and tripping its rate limiter (429) on
+  // large texts. On-demand loading keeps the page load to ~0 reference
+  // requests; the count fills in on open.
   useEffect(() => {
     const needLoad =
       !citationsLoaded && !citationsLoading && openPanel === 'links'
     if (!needLoad) return
     setCitationsLoading(true)
-    void Promise.all([
-      citationsFromArticle(articleId),
-      citationsToArticle(articleId),
-    ])
-      .then(([out, inc]) => {
-        setOutgoing(out.items ?? [])
-        setIncoming(inc.items ?? [])
+    void getArticleReferences(articleId)
+      .then((r) => {
+        setRefOutgoing(r.cites ?? [])
+        setRefIncoming(r.cited_by ?? [])
         setCitationsLoaded(true)
       })
       .catch(() => {
         // Non-essential; render an empty panel rather than crash.
-        setOutgoing([])
-        setIncoming([])
+        setRefOutgoing([])
+        setRefIncoming([])
         setCitationsLoaded(true)
       })
       .finally(() => setCitationsLoading(false))
@@ -221,48 +210,13 @@ export function ArticleAccordions({
     articleId,
   ])
 
-  // Resolver fan-out for cross-text article cites (so the column
-  // can render "Code Civil — Art. 1382" rather than "Article #1234").
-  useEffect(() => {
-    if (!citationsLoaded) return
-    const unknown: number[] = []
-    for (const c of outgoing) {
-      if (c.target_node_type === 'article' && !articleById.has(c.target_node_id)) {
-        unknown.push(c.target_node_id)
-      }
-    }
-    for (const c of incoming) {
-      if (c.source_node_type === 'article' && !articleById.has(c.source_node_id)) {
-        unknown.push(c.source_node_id)
-      }
-    }
-    const unique = Array.from(new Set(unknown))
-    if (unique.length === 0) return
-    let cancelled = false
-    void resolveArticles(unique)
-      .then((rows) => {
-        if (cancelled) return
-        const m = new Map<number, ArticleResolved>()
-        for (const r of rows) m.set(r.id, r)
-        setResolvedById(m)
-      })
-      .catch(() => {
-        /* fall back to "Article #id" */
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [citationsLoaded, outgoing, incoming, articleById])
-
   const outboundEntries = useMemo<CitationEntry[]>(
-    () =>
-      mapCitations(outgoing, 'outbound', articleById, lawSlug, resolvedById),
-    [outgoing, articleById, lawSlug, resolvedById],
+    () => mapRefItems(refOutgoing),
+    [refOutgoing],
   )
   const inboundEntries = useMemo<CitationEntry[]>(
-    () =>
-      mapCitations(incoming, 'inbound', articleById, lawSlug, resolvedById),
-    [incoming, articleById, lawSlug, resolvedById],
+    () => mapRefItems(refIncoming),
+    [refIncoming],
   )
   const totalCitations = outboundEntries.length + inboundEntries.length
 

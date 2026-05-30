@@ -1,16 +1,16 @@
 'use client'
 
 /**
- * Continuous "partie introductive" — the continuous rendering of
- * a legal text's introductory part (visas, considérants, mentions
- * procédurales, and the enacting formula) as ONE flowing block rather
- * than separate per-kind cards.
+ * Continuous "partie introductive" — renders a legal text's
+ * introductory part (visas, considérants, mentions procédurales, and
+ * the enacting formula) as ONE flowing block rather than separate
+ * per-kind cards.
  *
- * Takes the already-resolved display strings (in reading order) from
- * the parent, which pulls them from the flat ``visas_* /
- * considerants_* / mentions_procedurales_* / enacting_formula_*``
- * columns. Read-only — editors still edit the underlying fields via
- * FormalBlocksSection's per-field cards. Préambule keeps its own block.
+ * Takes the already-resolved display string from the parent, which now
+ * passes the single combined ``intro_fr`` / ``intro_ht`` value (no
+ * separate flat fields). Read-only — editors edit the same combined
+ * field via FormalBlocksSection's EditableFormalBlock. Préambule keeps
+ * its own block.
  */
 
 import { useState } from 'react'

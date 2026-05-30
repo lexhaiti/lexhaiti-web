@@ -7,7 +7,7 @@
  * inside its accordion.
  */
 import type { components } from '@/lib/api-types'
-import type { ArticleResolved } from '@/lib/api/endpoints'
+import type { ArticleRefItem, ArticleResolved } from '@/lib/api/endpoints'
 
 export type CitationRow = components['schemas']['CitationRead']
 
@@ -102,4 +102,31 @@ export function mapCitations(
       note: c.source_paragraph ?? undefined,
     }
   })
+}
+
+/**
+ * Convert items from the consolidated ``/articles/{id}/references``
+ * endpoint into the same ``CitationEntry`` shape ``CitationColumn``
+ * already renders.
+ *
+ * The new endpoint resolves cross-text article titles + permalinks
+ * server-side (e.g. "Code Civil — Art. 1382"), collapsing the legacy
+ * citationsFrom/citationsTo + resolveArticles trio into one round-
+ * trip. The trade-off: the response doesn't surface the citation
+ * ``relation`` (cites / amends / abrogates / …), so every entry lands
+ * in the default "vise" bucket. In practice public readers never saw
+ * meaningful per-relation grouping on article cards anyway — the
+ * legacy backfill marks ~all rows as ``cites``.
+ *
+ * ``decision_date`` is folded into ``note`` so the column can render
+ * "12 mars 2024" alongside a decision title without extra plumbing
+ * (mirrors ``adaptItem`` in CrossReferencesPanel).
+ */
+export function mapRefItems(items: ArticleRefItem[]): CitationEntry[] {
+  return items.map((ref) => ({
+    relation: 'vise',
+    target_label: ref.title,
+    href: ref.href || null,
+    note: ref.note ?? ref.decision_date ?? undefined,
+  }))
 }
