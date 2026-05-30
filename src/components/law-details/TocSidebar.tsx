@@ -162,11 +162,13 @@ export function TocSidebar({
               exit={{ x: '-100%' }}
               transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
               className={cn(
-                'lg:hidden fixed left-0 z-50 flex flex-col',
+                'lg:hidden fixed inset-x-0 z-50 flex flex-col',
                 // Sits below the global h-20 header so the user can
-                // still see where they are. Height fills the remainder.
+                // still see where they are. Full viewport width on
+                // mobile (per user request) — the sommaire is
+                // information-dense and benefits from the extra
+                // horizontal room for nested heading labels.
                 'top-20 bottom-0',
-                'w-[85%] max-w-sm',
                 'bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800',
                 'shadow-2xl',
               )}
@@ -262,11 +264,11 @@ export function TocSidebar({
         tabIndex={stickyActive ? 0 : -1}
         className={cn(
           'inline-flex items-center justify-center',
-          // Mobile: pin to the LEFT edge — matches the slide-in
-          // drawer's origin so the visual relationship between
-          // button and drawer reads. Desktop: stays on the right
-          // alongside the ScrollToTop button.
-          'fixed z-40 left-4 sm:left-6 lg:left-auto lg:right-6 xl:right-8',
+          // Right edge, above the ScrollToTop button (which pins to
+          // bottom-6/8). The bottom-20/24 offset keeps the two from
+          // colliding. Right-side placement was the user's request —
+          // matches the existing ScrollToTop stack.
+          'fixed z-40 right-6 sm:right-8',
           'bottom-20 sm:bottom-24',
           'h-12 w-12 lg:h-11 lg:w-11 rounded-full',
           'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-lg',

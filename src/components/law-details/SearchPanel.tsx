@@ -38,7 +38,9 @@ export function SearchPanel({
   const showSidebarToggle = onToggleSidebar !== undefined
 
   return (
-    <div className="mb-6">
+    // Top padding on mobile separates this panel from the law hero's
+    // bottom edge — the screenshot showed them visually colliding.
+    <div className="mb-6 pt-4 lg:pt-0">
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-6 text-sm text-slate-700 dark:text-slate-300 flex-wrap">
           <label className="flex items-center gap-2 cursor-pointer">
