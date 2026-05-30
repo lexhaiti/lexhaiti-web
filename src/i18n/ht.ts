@@ -1344,4 +1344,28 @@ export const ht = {
     },
     related: 'Tèks ki gen rapò',
   },
+
+  editor: {
+    articleLink: {
+      button: 'Lyen atik',
+      title: 'Antre yon lyen atik',
+      description:
+        'Lyen vè yon atik nan menm tèks la, oswa nan yon lòt tèks lwa.',
+      number: 'Nimewo atik',
+      numberPlaceholder: 'Egz. 295, 267.2, 1382-1',
+      display: 'Tèks afichaj',
+      displayPlaceholder: 'Pa defo : nimewo atik la',
+      optional: '(opsyonèl)',
+      target: 'Tèks destinasyon',
+      targetSelf: 'Tèks sa a (lyen entèn)',
+      searchPlaceholder: 'Chèche yon tèks…',
+      loading: 'Ap chaje…',
+      noResults: 'Pa gen okenn tèks ki jwenn',
+      insert: 'Antre',
+      cancel: 'Anile',
+      errors: {
+        invalidNumber: 'Nimewo atik la pa valab. Li dwe gen omwen yon chif.',
+      },
+    },
+  },
 } as const

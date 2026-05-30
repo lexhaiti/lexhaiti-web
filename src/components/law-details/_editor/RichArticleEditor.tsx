@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   EditorContent,
   Extension,
@@ -32,6 +32,7 @@ import {
   IndentDecrease,
   IndentIncrease,
   Italic,
+  Link2,
   List,
   ListOrdered,
   Minus,
@@ -46,6 +47,9 @@ import {
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { useT } from '@/i18n/useT'
+import { ArticleRefMark } from './ArticleRefMark'
+import { ArticleLinkDialog } from './ArticleLinkDialog'
 
 /**
  * Custom Tiptap extension: paragraph-level indentation.
@@ -306,6 +310,8 @@ export function RichArticleEditor({
   ariaLabel,
   disabled = false,
 }: RichArticleEditorProps) {
+  const { t } = useT()
+  const [articleLinkOpen, setArticleLinkOpen] = useState(false)
   const editor = useEditor({
     extensions: [
       // StarterKit ships Heading, Blockquote, HorizontalRule, Strike,
@@ -335,6 +341,11 @@ export function RichArticleEditor({
       TableRow,
       TableHeader,
       TableCell,
+      // Article-reference mark — editor-inserted links to other
+      // articles. Renders the same anchor shape the backend linkifier
+      // emits so the body HTML round-trips through the sanitizer's
+      // strict ``_ARTICLE_HREF_RE`` allowlist.
+      ArticleRefMark,
     ],
     content: toEditorHtml(value),
     editable: !disabled,
@@ -362,6 +373,22 @@ export function RichArticleEditor({
           '[&_p:has(>br:only-child)]:min-h-[1.5em]',
         ),
         ...(placeholder ? { 'data-placeholder': placeholder } : {}),
+      },
+      // Stop in-editor anchor clicks from triggering navigation. The
+      // ``rt-art-ref`` anchors carry a real ``href`` (so they round-
+      // trip through the sanitizer and behave correctly when rendered
+      // outside the editor), but inside the editor the click should
+      // only move the cursor — not switch routes.
+      handleDOMEvents: {
+        click: (_view, event) => {
+          const target = (event.target as Element | null)?.closest?.(
+            'a.rt-art-ref',
+          )
+          if (target) {
+            event.preventDefault()
+          }
+          return false
+        },
       },
     },
     onUpdate({ editor }) {
@@ -545,6 +572,19 @@ export function RichArticleEditor({
           ))}
         </select>
         <ToolbarSeparator />
+        {/* Article-reference link — opens a dialog where the editor
+            picks the article number, optional display text, and the
+            target law (defaults to the same law). Emits the same
+            ``rt-art-ref`` anchor shape the backend linkifier produces
+            so the body HTML round-trips through the sanitizer. */}
+        <ToolbarButton
+          icon={Link2}
+          label={t('editor.articleLink.button')}
+          active={editor.isActive('articleRef')}
+          onClick={() => setArticleLinkOpen(true)}
+          tone={tone}
+        />
+        <ToolbarSeparator />
         <ToolbarButton
           icon={AlignLeft}
           label="Aligner à gauche"
@@ -706,6 +746,11 @@ export function RichArticleEditor({
         )}
       </div>
       <EditorContent editor={editor} />
+      <ArticleLinkDialog
+        editor={editor}
+        open={articleLinkOpen}
+        onOpenChange={setArticleLinkOpen}
+      />
     </div>
   )
 }

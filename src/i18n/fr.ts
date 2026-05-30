@@ -1366,4 +1366,29 @@ export const fr = {
     },
     related: 'Textes connexes',
   },
+
+  editor: {
+    articleLink: {
+      button: 'Lien article',
+      title: "Insérer un lien d'article",
+      description:
+        "Renvoie vers un article du même texte, ou d'un autre texte législatif.",
+      number: "Numéro d'article",
+      numberPlaceholder: 'Ex. 295, 267.2, 1382-1',
+      display: 'Texte affiché',
+      displayPlaceholder: 'Par défaut : numéro d’article',
+      optional: '(facultatif)',
+      target: 'Texte de destination',
+      targetSelf: 'Ce texte (lien interne)',
+      searchPlaceholder: 'Rechercher un texte…',
+      loading: 'Chargement…',
+      noResults: 'Aucun texte trouvé',
+      insert: 'Insérer',
+      cancel: 'Annuler',
+      errors: {
+        invalidNumber:
+          "Numéro d'article invalide. Doit contenir au moins un chiffre.",
+      },
+    },
+  },
 } as const
