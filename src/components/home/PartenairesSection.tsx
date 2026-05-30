@@ -1,6 +1,7 @@
 // Server Component — no client state. Entrance animation handled by
 // tailwindcss-animate utilities instead of framer-motion.
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Building2, GraduationCap, Scale } from 'lucide-react'
 import { SectionHeading } from '@/components/shared/SectionHeading'
@@ -13,6 +14,24 @@ const TYPES = [
   { key: 'universities' as const, icon: GraduationCap },
   { key: 'bars' as const, icon: Scale },
   { key: 'ngos' as const, icon: Building2 },
+]
+
+// Active partner logos. The grid auto-balances 1/2/3 across mobile/
+// tablet/desktop so a single partner reads as intentional, and adding
+// more later doesn't require markup changes — just push a new entry.
+// ``logoMaxH`` lets each logo pick its own ceiling (logos with lots
+// of bottom whitespace can claim more vertical space without dwarfing
+// the tile).
+const PARTNERS = [
+  {
+    id: 'aprann',
+    name: 'APRANN — Online Education Academy',
+    href: 'https://aprannakademi.com/',
+    logo: '/partners/aprann-logo.png',
+    width: 1292,
+    height: 413,
+    logoMaxH: 'max-h-12 sm:max-h-14',
+  },
 ]
 
 export default async function PartenairesSection() {
@@ -45,6 +64,35 @@ export default async function PartenairesSection() {
           // full-bleed. ``max-w-none`` removes the constraint.
           titleMaxWidth="max-w-none"
         />
+
+        {/* Active-partner logo grid — first thing the visitor sees
+            after the heading, because logos > placeholders. Each logo
+            sits on a white tile (solid white even in dark mode so
+            client brand-colors hit their intended surface). Grid
+            balances 1 / 2 / 3 across breakpoints so a lone partner
+            still reads as a deliberate spotlight. */}
+        {PARTNERS.length > 0 && (
+          <div className="mb-10 flex flex-wrap justify-center gap-4 lg:gap-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            {PARTNERS.map((p) => (
+              <a
+                key={p.id}
+                href={p.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={p.name}
+                className="group flex h-24 sm:h-28 w-full max-w-xs items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-700 bg-white px-6 py-4 shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
+              >
+                <Image
+                  src={p.logo}
+                  alt={p.name}
+                  width={p.width}
+                  height={p.height}
+                  className={`h-auto w-auto ${p.logoMaxH} object-contain transition-transform group-hover:scale-[1.02]`}
+                />
+              </a>
+            ))}
+          </div>
+        )}
 
         {/* Partner-types grid — full-width stretch, the tiles share
             the same gutter as the heading so the band reads as one
