@@ -61,21 +61,31 @@ function isPathActive(
   return true
 }
 
-// --- Animated Hamburger Icon ---
+// --- Hamburger Icon ---
+// A three-bar mark with intentional asymmetry — top bar full width,
+// middle slightly shorter, bottom medium. Looks like a stylized
+// document outline (it's a legal portal — the menu glyph hints at
+// the corpus structure underneath) instead of a generic burger. On
+// open the bars cross-fade to an X, with the middle bar fading out
+// before the others rotate so the morph doesn't feel cluttered.
 function AnimatedHamburger({ isOpen }: { isOpen: boolean }) {
   return (
     <div className="relative w-6 h-6 flex flex-col items-center justify-center gap-[5px]">
       <motion.span
-        animate={isOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
-        className="w-6 h-0.5 bg-current rounded-full origin-center"
+        animate={isOpen ? { rotate: 45, y: 7, width: 24 } : { rotate: 0, y: 0, width: 24 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+        className="h-[2px] bg-current rounded-full origin-center"
       />
       <motion.span
-        animate={isOpen ? { opacity: 0, x: -10 } : { opacity: 1, x: 0 }}
-        className="w-6 h-0.5 bg-current rounded-full"
+        animate={isOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1, width: 16 }}
+        transition={{ duration: 0.18, ease: 'easeOut' }}
+        className="h-[2px] bg-current rounded-full origin-center"
+        style={{ width: 16 }}
       />
       <motion.span
-        animate={isOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
-        className="w-6 h-0.5 bg-current rounded-full origin-center"
+        animate={isOpen ? { rotate: -45, y: -7, width: 24 } : { rotate: 0, y: 0, width: 20 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+        className="h-[2px] bg-current rounded-full origin-center"
       />
     </div>
   )

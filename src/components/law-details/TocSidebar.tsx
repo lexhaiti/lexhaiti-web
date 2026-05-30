@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronRight, PanelLeft, PanelLeftClose } from 'lucide-react'
+import { PanelLeft, PanelLeftClose, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useReaderChrome } from '@/components/layout/ReaderChromeContext'
 import { useFooterAvoidance } from '@/lib/hooks/useFooterAvoidance'
@@ -132,37 +132,64 @@ export function TocSidebar({
 
   return (
     <>
-      {/* Mobile Accordion */}
-      <div className="block lg:hidden w-full mt-6 lg:mt-0 mb-4">
-        <button
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="w-full flex items-center justify-between p-4 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-50 dark:bg-red-950/40 rounded-lg">
-              <PanelLeft className="w-5 h-5 text-red-600 dark:text-red-400" />
-            </div>
-            <span className="font-bold uppercase tracking-widest text-xs text-slate-700 dark:text-slate-300">
-              {currentLang === 'fr' ? 'Sommaire' : 'Somè'}
-            </span>
-          </div>
-          <ChevronRight
-            className={cn(
-              'w-5 h-5 text-gray-400 transition-transform duration-300',
-              isSidebarOpen && 'rotate-90',
-            )}
-          />
-        </button>
-
-        <AnimatePresence>
-          {isSidebarOpen && (
+      {/* Mobile slide-in drawer — replaces the previous inline
+          accordion. On mobile the sommaire opens as a left-edge
+          drawer pinned under the global header (top-20 = h-20)
+          with a backdrop that dims the page. Same ``isSidebarOpen``
+          state powers it as the desktop sidebar; entry points are
+          (a) the inline "Sommaire" pill in SearchPanel's mobile row
+          and (b) the floating button below that becomes visible
+          once the reader scrolls into the body. */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <>
+            <motion.button
+              type="button"
+              aria-label={currentLang === 'fr' ? 'Fermer le sommaire' : 'Fèmen somè a'}
+              onClick={() => setIsSidebarOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="lg:hidden fixed inset-0 top-20 z-40 bg-slate-950/40 backdrop-blur-sm"
+            />
             <motion.div
-              initial={{ opacity: 0, height: 0, marginTop: 0 }}
-              animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
-              exit={{ opacity: 0, height: 0, marginTop: 0 }}
-              className="overflow-hidden"
+              role="dialog"
+              aria-modal="true"
+              aria-label={currentLang === 'fr' ? 'Sommaire' : 'Somè'}
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
+              className={cn(
+                'lg:hidden fixed left-0 z-50 flex flex-col',
+                // Sits below the global h-20 header so the user can
+                // still see where they are. Height fills the remainder.
+                'top-20 bottom-0',
+                'w-[85%] max-w-sm',
+                'bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800',
+                'shadow-2xl',
+              )}
             >
-              <div className="max-h-[60vh]">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 bg-red-50 dark:bg-red-950/40 rounded-md">
+                    <PanelLeft className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  </div>
+                  <span className="font-bold uppercase tracking-widest text-xs text-slate-700 dark:text-slate-300">
+                    {currentLang === 'fr' ? 'Sommaire' : 'Somè'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsSidebarOpen(false)}
+                  aria-label={currentLang === 'fr' ? 'Fermer' : 'Fèmen'}
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto px-2 py-3">
                 <TableOfContents
                   {...tocProps}
                   onArticleSelect={(article: any) => {
@@ -206,9 +233,9 @@ export function TocSidebar({
                 />
               </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Floating Sommaire toggle (desktop) — appears once the reader
           scrolls into the body (``stickyActive``), so the sommaire stays
@@ -234,9 +261,14 @@ export function TocSidebar({
         title={currentLang === 'fr' ? 'Sommaire' : 'Somè'}
         tabIndex={stickyActive ? 0 : -1}
         className={cn(
-          'hidden lg:inline-flex items-center justify-center',
-          'fixed z-40 right-6 sm:right-8 bottom-20 sm:bottom-24',
-          'h-11 w-11 rounded-full',
+          'inline-flex items-center justify-center',
+          // Mobile: pin to the LEFT edge — matches the slide-in
+          // drawer's origin so the visual relationship between
+          // button and drawer reads. Desktop: stays on the right
+          // alongside the ScrollToTop button.
+          'fixed z-40 left-4 sm:left-6 lg:left-auto lg:right-6 xl:right-8',
+          'bottom-20 sm:bottom-24',
+          'h-12 w-12 lg:h-11 lg:w-11 rounded-full',
           'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-lg',
           'hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2',

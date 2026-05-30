@@ -71,19 +71,18 @@ export function SearchPanel({
           </label>
 
           {/* Right-side controls — view-mode switcher and sommaire
-              toggle share the row's right edge so the page-level
-              chrome (which slice to read, sommaire on/off) lives
-              alongside the scope radios it complements. Desktop
-              only; mobile keeps the accordion toggle inside
-              TocSidebar. */}
+              toggle. On desktop (lg+) they share the same row as the
+              scope radios on the right. Below lg they break onto
+              their own row directly under the radios so the
+              switcher + sommaire toggle stay reachable on mobile.
+              The mobile sommaire toggle here doubles up with the
+              floating FAB further down (see TocSidebar) — both lead
+              to the same drawer; users with thumbs reach the FAB,
+              users at the top of the page reach this inline one. */}
           {(rightControls || showSidebarToggle) && (
-            <div className="ml-auto hidden lg:flex items-center gap-3">
+            <div className="hidden lg:flex ml-auto items-center gap-3">
               {rightControls}
               {showSidebarToggle && (
-                // Static label, but the icon flips on open/close so it
-                // still signals state at a glance (panel-open vs panel-
-                // closed glyph). ``h-9`` + ``text-[12px]`` match the
-                // ViewModeSwitcher pill so the two read as a set.
                 <button
                   type="button"
                   onClick={onToggleSidebar}
@@ -106,6 +105,35 @@ export function SearchPanel({
             </div>
           )}
         </div>
+
+        {/* Mobile / tablet row for the view-mode switcher + sommaire
+            toggle — same controls as the desktop right-edge cluster,
+            just stacked. Hidden at lg+ to avoid duplication. */}
+        {(rightControls || showSidebarToggle) && (
+          <div className="flex flex-wrap items-center gap-2 lg:hidden">
+            {rightControls}
+            {showSidebarToggle && (
+              <button
+                type="button"
+                onClick={onToggleSidebar}
+                aria-pressed={!!isSidebarOpen}
+                className={cn(
+                  'inline-flex items-center gap-2 rounded-full h-9',
+                  'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5',
+                  'text-[12px] font-semibold text-slate-600 dark:text-slate-300',
+                  'hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors',
+                )}
+              >
+                {isSidebarOpen ? (
+                  <PanelLeftClose className="w-3.5 h-3.5" />
+                ) : (
+                  <PanelLeft className="w-3.5 h-3.5" />
+                )}
+                {currentLang === 'fr' ? ' Sommaire' : 'Somè'}
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="relative">
           <input
