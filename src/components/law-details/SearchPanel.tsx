@@ -108,37 +108,6 @@ export function SearchPanel({
           )}
         </div>
 
-        {/* Mobile / tablet row for the view-mode switcher + sommaire
-            toggle — same controls as the desktop right-edge cluster,
-            just stacked. ``justify-between`` so the switcher anchors
-            left and the Sommaire pill anchors right, claiming the
-            full row width. Hidden at lg+ to avoid duplication. */}
-        {(rightControls || showSidebarToggle) && (
-          <div className="flex flex-wrap items-center justify-between gap-2 lg:hidden">
-            {rightControls}
-            {showSidebarToggle && (
-              <button
-                type="button"
-                onClick={onToggleSidebar}
-                aria-pressed={!!isSidebarOpen}
-                className={cn(
-                  'inline-flex items-center gap-2 rounded-full h-9',
-                  'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5',
-                  'text-[12px] font-semibold text-slate-600 dark:text-slate-300',
-                  'hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors',
-                )}
-              >
-                {isSidebarOpen ? (
-                  <PanelLeftClose className="w-3.5 h-3.5" />
-                ) : (
-                  <PanelLeft className="w-3.5 h-3.5" />
-                )}
-                {currentLang === 'fr' ? ' Sommaire' : 'Somè'}
-              </button>
-            )}
-          </div>
-        )}
-
         <div className="relative">
           <input
             type="text"
@@ -179,6 +148,18 @@ export function SearchPanel({
             <Search className="w-4 h-4" />
           </button>
         </div>
+
+        {/* Mobile / tablet — view-mode switcher on its own full-width
+            row below the search bar. The radios + search bar belong
+            visually together (one search affordance), so the switcher
+            sits beneath them as a separate control. Hidden at lg+
+            because the desktop right-cluster above already carries
+            it. The Sommaire toggle moved out of here — on mobile it
+            shares a row with the Outils dropdown inside
+            DocumentToolbar so the two reader controls cluster. */}
+        {rightControls && (
+          <div className="lg:hidden">{rightControls}</div>
+        )}
       </div>
     </div>
   )

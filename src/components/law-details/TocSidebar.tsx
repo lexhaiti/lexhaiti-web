@@ -319,13 +319,14 @@ export function TocSidebar({
         tabIndex={stickyActive ? 0 : -1}
         className={cn(
           'inline-flex items-center justify-center',
-          // Left edge of the viewport so it never collides with
-          // ScrollToTop on the right. ``useFooterAvoidance`` lifts
-          // it above the footer at the bottom of the page. The
-          // bottom-6/sm:bottom-8 mirrors ScrollToTop's resting
-          // position so the two read as a paired set anchored at
-          // the bottom corners.
-          'fixed z-40 left-4 sm:left-6',
+          // Right edge, immediately to the LEFT of ScrollToTop.
+          // ScrollToTop sits at right-6/8 (24/32px from edge) and
+          // is 44px wide, so right-20/24 (80/96px) lands the FAB
+          // with a ~12-20px gap to ScrollToTop's left edge — the
+          // two read as a paired set anchored to the bottom-right
+          // corner. ``useFooterAvoidance`` lifts them in tandem
+          // above the footer when the user scrolls to the bottom.
+          'fixed z-40 right-20 sm:right-24',
           'bottom-6 sm:bottom-8',
           'h-12 w-12 lg:h-11 lg:w-11 rounded-full',
           'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-lg',

@@ -32,6 +32,8 @@ import {
   LinkIcon,
   Maximize2,
   Minimize2,
+  PanelLeft,
+  PanelLeftClose,
   SlidersHorizontal,
 } from 'lucide-react'
 import { useToast } from '@/components/ui/toast-simple'
@@ -70,6 +72,13 @@ interface DocumentToolbarProps {
    *  Both callbacks must be provided to render the pair. */
   onCollapseAll?: () => void
   onExpandAll?: () => void
+  /** Sommaire (TOC sidebar) state + handler — when both are passed
+   *  the mobile toolbar renders a "Sommaire" pill on the same row
+   *  as the "Outils" dropdown so the two reader controls cluster
+   *  together at <sm. Desktop sidebar has its own toggle inside
+   *  SearchPanel's right-cluster, so these props are mobile-only. */
+  isSidebarOpen?: boolean
+  onToggleSidebar?: () => void
 }
 
 export function DocumentToolbar({
@@ -82,7 +91,10 @@ export function DocumentToolbar({
   onToggleHideAbrogated,
   onCollapseAll,
   onExpandAll,
+  isSidebarOpen,
+  onToggleSidebar,
 }: DocumentToolbarProps) {
+  const showSidebarToggle = onToggleSidebar !== undefined
   const { toast } = useToast()
   const isFr = lang === 'fr'
 
@@ -147,11 +159,32 @@ export function DocumentToolbar({
 
   return (
     <>
-      {/* Mobile (below sm): single dropdown trigger that opens the
-          stacked action list. Removes the horizontal-scroll strip
-          per user feedback — easier to find an action when each row
-          is full-width and tap-sized. */}
-      <div className="sm:hidden mt-3 mb-5">
+      {/* Mobile (below sm): Sommaire toggle + Outils dropdown share
+          a single row so the two primary reader controls cluster
+          together. Outils opens a popover with the stacked action
+          list (Aujourd'hui / Initiale / Chrono / Abrogés / Tout
+          ouvrir / Tout fermer / Copier le lien). */}
+      <div className="sm:hidden mt-3 mb-5 flex items-center gap-2">
+        {showSidebarToggle && (
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            aria-pressed={!!isSidebarOpen}
+            className={cn(
+              'inline-flex items-center gap-2 rounded-full h-9 px-4',
+              'text-[12px] font-medium',
+              'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300',
+              'hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors',
+            )}
+          >
+            {isSidebarOpen ? (
+              <PanelLeftClose className="w-3.5 h-3.5" aria-hidden />
+            ) : (
+              <PanelLeft className="w-3.5 h-3.5" aria-hidden />
+            )}
+            {isFr ? 'Sommaire' : 'Somè'}
+          </button>
+        )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button

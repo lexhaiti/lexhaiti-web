@@ -57,7 +57,11 @@ export function ViewModeSwitcher({
         lang === 'fr' ? 'Mode de lecture' : 'Mòd lekti'
       }
       className={cn(
-        'inline-flex items-center h-9 rounded-full border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 p-1 backdrop-blur-sm shadow-[0_1px_2px_rgba(15,23,42,0.04)]',
+        // On mobile the switcher fills the SearchPanel's full-width
+        // row (one control per row pattern); on sm+ it goes back to
+        // ``inline-flex`` for the desktop right-cluster's natural
+        // width.
+        'flex w-full sm:inline-flex sm:w-auto items-center h-9 rounded-full border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 p-1 backdrop-blur-sm shadow-[0_1px_2px_rgba(15,23,42,0.04)]',
         className,
       )}
     >
@@ -78,10 +82,12 @@ export function ViewModeSwitcher({
             aria-selected={isActive}
             onClick={() => onChange(m)}
             className={cn(
-              // px-4 on mobile / px-3 at sm+ — mobile segments breathe
-              // a bit more so the switcher fills more of the row
-              // alongside the Sommaire pill without squashing labels.
-              'group inline-flex items-center gap-1.5 rounded-full px-4 sm:px-3 py-1.5 text-[12px] font-semibold transition-all',
+              // On mobile, each segment grows equally (``flex-1
+              // justify-center``) so the full-width switcher
+              // distributes the row evenly across Tous / Titre /
+              // Article. At sm+ they go back to their natural
+              // content widths inside the inline-flex pill.
+              'group inline-flex flex-1 sm:flex-initial items-center justify-center gap-1.5 rounded-full px-4 sm:px-3 py-1.5 text-[12px] font-semibold transition-all',
               isActive
                 ? 'bg-primary dark:bg-slate-700 text-white shadow-sm'
                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100',

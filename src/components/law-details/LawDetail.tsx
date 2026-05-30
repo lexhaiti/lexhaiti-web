@@ -992,6 +992,10 @@ export default function LawDetail() {
                       ? headingCollapse.expandAll
                       : undefined
                   }
+                  // Mobile-only: Sommaire toggle shares a row with the
+                  // Outils dropdown trigger inside DocumentToolbar.
+                  isSidebarOpen={isSidebarOpen}
+                  onToggleSidebar={() => handleSidebarToggle(!isSidebarOpen)}
                 />
               )}
 
@@ -1384,6 +1388,11 @@ export default function LawDetail() {
             )}
 
             <RelatedLaws relatedLaws={relatedLaws} currentLang={currentLang} />
+            {/* Spacer so the last content item never sits flush against
+                the floating Sommaire / ScrollToTop pair anchored at
+                bottom-6/8. Disabled at lg+ where the FABs land in a
+                less collision-prone strip. */}
+            <div aria-hidden className="h-24 lg:h-0" />
           </div>
         </div>
       </div>
