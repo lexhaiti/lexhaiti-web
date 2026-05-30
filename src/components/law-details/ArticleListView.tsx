@@ -716,6 +716,11 @@ const ArticleCard = memo(function ArticleCard({
         // placeholder, which was leaving big gaps between headings.
         'article-cv group rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6',
         'transition-shadow hover:shadow-[0_2px_12px_-4px_rgba(15,23,42,0.08)]',
+        // Scroll-margin keeps the article title clear of the sticky
+        // header + toolbar (~80px header + ~50px tools row = ~130px)
+        // when we ``scrollIntoView(block:'start')`` from the URL
+        // ?article=N jump. 8rem = 128px — close enough.
+        'scroll-mt-32',
         isAbrogated && 'opacity-70',
       )}
     >

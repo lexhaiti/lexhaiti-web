@@ -486,6 +486,7 @@ export default function LawDetail() {
     // expand. Total budget: ~1.5s (30 × 50ms).
     let attempts = 0
     let timer: number | null = null
+    let raf: number | null = null
     // Try both the URL-as-typed and the dash-normalized form. The
     // card id is built from the article's native ``number`` (e.g.
     // "11-1" in the Constitution), so when an amending law's URL
@@ -495,14 +496,38 @@ export default function LawDetail() {
       requestedArticleParam,
       normalizeArticleNumber(requestedArticleParam),
     ].filter((v, i, arr) => v && arr.indexOf(v) === i)
+    const findCard = (): HTMLElement | null => {
+      for (const c of candidates) {
+        const el = document.getElementById(`article-${c}`)
+        if (el) return el
+      }
+      return null
+    }
     const tryScroll = () => {
       attempts += 1
-      for (const c of candidates) {
-        const card = document.getElementById(`article-${c}`)
-        if (card) {
-          card.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          return
-        }
+      const card = findCard()
+      if (card) {
+        // ``block: 'start'`` + ``scroll-mt-32`` on the card lands the
+        // article title just below the sticky header. ``center`` is
+        // brittle here — short articles can render inside the same
+        // viewport as their neighbour, and the user reads the wrong
+        // one as the "landed" article.
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        // Content-visibility:auto on the cards above replaces
+        // intrinsic-size placeholders with real heights as they
+        // enter the viewport, shifting absolute Y. Settle that with
+        // a second scrollIntoView two frames later — same target,
+        // by then heights are stable. (One frame is sometimes too
+        // soon when the browser batches the layout passes.)
+        raf = window.requestAnimationFrame(() => {
+          raf = window.requestAnimationFrame(() => {
+            const stable = findCard()
+            if (stable) {
+              stable.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+          })
+        })
+        return
       }
       if (attempts < 30) {
         timer = window.setTimeout(tryScroll, 50)
@@ -511,6 +536,7 @@ export default function LawDetail() {
     timer = window.setTimeout(tryScroll, 50)
     return () => {
       if (timer != null) window.clearTimeout(timer)
+      if (raf != null) window.cancelAnimationFrame(raf)
     }
   }, [requestedArticleParam, searchParams, law?.articles])
 

@@ -1,13 +1,24 @@
 'use client'
 
 /**
- * Sun ↔ Moon toggle for the site-wide dark theme. Available to every
- * visitor; the theme is persisted by next-themes and follows the OS
- * preference by default.
+ * Three-state theme toggle: System → Dark → Light → System.
+ *
+ * Default on first visit is ``system`` (configured via
+ * ``defaultTheme="system"`` in providers.tsx) — follows the OS
+ * preference (prefers-color-scheme). Once the user clicks the toggle
+ * they enter an explicit mode (light or dark) which next-themes
+ * persists in localStorage; subsequent loads honour that choice and
+ * IGNORE the OS setting. Cycling once more brings them back to
+ * ``system`` (the explicit override is cleared).
+ *
+ * The icon reflects the *stored* preference (Monitor / Sun / Moon),
+ * not the resolved theme, so the user can tell at a glance which
+ * mode is in effect — including the case where they're on ``system``
+ * and the OS happens to be dark.
  */
 
 import { useEffect, useState } from 'react'
-import { Moon, Sun } from 'lucide-react'
+import { Monitor, Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 
@@ -15,20 +26,44 @@ interface Props {
   className?: string
 }
 
+// Cycle order — chosen so the most common flow (system → opt out
+// to dark for night reading) is a single click. A second click drops
+// to light; a third returns to system. The icon shows where you are.
+const NEXT_THEME: Record<string, 'light' | 'dark' | 'system'> = {
+  system: 'dark',
+  dark: 'light',
+  light: 'system',
+}
+
+const ICON: Record<string, typeof Sun> = {
+  system: Monitor,
+  light: Sun,
+  dark: Moon,
+}
+
+const LABEL: Record<string, string> = {
+  system: 'Thème : système (cliquer pour forcer sombre)',
+  light: 'Thème : clair (cliquer pour revenir au système)',
+  dark: 'Thème : sombre (cliquer pour clair)',
+}
+
 export function ThemeToggle({ className }: Props) {
-  const { resolvedTheme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => setMounted(true), [])
 
-  const isDark = mounted && resolvedTheme === 'dark'
-  const Icon = isDark ? Sun : Moon
-  const label = isDark ? 'Mode clair' : 'Mode sombre'
+  // Before hydration we don't know the stored value — render the
+  // neutral Monitor icon as a placeholder so the SSR markup matches
+  // the post-hydration "system" default for first-time visitors.
+  const current = mounted ? (theme ?? 'system') : 'system'
+  const Icon = ICON[current] ?? Monitor
+  const label = LABEL[current] ?? LABEL.system
 
   return (
     <button
       type="button"
-      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      onClick={() => setTheme(NEXT_THEME[current] ?? 'system')}
       aria-label={label}
       title={label}
       className={cn(
