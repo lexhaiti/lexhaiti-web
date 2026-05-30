@@ -1,12 +1,14 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { PanelLeft, PanelLeftClose, X } from 'lucide-react'
+import { Maximize2, Minimize2, PanelLeft, PanelLeftClose, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useReaderChrome } from '@/components/layout/ReaderChromeContext'
 import { useFooterAvoidance } from '@/lib/hooks/useFooterAvoidance'
-import TableOfContents from '@/components/law-details/TableOfContent'
+import TableOfContents, {
+  type TableOfContentsHandle,
+} from '@/components/law-details/TableOfContent'
 import {
   deleteHeading,
   reorderArticles,
@@ -77,6 +79,27 @@ export function TocSidebar({
   const { stickyActive } = useReaderChrome()
   // Lifts the floating toggle above the footer instead of overlapping.
   const sommaireFooterRef = useFooterAvoidance<HTMLButtonElement>()
+  // Mobile drawer's TableOfContents — we reach its expandAll /
+  // collapseAll via this ref so the drawer header buttons (rendered
+  // outside the component) can drive the same state.
+  const mobileTocRef = useRef<TableOfContentsHandle>(null)
+
+  // Body scroll lock while the mobile drawer is open. Without it the
+  // page underneath scrolls when the user drags inside the drawer
+  // (typical mobile webview behaviour), which makes finding entries
+  // feel unsteady. The lock is mobile-only — desktop sidebar is
+  // inline and the body should keep scrolling.
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    if (!isSidebarOpen) return
+    // Skip on lg+ — desktop sidebar is in-flow, not an overlay.
+    if (window.matchMedia?.('(min-width: 1024px)').matches) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [isSidebarOpen])
 
   // Shared TOC props
   const tocProps = {
@@ -182,17 +205,49 @@ export function TocSidebar({
                     {currentLang === 'fr' ? 'Sommaire' : 'Somè'}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsSidebarOpen(false)}
-                  aria-label={currentLang === 'fr' ? 'Fermer' : 'Fèmen'}
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                {/* Tout-ouvrir / Tout-fermer next to X — drive the
+                    TableOfContents' state via the ref handle. */}
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => mobileTocRef.current?.expandAll()}
+                    aria-label={
+                      currentLang === 'fr' ? 'Tout ouvrir' : 'Ouvri tout'
+                    }
+                    title={
+                      currentLang === 'fr' ? 'Tout ouvrir' : 'Ouvri tout'
+                    }
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+                  >
+                    <Maximize2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => mobileTocRef.current?.collapseAll()}
+                    aria-label={
+                      currentLang === 'fr' ? 'Tout fermer' : 'Fèmen tout'
+                    }
+                    title={
+                      currentLang === 'fr' ? 'Tout fermer' : 'Fèmen tout'
+                    }
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+                  >
+                    <Minimize2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsSidebarOpen(false)}
+                    aria-label={currentLang === 'fr' ? 'Fermer' : 'Fèmen'}
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
-              <div className="flex-1 overflow-y-auto px-2 py-3">
+              <div className="flex-1 overflow-y-auto overscroll-contain px-2 py-3">
                 <TableOfContents
+                  ref={mobileTocRef}
+                  hideInternalHeader
                   {...tocProps}
                   onArticleSelect={(article: any) => {
                     onArticleSelect(article)
@@ -264,12 +319,14 @@ export function TocSidebar({
         tabIndex={stickyActive ? 0 : -1}
         className={cn(
           'inline-flex items-center justify-center',
-          // Right edge, above the ScrollToTop button (which pins to
-          // bottom-6/8). The bottom-20/24 offset keeps the two from
-          // colliding. Right-side placement was the user's request —
-          // matches the existing ScrollToTop stack.
-          'fixed z-40 right-6 sm:right-8',
-          'bottom-20 sm:bottom-24',
+          // Left edge of the viewport so it never collides with
+          // ScrollToTop on the right. ``useFooterAvoidance`` lifts
+          // it above the footer at the bottom of the page. The
+          // bottom-6/sm:bottom-8 mirrors ScrollToTop's resting
+          // position so the two read as a paired set anchored at
+          // the bottom corners.
+          'fixed z-40 left-4 sm:left-6',
+          'bottom-6 sm:bottom-8',
           'h-12 w-12 lg:h-11 lg:w-11 rounded-full',
           'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-lg',
           'hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary',

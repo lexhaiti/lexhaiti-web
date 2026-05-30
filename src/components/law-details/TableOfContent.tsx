@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { formatHeadingNumber as fmtHeadingNumberShared } from '@/lib/legal/headingLabels'
 import {
@@ -150,6 +150,19 @@ interface TableOfContentsProps {
    *  into view — like a breadcrumb embedded in the tree.
    *  Auto-expanded on selection so the path is always visible. */
   activeHeadingIds?: number[]
+  /** When true, skip rendering the internal header (Sommaire label +
+   *  Tout-ouvrir / Tout-fermer / Plus buttons). Used by the mobile
+   *  drawer in TocSidebar, which renders its own header and reaches
+   *  the expand/collapse handlers through ``ref``. */
+  hideInternalHeader?: boolean
+}
+
+/** Imperative handle exposed via ``ref`` so a parent (the mobile
+ *  drawer) can call expand/collapse-all from outside the component
+ *  while the internal header is hidden. */
+export interface TableOfContentsHandle {
+  expandAll: () => void
+  collapseAll: () => void
 }
 
 // Heading level labels (Livre, Titre, …) and per-code overrides
@@ -348,31 +361,36 @@ function filterTree(
   return nodes.map(filterNode).filter(Boolean) as TocNode[]
 }
 
-export default function TableOfContents({
-  articles = [],
-  headings = [],
-  currentLang = 'fr',
-  codeSubcategory = null,
-  onArticleSelect,
-  onHeadingNavigate,
-  selectedArticle,
-  externalQuery,
-  hasPreamble,
-  onPreambleClick,
-  preambleExpanded,
-  hasIntro,
-  onIntroClick,
-  introExpanded,
-  isEditor = false,
-  onHeadingTitleSave,
-  onHeadingDelete,
-  onAddSiblingHeading,
-  onAddChildHeading,
-  onAddRootHeading,
-  onReorderHeadings,
-  onReorderArticles,
-  activeHeadingIds,
-}: TableOfContentsProps) {
+const TableOfContents = forwardRef<TableOfContentsHandle, TableOfContentsProps>(
+  function TableOfContents(
+    {
+      articles = [],
+      headings = [],
+      currentLang = 'fr',
+      codeSubcategory = null,
+      onArticleSelect,
+      onHeadingNavigate,
+      selectedArticle,
+      externalQuery,
+      hasPreamble,
+      onPreambleClick,
+      preambleExpanded,
+      hasIntro,
+      onIntroClick,
+      introExpanded,
+      isEditor = false,
+      onHeadingTitleSave,
+      onHeadingDelete,
+      onAddSiblingHeading,
+      onAddChildHeading,
+      onAddRootHeading,
+      onReorderHeadings,
+      onReorderArticles,
+      activeHeadingIds,
+      hideInternalHeader = false,
+    }: TableOfContentsProps,
+    ref,
+  ) {
   // Lookup-friendly set for "is this heading on the active path?"
   // checks during render. Memoised so we don't rebuild it on every
   // mouseenter / keystroke.
@@ -600,6 +618,16 @@ export default function TableOfContents({
   }
 
   const collapseAll = () => setExpandedSections({})
+
+  // Expose the two functions to a parent via ``ref`` so the mobile
+  // drawer's header buttons (rendered alongside the X close, outside
+  // this component) can drive the same state. The desktop sidebar
+  // keeps using the internal header buttons, which point at the
+  // same functions.
+  useImperativeHandle(ref, () => ({ expandAll, collapseAll }), [
+    expandAll,
+    collapseAll,
+  ])
 
   // Accordion-style expansion: when an article is selected, ONLY the
   // headings on the path to that article stay expanded. Every other
@@ -1252,7 +1280,10 @@ export default function TableOfContents({
 
   return (
     <div className="h-full flex flex-col max-w-full">
-      {/* Header */}
+      {/* Header — suppressed when ``hideInternalHeader`` is set
+          (mobile drawer renders its own SOMMAIRE row and surfaces
+          the expand/collapse buttons there via the ref handle). */}
+      {!hideInternalHeader && (
       <div className="pb-3 border-b border-gray-200 dark:border-slate-800">
         <div className="flex items-center justify-between mb-4">
           <div className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
@@ -1298,6 +1329,7 @@ export default function TableOfContents({
         </div>
 
       </div>
+      )}
 
       {/* Tree */}
       <ScrollArea className="flex-1">
@@ -1415,4 +1447,6 @@ export default function TableOfContents({
       )}
     </div>
   )
-}
+})
+
+export default TableOfContents
