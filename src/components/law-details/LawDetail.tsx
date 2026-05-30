@@ -683,23 +683,14 @@ export default function LawDetail() {
       // shape is what tells us which click path to take.
       const hrefAttr = target.getAttribute('href') || ''
       if (hrefAttr.startsWith('/loi/')) {
-        // Cross-text reference. Intercept so we can force the
-        // destination into the single-article focused view —
-        // landing in list view and then auto-scrolling to a
-        // mid-page row feels uncertain. ``view=article`` gives
-        // the reader a clear "this is the article you clicked"
-        // surface on arrival. Next.js handles the route change
-        // client-side; on the destination LawDetail the existing
-        // ``requestedArticleParam`` effect runs the precise jump.
-        try {
-          const url = new URL(target.href, window.location.origin)
-          url.searchParams.set('view', 'article')
-          e.preventDefault()
-          router.push(url.pathname + url.search)
-        } catch {
-          // Malformed href — fall through to the browser's default
-          // nav as a safe fallback.
-        }
+        // Cross-text reference — the href is ALREADY correct
+        // (the on-mount useEffect above rewrote any pre-v4 anchors
+        // to include ``view=article``). Let the browser do its
+        // default anchor navigation, which Next.js intercepts as a
+        // regular client-side route change. The earlier JS
+        // intercept here was unreliable: Next.js's own anchor
+        // capture handler seems to swallow it on real user clicks,
+        // leaving the page stuck on the source law.
         return
       }
       // Pull the article number off the data attribute (cheaper than
