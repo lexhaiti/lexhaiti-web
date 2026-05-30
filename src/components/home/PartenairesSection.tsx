@@ -80,7 +80,14 @@ export default async function PartenairesSection() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={p.name}
-                className="group flex h-24 sm:h-28 w-full max-w-xs items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-700 bg-white px-6 py-4 shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
+                // Tile bg is white in light mode (matches the logos'
+                // intended brand surface) and a soft off-white
+                // (slate-100) in dark mode — keeps APRANN's blue and
+                // Relève's red+blue legible without punching two
+                // bright rectangles out of the slate-950 page.
+                // Slight inner ring in dark for definition against
+                // the page bg.
+                className="group flex h-24 sm:h-28 w-full max-w-xs items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-100 px-6 py-4 shadow-sm dark:shadow-black/30 dark:ring-1 dark:ring-slate-800 transition-all hover:border-primary/40 hover:shadow-md"
               >
                 <Image
                   src={p.logo}
