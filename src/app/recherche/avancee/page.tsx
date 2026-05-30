@@ -530,7 +530,7 @@ export default function AdvancedSearchPage() {
             type="button"
             onClick={() => submit()}
             size="lg"
-            className="h-12 rounded-md bg-primary text-white hover:bg-primary/90 px-7 font-semibold gap-2"
+            className="h-12 rounded-md bg-primary dark:bg-slate-800 text-white hover:bg-primary/90 dark:hover:bg-slate-700 px-7 font-semibold gap-2"
           >
             <SearchIcon className="w-4 h-4" />
             {t('searchAdvanced.submit')}
@@ -690,7 +690,7 @@ function FondsPicker({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="inline-flex items-center justify-between gap-3 min-w-[260px] h-11 px-4 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
+          className="inline-flex items-center justify-between gap-3 min-w-[260px] h-11 px-4 rounded-md bg-primary dark:bg-slate-800 text-white text-sm font-semibold hover:bg-primary/90 dark:hover:bg-slate-700 transition-colors"
         >
           <span>{labelText}</span>
           <ChevronDown

@@ -74,7 +74,7 @@ function SearchBar({
       <button
         type="submit"
         aria-label={lang === 'fr' ? 'Rechercher' : 'Chèche'}
-        className="inline-flex items-center gap-2 px-5 sm:px-7 bg-primary text-white text-sm font-semibold hover:bg-primary/90 active:scale-[0.99] transition-all"
+        className="inline-flex items-center gap-2 px-5 sm:px-7 bg-primary dark:bg-slate-800 text-white text-sm font-semibold hover:bg-primary/90 dark:hover:bg-slate-700 active:scale-[0.99] transition-all"
       >
         <Search className="w-4 h-4" aria-hidden />
         <span className="hidden sm:inline">
