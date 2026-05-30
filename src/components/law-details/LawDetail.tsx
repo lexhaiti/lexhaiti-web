@@ -449,28 +449,52 @@ export default function LawDetail() {
   // URLs) AND the inline ``rt-art-ref`` clicks from the body text —
   // both end up driving the URL ``?article=`` param, which is the
   // single source of truth.
+  //
+  // Two tricky timings to handle:
+  //   1. Cross-text link click: arrives on this page with ?article=N
+  //      already set, but ``law`` is still null while the data fetch
+  //      is in flight. We MUST re-run once the articles array lands —
+  //      that's why ``law?.articles`` is in the dep array.
+  //   2. Render windowing: ArticleListView only renders the first
+  //      ~70 articles by default; if the target is past that, the
+  //      jumpToArticleNumber path widens the window synchronously
+  //      *during* the next render, so a single 50ms setTimeout still
+  //      misses the element. We poll for up to ~1.5s before giving up.
   useEffect(() => {
     if (!requestedArticleParam) return
     const isFocused = searchParams?.get('view') === 'article'
-    // Defer to next paint so the freshly-mounted target has a chance
-    // to land in the DOM (the article-list windowing extends to
-    // include the requested article on the same tick the URL param
-    // changes, but the layout pass hasn't run yet).
-    const id = window.setTimeout(() => {
-      if (isFocused) {
+    if (isFocused) {
+      const id = window.setTimeout(() => {
         articleViewerRef.current?.scrollIntoView({
           behavior: 'smooth',
           block: 'center',
         })
-        return
-      }
+      }, 50)
+      return () => window.clearTimeout(id)
+    }
+    // Inline list view — poll for the card element. The windowing
+    // logic in ArticleListView extends the rendered window to include
+    // the jump target on the next render after the URL param changes,
+    // and ancestor accordions in chapter view need a tick or two to
+    // expand. Total budget: ~1.5s (30 × 50ms).
+    let attempts = 0
+    let timer: number | null = null
+    const tryScroll = () => {
+      attempts += 1
       const card = document.getElementById(`article-${requestedArticleParam}`)
       if (card) {
         card.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        return
       }
-    }, 50)
-    return () => window.clearTimeout(id)
-  }, [requestedArticleParam, searchParams])
+      if (attempts < 30) {
+        timer = window.setTimeout(tryScroll, 50)
+      }
+    }
+    timer = window.setTimeout(tryScroll, 50)
+    return () => {
+      if (timer != null) window.clearTimeout(timer)
+    }
+  }, [requestedArticleParam, searchParams, law?.articles])
 
   // Re-bind selectedArticle to the freshest copy whenever law.articles changes.
   useEffect(() => {
