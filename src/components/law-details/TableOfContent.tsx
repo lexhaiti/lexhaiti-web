@@ -840,17 +840,44 @@ const TableOfContents = forwardRef<TableOfContentsHandle, TableOfContentsProps>(
           }`}
         >
           <div className="flex items-center gap-2">
-            {isExpanded ? (
-              <ChevronDown className="w-4 h-4 text-red-600 flex-shrink-0" />
-            ) : (
-              <ChevronRight
-                className={`w-4 h-4 flex-shrink-0 transition-colors ${
-                  isOnActivePath
-                    ? 'text-red-600'
-                    : 'text-gray-400 group-hover:text-red-600'
-                }`}
-              />
-            )}
+            {/* Chevron is its OWN click target: tap to expand /
+                collapse the sub-tree inline. ``stopPropagation``
+                prevents the parent row's navigate-and-close
+                handler from also firing — important on the mobile
+                drawer where the row click closes the drawer, but
+                the user might just want to peek at children
+                without leaving the sommaire. Tap the title for the
+                navigate-and-close path. */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleSection(heading.key)
+              }}
+              aria-label={
+                isExpanded
+                  ? currentLang === 'fr'
+                    ? 'Réduire'
+                    : 'Redui'
+                  : currentLang === 'fr'
+                    ? 'Développer'
+                    : 'Devlope'
+              }
+              aria-expanded={isExpanded}
+              className="flex-shrink-0 -ml-1 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+            >
+              {isExpanded ? (
+                <ChevronDown className="w-4 h-4 text-red-600" />
+              ) : (
+                <ChevronRight
+                  className={`w-4 h-4 transition-colors ${
+                    isOnActivePath
+                      ? 'text-red-600'
+                      : 'text-gray-400 group-hover:text-red-600'
+                  }`}
+                />
+              )}
+            </button>
 
             <div className="flex-1 min-w-0 flex flex-wrap items-baseline gap-x-2">
               {/* Heading number — inline-editable in editor mode. Click
