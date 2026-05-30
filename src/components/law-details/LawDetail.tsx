@@ -1388,11 +1388,14 @@ export default function LawDetail() {
             )}
 
             <RelatedLaws relatedLaws={relatedLaws} currentLang={currentLang} />
-            {/* Spacer so the last content item never sits flush against
-                the floating Sommaire / ScrollToTop pair anchored at
-                bottom-6/8. Disabled at lg+ where the FABs land in a
-                less collision-prone strip. */}
-            <div aria-hidden className="h-24 lg:h-0" />
+            {/* Modest spacer (h-12) so the last content item doesn't
+                sit flush against the floating Sommaire / ScrollToTop
+                pair when the user scrolls all the way to the bottom.
+                Disabled at lg+ where the FABs are less collision-
+                prone. The previous h-24 left an awkward void; h-12
+                is enough to clear the FABs' shadow without the
+                cavernous feel. */}
+            <div aria-hidden className="h-12 lg:h-0" />
           </div>
         </div>
       </div>

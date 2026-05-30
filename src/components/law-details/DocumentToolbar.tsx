@@ -182,7 +182,7 @@ export function DocumentToolbar({
             ) : (
               <PanelLeft className="w-3.5 h-3.5" aria-hidden />
             )}
-            {isFr ? 'Sommaire' : 'Somè'}
+            {isFr ? 'Voir le sommaire' : 'Wè somè a'}
           </button>
         )}
         <DropdownMenu>
@@ -201,7 +201,18 @@ export function DocumentToolbar({
               <ChevronDown className="w-3.5 h-3.5 opacity-60" aria-hidden />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="min-w-[260px]">
+          {/* ``align="end"`` so the dropdown right-edge aligns with
+              the Outils trigger (which sits on the right of the
+              row). The menu then extends LEFTWARD into safe
+              territory instead of overflowing off the right edge
+              of small viewports. ``collisionPadding`` keeps a
+              breathing margin from the viewport edge in case the
+              row layout shifts. */}
+          <DropdownMenuContent
+            align="end"
+            collisionPadding={16}
+            className="min-w-[260px]"
+          >
             {showViewAsOf && (
               <>
                 <DropdownMenuItem

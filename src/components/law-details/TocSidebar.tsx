@@ -318,27 +318,19 @@ export function TocSidebar({
         title={currentLang === 'fr' ? 'Sommaire' : 'Somè'}
         tabIndex={stickyActive ? 0 : -1}
         className={cn(
-          'inline-flex items-center justify-center gap-2',
+          'inline-flex items-center justify-center',
           // Right edge, immediately to the LEFT of ScrollToTop.
-          // ``right-20/24`` anchors the FAB's right edge ~80/96px
-          // from the viewport edge — with ScrollToTop (44px) sitting
-          // at right-6/8, that leaves a ~12-20px gap between them.
-          // The pill grows LEFTWARD as the label widens, so the
-          // gap to ScrollToTop stays stable regardless of label
-          // length. ``useFooterAvoidance`` lifts the pair in tandem
-          // above the footer when the user scrolls to the bottom.
+          // Both are circular icon-only chips of the same size —
+          // they read as a paired set in the bottom-right corner.
+          // The labeled "Voir le sommaire" affordance lives in the
+          // DocumentToolbar's inline row above; the FAB is the
+          // discreet shortcut for scrolled readers.
           'fixed z-40 right-20 sm:right-24',
           'bottom-6 sm:bottom-8',
-          // Mobile / tablet (<lg): pill with icon + visible label
-          // ("Voir le sommaire"). Desktop (lg+): circular icon-only
-          // since the inline Sommaire toggle in SearchPanel's
-          // right-cluster already labels the function.
-          'h-12 lg:h-11 px-4 lg:px-0 lg:w-11 rounded-full',
+          'h-12 w-12 lg:h-11 lg:w-11 rounded-full',
           'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-lg',
           'hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2',
-          // Only opacity transitions — the footer-avoidance transform is
-          // applied imperatively and must track scroll instantly.
           'transition-opacity duration-200',
           stickyActive
             ? 'opacity-100 pointer-events-auto'
@@ -350,9 +342,6 @@ export function TocSidebar({
         ) : (
           <PanelLeft className="w-5 h-5" aria-hidden />
         )}
-        <span className="lg:hidden text-sm font-semibold whitespace-nowrap">
-          {currentLang === 'fr' ? 'Voir le sommaire' : 'Wè somè a'}
-        </span>
       </button>
 
       {/* Desktop Sidebar */}
