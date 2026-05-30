@@ -43,6 +43,7 @@ import Link from 'next/link'
 import { ArrowUpRight, ChevronDown, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getLevelLabel } from '@/lib/legal/headingLabels'
+import { articleNumberEquals } from '@/lib/legal/articleNumber'
 import { CiteArticleButton } from './CiteArticleButton'
 import { PlainExplainerBox } from './PlainExplainerBox'
 import { ArticleAccordions } from './ArticleAccordions'
@@ -276,8 +277,9 @@ export function ArticleListView({
   // reset. Recomputed only when the target number or the set changes.
   const jumpIndex = useMemo(() => {
     if (!jumpToArticleNumber || isSearching) return -1
-    return filteredArticles.findIndex(
-      (a) => String(a.number ?? '') === jumpToArticleNumber,
+    // Separator-tolerant match — see lib/legal/articleNumber.ts.
+    return filteredArticles.findIndex((a) =>
+      articleNumberEquals(a.number, jumpToArticleNumber),
     )
   }, [jumpToArticleNumber, filteredArticles, isSearching])
 

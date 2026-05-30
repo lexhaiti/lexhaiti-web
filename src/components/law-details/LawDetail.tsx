@@ -90,6 +90,10 @@ import { useViewMode } from '@/lib/hooks/useViewMode'
 import { useHeadingCollapse } from '@/lib/hooks/useHeadingCollapse'
 import { useInitialVersions } from '@/lib/hooks/useInitialVersions'
 import { lawShortCite } from '@/lib/legal/cite'
+import {
+  articleNumberEquals,
+  normalizeArticleNumber,
+} from '@/lib/legal/articleNumber'
 import { cn } from '@/lib/utils'
 import { useReaderChrome } from '@/components/layout/ReaderChromeContext'
 
@@ -421,8 +425,11 @@ export default function LawDetail() {
   useEffect(() => {
     if (!law?.articles || law.articles.length === 0) return
     if (requestedArticleParam) {
-      const target = law.articles.find(
-        (a) => String(a.number) === requestedArticleParam,
+      // Match modulo separator convention — "11.1" (dot, common in
+      // amending-law prose) and "11-1" (dash, the Constitution's
+      // canonical form) refer to the same article.
+      const target = law.articles.find((a) =>
+        articleNumberEquals(a.number, requestedArticleParam),
       )
       if (target && target.id !== selectedArticle?.id) {
         setSelectedArticle(target)
@@ -479,12 +486,23 @@ export default function LawDetail() {
     // expand. Total budget: ~1.5s (30 × 50ms).
     let attempts = 0
     let timer: number | null = null
+    // Try both the URL-as-typed and the dash-normalized form. The
+    // card id is built from the article's native ``number`` (e.g.
+    // "11-1" in the Constitution), so when an amending law's URL
+    // uses dot form ("11.1"), the as-typed lookup misses and the
+    // normalized lookup hits.
+    const candidates = [
+      requestedArticleParam,
+      normalizeArticleNumber(requestedArticleParam),
+    ].filter((v, i, arr) => v && arr.indexOf(v) === i)
     const tryScroll = () => {
       attempts += 1
-      const card = document.getElementById(`article-${requestedArticleParam}`)
-      if (card) {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        return
+      for (const c of candidates) {
+        const card = document.getElementById(`article-${c}`)
+        if (card) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          return
+        }
       }
       if (attempts < 30) {
         timer = window.setTimeout(tryScroll, 50)
