@@ -112,11 +112,11 @@ export function mapCitations(
  * The new endpoint resolves cross-text article titles + permalinks
  * server-side (e.g. "Code Civil — Art. 1382"), collapsing the legacy
  * citationsFrom/citationsTo + resolveArticles trio into one round-
- * trip. The trade-off: the response doesn't surface the citation
- * ``relation`` (cites / amends / abrogates / …), so every entry lands
- * in the default "vise" bucket. In practice public readers never saw
- * meaningful per-relation grouping on article cards anyway — the
- * legacy backfill marks ~all rows as ``cites``.
+ * trip. The ``relation`` field on the response now carries the raw
+ * CitationRelation enum value (``cites`` / ``amends`` / ``abrogates``
+ * / …) so the badge grouping that CitationColumn renders survives
+ * the migration. Older citation rows without a relation column fall
+ * back to ``vise`` (the neutral "references" colour).
  *
  * ``decision_date`` is folded into ``note`` so the column can render
  * "12 mars 2024" alongside a decision title without extra plumbing
@@ -124,7 +124,7 @@ export function mapCitations(
  */
 export function mapRefItems(items: ArticleRefItem[]): CitationEntry[] {
   return items.map((ref) => ({
-    relation: 'vise',
+    relation: RELATION_MAP[ref.relation ?? ''] ?? 'vise',
     target_label: ref.title,
     href: ref.href || null,
     note: ref.note ?? ref.decision_date ?? undefined,

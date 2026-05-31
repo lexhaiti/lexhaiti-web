@@ -219,6 +219,11 @@ export interface ArticleRefItem {
   kind: ArticleRefKind
   title: string
   href: string
+  /** Citation semantic relation (vise / modifie / abroge /
+   *  applique / interprete / …) — drives the CitationColumn badge
+   *  colour. ``null`` for citations recorded before the relation
+   *  column existed. */
+  relation?: string | null
   note?: string | null
   decision_date?: string | null
 }
