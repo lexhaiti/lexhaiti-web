@@ -8,7 +8,7 @@
  * Detection rule (top-level keys, in order):
  *
  *   1. ``{issue, entries}``  → Moniteur shape
- *      → POST /editorial/moniteur/issues/import-json
+ *      → POST /moniteur/issues/import-json
  *   2. ``{slug, title_fr}``  → LegalText shape
  *      → POST /editorial/legal-texts
  *   3. otherwise             → ambiguous (error before submit)
@@ -360,7 +360,7 @@ export default function JsonImportPanel() {
         setCreated({ shape: 'legal_text', payload: result })
       } else {
         const result = await apiPost<MoniteurIssueRead>(
-          '/editorial/moniteur/issues/import-json',
+          '/moniteur/issues/import-json',
           parsed,
         )
         setCreated({ shape: 'moniteur', payload: result })
@@ -416,7 +416,7 @@ export default function JsonImportPanel() {
                   <code className="font-mono text-xs">
                     {'{schema_version, issue, entries[]}'}
                   </code>
-                  {' '}→ POST /editorial/moniteur/issues/import-json
+                  {' '}→ POST /moniteur/issues/import-json
                 </>
               ) : (
                 <>
@@ -424,7 +424,7 @@ export default function JsonImportPanel() {
                   <code className="font-mono text-xs">
                     {'{schema_version, issue, entries[]}'}
                   </code>
-                  {' '}→ POST /editorial/moniteur/issues/import-json
+                  {' '}→ POST /moniteur/issues/import-json
                 </>
               )}
             </li>
