@@ -660,16 +660,31 @@ const TableOfContents = forwardRef<TableOfContentsHandle, TableOfContentsProps>(
 
   // Scroll the selected article into view inside the TOC. Two
   // requestAnimationFrame ticks let React + framer-motion settle the
-  // expand-collapse from the accordion effect above before we measure
-  // the target's position — otherwise the target is still offscreen
-  // (or doesn't yet exist in the DOM) when scrollIntoView fires.
+  // accordion expand-collapse above before we measure the target's
+  // position — otherwise the target is still offscreen (or doesn't yet
+  // exist in the DOM) when scrollIntoView fires.
   //
   // ``block: 'center'`` keeps the row visually centred in the scroll
   // viewport with surrounding context — ``nearest`` would skip the
   // scroll when the target is already barely on-screen, which feels
   // sticky when navigating sequentially through articles.
+  //
+  // IMPORTANT: only scroll when the *selected article* actually changes.
+  // ``expandedSections`` used to be a dependency so the accordion
+  // auto-expand (which mutates it on article selection) would settle
+  // before measuring. But that also re-fired the effect on every MANUAL
+  // chevron toggle, snapping the sommaire back to the selected article —
+  // on mobile this reads as "the list jumps to the top every time I open
+  // a level". We guard with a ref so a bare expand/collapse never scrolls;
+  // the effect still depends on ``expandedSections`` to get the post-
+  // accordion timing right, but the body no-ops unless the article moved.
+  const lastScrolledArticle = React.useRef<string | number | null>(null)
   React.useEffect(() => {
-    if (!selectedArticle) return
+    if (!selectedArticle) {
+      lastScrolledArticle.current = null
+      return
+    }
+    if (lastScrolledArticle.current === selectedArticle) return
     let raf1 = 0
     let raf2 = 0
     raf1 = requestAnimationFrame(() => {
@@ -677,6 +692,7 @@ const TableOfContents = forwardRef<TableOfContentsHandle, TableOfContentsProps>(
         const el = document.getElementById(`toc-article-${selectedArticle}`)
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          lastScrolledArticle.current = selectedArticle
         }
       })
     })
