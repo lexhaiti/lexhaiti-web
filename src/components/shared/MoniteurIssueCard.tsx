@@ -139,9 +139,8 @@ export function MoniteurIssueCard({
             {visible.map((s, idx) => (
               <li
                 key={idx}
-                className="flex items-baseline gap-2 text-sm leading-snug"
+                className="text-sm leading-snug"
               >
-                <span className="w-1 h-1 rounded-full bg-red-500 flex-shrink-0 mt-[0.45em]" />
                 <span className="line-clamp-2">
                   {s.category && (
                     <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wide mr-1">
