@@ -160,11 +160,6 @@ export function LawCard(props: Props) {
           {/* Hover wash */}
           <div className="absolute inset-0 z-0 bg-gradient-to-r from-white/50 via-white/30 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 backdrop-blur-sm" />
 
-          {/* Left colour rail — scales in from the top on hover. */}
-          <div
-            className="absolute left-0 top-0 bottom-0 w-[3px] z-20 origin-top scale-y-0 transition-transform duration-500 ease-out group-hover:scale-y-100 bg-[var(--card-theme)]"
-          />
-
           <div className="relative z-10 pl-6 pr-4 py-4">
             <div className="flex gap-4">
               {/* Icon column */}
@@ -328,13 +323,10 @@ export function LawCard(props: Props) {
           'hover:-translate-y-1',
         )}
       >
-        {/* Top colour rail — scales in horizontally on hover. */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 z-20 origin-left scale-x-0 transition-transform duration-500 ease-out group-hover:scale-x-100 bg-[var(--card-theme)]" />
-
         {/* Diagonal background tint on hover. */}
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-[var(--card-theme-light)] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
-        <div className="relative z-10 p-7 pt-9 flex flex-col h-full">
+        <div className="relative z-10 p-7 flex flex-col h-full">
           <div className="mb-6 flex items-start justify-between">
             <div
               className={cn(
