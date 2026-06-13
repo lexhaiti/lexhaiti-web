@@ -7,9 +7,11 @@ import { StandardPageHeader } from '@/components/shared/StandardPageHeader'
 import {
   AlertTriangle,
   ArrowRight,
+  CalendarDays,
   CheckCircle2,
   Clock,
   FileText,
+  LayoutGrid,
   Loader2,
   Newspaper,
   Plus,
@@ -30,6 +32,7 @@ import {
 } from '@/components/shared/EditorialFilter'
 import { MoniteurIssueCard } from '@/components/shared/MoniteurIssueCard'
 import { LoadingState } from '@/components/shared/LoadingState'
+import { MoniteurYearView } from './MoniteurYearView'
 
 const STATUS_LABEL: Record<
   MoniteurIssueRead['processing_status'],
@@ -76,6 +79,10 @@ export default function MoniteurListClient() {
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
   const [editorialFilter, setEditorialFilter] = useState<EditorialStatusFilter>('published')
+  // Editor-only: switch between the public card grid and the year-grouped
+  // review/assignment view. Defaults to grid so the page is unchanged for
+  // the common case.
+  const [view, setView] = useState<'grid' | 'year'>('grid')
 
   useEffect(() => {
     let cancelled = false
@@ -159,6 +166,36 @@ export default function MoniteurListClient() {
 
         {isEditor && (
           <div className="mt-4 flex flex-wrap items-center gap-3">
+            {/* Grid ↔ year-view toggle (editor-only). The year view is the
+                review/assignment work surface; the grid is the public look. */}
+            <div className="inline-flex rounded-md border border-white/20 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setView('grid')}
+                className={cn(
+                  'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors',
+                  view === 'grid'
+                    ? 'bg-white text-slate-900'
+                    : 'bg-transparent text-white/80 hover:bg-white/10',
+                )}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                {isFr ? 'Grille' : 'Griy'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setView('year')}
+                className={cn(
+                  'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors',
+                  view === 'year'
+                    ? 'bg-white text-slate-900'
+                    : 'bg-transparent text-white/80 hover:bg-white/10',
+                )}
+              >
+                <CalendarDays className="w-3.5 h-3.5" />
+                {isFr ? 'Par année' : 'Pa ane'}
+              </button>
+            </div>
             <EditorialFilter
               value={editorialFilter}
               onChange={setEditorialFilter}
@@ -189,7 +226,9 @@ export default function MoniteurListClient() {
 
       <div className="container py-12 lg:py-20">
 
-        {loading ? (
+        {isEditor && view === 'year' ? (
+          <MoniteurYearView lang={lang} />
+        ) : loading ? (
           <LoadingState />
         ) : visibleIssues.length > 0 ? (
           <motion.div

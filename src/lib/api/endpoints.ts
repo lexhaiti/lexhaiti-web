@@ -638,7 +638,16 @@ export async function getAmendmentsForText(slug: string) {
 // without a manual edit. The hand-typed version that lived here used
 // to drift — it carried no `number` field even after the backend
 // surfaced it, breaking the card render.
-export type MoniteurIssueRead = components['schemas']['MoniteurIssueRead']
+// The generated `components` type for MoniteurIssueRead lags the backend
+// (api-types.ts is regenerated manually and currently predates the
+// reviewer-assignment columns). Intersect the new editorial fields here
+// so the year/assignment UI is typed without a full regen.
+export type MoniteurIssueRead = components['schemas']['MoniteurIssueRead'] & {
+  assigned_reviewer_id?: number | null
+  assigned_reviewer_email?: string | null
+  assigned_reviewer_name?: string | null
+  assigned_at?: string | null
+}
 
 export type MoniteurEntryRead = {
   id: number
@@ -743,6 +752,10 @@ export async function listMoniteurIssues(params?: {
   limit?: number
   offset?: number
   only_published?: boolean
+  /** Editor view: restrict to a single publication year. */
+  year?: number
+  /** Editor view: only issues assigned to the signed-in reviewer. */
+  mine?: boolean
 }) {
   return apiGet<{
     items: MoniteurIssueRead[]
@@ -750,6 +763,63 @@ export async function listMoniteurIssues(params?: {
     page: number
     size: number
   }>(`/moniteur/issues`, { params })
+}
+
+// Reviewer-assignment types defined standalone (the generated api-types
+// lags the backend — see the note on MoniteurIssueRead above).
+export interface MoniteurYearAssignee {
+  reviewer_id: number
+  email?: string | null
+  name?: string | null
+  count: number
+}
+export interface MoniteurYearSummary {
+  year: number
+  total: number
+  reviewed: number
+  published: number
+  assigned: number
+  assignees?: MoniteurYearAssignee[]
+}
+export interface MoniteurReviewerOption {
+  id: number
+  email?: string | null
+  name?: string | null
+  role: string
+  assigned_count: number
+}
+
+/** Editor year view: per-year counts, review progress, and reviewers. */
+export async function listMoniteurYears(only_published = false) {
+  return apiGet<MoniteurYearSummary[]>(`/moniteur/years`, {
+    params: { only_published },
+  })
+}
+
+/** Assignable reviewers (admin / reviewer / editor) with their workload. */
+export async function listMoniteurReviewers() {
+  return apiGet<MoniteurReviewerOption[]>(`/moniteur/reviewers`)
+}
+
+/** Assign (reviewer_id) or clear (null) the reviewer for one issue. */
+export async function assignMoniteurIssue(
+  id: number,
+  reviewer_id: number | null,
+) {
+  return apiPatch<MoniteurIssueRead>(`/moniteur/issues/${id}/assignment`, {
+    reviewer_id,
+  })
+}
+
+/** Bulk-assign every issue of a year to a reviewer (or clear with null). */
+export async function assignMoniteurYear(
+  year: number,
+  reviewer_id: number | null,
+) {
+  return apiPost<{ year: number; reviewer_id: number | null; updated: number }>(
+    `/moniteur/years/${year}/assignment`,
+    { reviewer_id },
+  )
 }
 
 export async function getMoniteurIssue(id: number) {
