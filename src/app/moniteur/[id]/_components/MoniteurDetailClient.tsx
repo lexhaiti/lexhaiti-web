@@ -32,7 +32,6 @@ import { formatLongDate as formatLongDateBilingual } from '@/lib/format/date'
 import { isNestedAccompaniment, smartIssueNumber } from '@/lib/format/moniteur'
 import { LoadingState } from '@/components/shared/LoadingState'
 import { EmptyState } from '@/components/shared/EmptyState'
-import { SourceDisclaimer } from '@/components/shared/SourceDisclaimer'
 import { ReportErrorButton } from '@/components/shared/ReportErrorButton'
 import { useEditorMode } from '@/lib/hooks/useEditorMode'
 import { useSession } from 'next-auth/react'
@@ -1039,9 +1038,8 @@ export default function MoniteurDetailClient({
           )}
         </section>
 
-        {/* Reader trust layer (Phase 3): source disclaimer + report-error */}
-        <div className="mt-12 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <SourceDisclaimer lang={lang} className="sm:flex-1" />
+        {/* Reader trust layer (Phase 3): report-error */}
+        <div className="mt-12 flex justify-end">
           <ReportErrorButton
             lang={lang}
             target={{
@@ -1049,7 +1047,6 @@ export default function MoniteurDetailClient({
               target_id: issue.id,
               target_slug: issue.slug ?? null,
             }}
-            className="shrink-0"
           />
         </div>
 
