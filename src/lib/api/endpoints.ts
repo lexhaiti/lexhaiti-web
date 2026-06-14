@@ -729,6 +729,12 @@ export type MoniteurEntryRead = {
   ocr_remark_ai?: string | null
   ocr_issues?: string[] | null
   needs_ocr_review?: boolean
+  /** Risk-based review (Phase 2). critical_flags / uncertain_spans are
+   *  AI-produced (ingested via JSON import); review_risk is derived
+   *  server-side and routes single- vs four-eyes review. */
+  critical_flags?: Array<Record<string, unknown>> | null
+  uncertain_spans?: Array<Record<string, unknown>> | null
+  review_risk?: 'low' | 'medium' | 'high'
   created_at: string
   updated_at: string
 }

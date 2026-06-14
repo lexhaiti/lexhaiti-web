@@ -100,6 +100,20 @@ function ocrBadgeCls(score: number): string {
   return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300'
 }
 
+/** Risk-based review (Phase 2): badge styling + bilingual label for the
+ *  derived review_risk tier. high → four-eyes; low/medium → single review. */
+const RISK_BADGE: Record<'low' | 'medium' | 'high', string> = {
+  low: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300',
+  medium:
+    'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300',
+  high: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300',
+}
+function riskLabel(r: 'low' | 'medium' | 'high', lang: 'fr' | 'ht'): string {
+  const fr = { low: 'risque faible', medium: 'risque moyen', high: 'risque élevé' }
+  const ht = { low: 'ti risk', medium: 'risk mwayen', high: 'gwo risk' }
+  return (lang === 'fr' ? fr : ht)[r]
+}
+
 type T = (key: string, opts?: { fallback?: string }) => string
 
 type PanelProps = {
@@ -686,6 +700,28 @@ export function MoniteurIssueEditorPanel({
                     >
                       {t(`editorial.moniteur.review.${pill.key}`)}
                     </span>
+                    {c.review_risk && (
+                      <span
+                        className={cn(
+                          'inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[11px] font-bold uppercase tracking-wider',
+                          RISK_BADGE[c.review_risk],
+                        )}
+                        title={
+                          c.review_risk === 'high'
+                            ? lang === 'fr'
+                              ? 'Contenu à risque : second contrôle (quatre yeux) requis avant publication'
+                              : 'Kontni a risk : dezyèm kontwòl (kat je) obligatwa anvan piblikasyon'
+                            : lang === 'fr'
+                              ? 'Une seule relecture suffit avant publication'
+                              : 'Yon sèl reli ase anvan piblikasyon'
+                        }
+                      >
+                        {c.review_risk === 'high' && (
+                          <Flag className="w-3 h-3" aria-hidden="true" />
+                        )}
+                        {riskLabel(c.review_risk, lang)}
+                      </span>
+                    )}
                     {c.confidence && (
                       <span className="text-[11px] text-slate-500 tabular-nums">
                         {t('editorial.moniteur.review.cardConfidence')}: {Number(c.confidence).toFixed(2)}
@@ -968,6 +1004,49 @@ export function MoniteurIssueEditorPanel({
                       </span>
                     )}
                   </div>
+
+                  {/* Must-verify fields flagged by the AI (numbers, dates,
+                      names, amounts). OCR confidence ≠ correctness — these
+                      always need a human eye, which is why a non-empty list
+                      forces the high-risk tier + four-eyes. */}
+                  {c.critical_flags && c.critical_flags.length > 0 && (
+                    <div className="rounded-md border border-red-200 dark:border-red-500/30 bg-red-50/60 dark:bg-red-950/30 px-2.5 py-2 mb-2">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-red-700 dark:text-red-300 mb-1">
+                        <Flag className="w-3 h-3" aria-hidden="true" />
+                        {lang === 'fr'
+                          ? 'À vérifier manuellement'
+                          : 'Pou verifye alamen'}
+                      </div>
+                      <ul className="space-y-0.5">
+                        {c.critical_flags.map((f, i) => {
+                          const field = String(
+                            (f as Record<string, unknown>).field ?? '',
+                          )
+                          const value = String(
+                            (f as Record<string, unknown>).value ?? '',
+                          )
+                          const reason = (f as Record<string, unknown>).reason
+                          return (
+                            <li
+                              key={i}
+                              className="text-[12px] text-slate-700 dark:text-slate-300"
+                            >
+                              {field && (
+                                <span className="font-semibold">{field}: </span>
+                              )}
+                              <span className="tabular-nums">{value}</span>
+                              {reason ? (
+                                <span className="text-slate-400">
+                                  {' '}
+                                  — {String(reason)}
+                                </span>
+                              ) : null}
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    </div>
+                  )}
 
                   {c.ocr_remark_ai && (
                     <div className="flex gap-2 bg-indigo-50 dark:bg-indigo-950/40 rounded-md px-2.5 py-2 mb-2">
