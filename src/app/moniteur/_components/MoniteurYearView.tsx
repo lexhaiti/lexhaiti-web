@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { CheckCircle2, ChevronRight, Loader2, UserCircle2, Users } from 'lucide-react'
+import { CheckCircle2, ChevronRight, Loader2, ScanLine, UserCircle2, Users } from 'lucide-react'
 
 import {
   assignMoniteurIssue,
@@ -268,6 +268,19 @@ export function MoniteurYearView({ lang }: { lang: 'fr' | 'ht' }) {
                               </span>
                             </div>
                           </Link>
+                          {(it.ocr_flagged_count ?? 0) > 0 && (
+                            <span
+                              className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 dark:text-amber-400 flex-shrink-0"
+                              title={
+                                isFr
+                                  ? `${it.ocr_flagged_count} texte(s) à vérifier (OCR)`
+                                  : `${it.ocr_flagged_count} tèks pou verifye (OCR)`
+                              }
+                            >
+                              <ScanLine className="w-3 h-3" aria-hidden="true" />
+                              {it.ocr_flagged_count}
+                            </span>
+                          )}
                           {it.assigned_reviewer_email && (
                             <span className="hidden sm:inline text-[11px] text-slate-400 truncate max-w-[140px]">
                               {it.assigned_reviewer_name ||

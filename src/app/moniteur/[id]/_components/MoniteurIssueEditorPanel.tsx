@@ -7,10 +7,13 @@ import { Fragment } from 'react'
 import {
   AlertTriangle,
   ArrowRight,
+  Bot,
   Check,
+  Flag,
   Loader2,
   Pencil,
   RotateCcw,
+  ScanLine,
   Trash2,
   X,
 } from 'lucide-react'
@@ -28,6 +31,7 @@ import {
   previewMoniteurEntrySplit,
   promoteMoniteurEntry,
   reviewMoniteurEntry,
+  updateMoniteurEntryOcr,
   type MoniteurIssueRead,
   type MoniteurIssueWithEntries,
   type MoniteurEntryRead,
@@ -68,6 +72,33 @@ const PROMOTABLE_CATEGORIES = new Set([
   'convention',
   'ordonnance',
 ])
+
+/** OCR-quality issue tags (Phase 1) + their French labels. */
+const OCR_ISSUE_VALUES = [
+  'BRUIT',
+  'CROPPED_TEXT',
+  'UNREADABLE_SECTIONS',
+  'COMPLEX_LAYOUT',
+  'TABLEAU',
+  'MANUSCRIT',
+] as const
+const OCR_ISSUE_LABEL: Record<string, string> = {
+  BRUIT: 'Bruit',
+  CROPPED_TEXT: 'Texte coupé',
+  UNREADABLE_SECTIONS: 'Sections illisibles',
+  COMPLEX_LAYOUT: 'Mise en page complexe',
+  TABLEAU: 'Tableau',
+  MANUSCRIT: 'Manuscrit',
+}
+
+/** Colour-band a 0–1 OCR confidence score: green ≥0.85, amber ≥0.70, red. */
+function ocrBadgeCls(score: number): string {
+  if (score >= 0.85)
+    return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+  if (score >= 0.7)
+    return 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+  return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300'
+}
 
 type T = (key: string, opts?: { fallback?: string }) => string
 
@@ -224,6 +255,58 @@ export function MoniteurIssueEditorPanel({
       setError(e?.body?.detail ?? String(e))
     } finally {
       setSavingText(false)
+    }
+  }
+
+  // OCR-annotation edit state (reviewer remark + issue tags + needs-review
+  // flag). One entry at a time, mirroring the editingText pattern.
+  const [editingOcr, setEditingOcr] = useState<{
+    candidateId: number
+    ocr_remark: string
+    ocr_issues: string[]
+    needs_ocr_review: boolean
+  } | null>(null)
+  const [savingOcr, setSavingOcr] = useState(false)
+
+  function startEditOcr(c: MoniteurEntryRead) {
+    setEditingOcr({
+      candidateId: c.id,
+      ocr_remark: c.ocr_remark ?? '',
+      ocr_issues: c.ocr_issues ?? [],
+      needs_ocr_review: !!c.needs_ocr_review,
+    })
+  }
+  function cancelEditOcr() {
+    setEditingOcr(null)
+  }
+  function toggleOcrIssue(v: string) {
+    setEditingOcr((p) =>
+      p
+        ? {
+            ...p,
+            ocr_issues: p.ocr_issues.includes(v)
+              ? p.ocr_issues.filter((x) => x !== v)
+              : [...p.ocr_issues, v],
+          }
+        : p,
+    )
+  }
+  async function saveEditOcr() {
+    if (!editingOcr) return
+    setSavingOcr(true)
+    setError(null)
+    try {
+      const updated = await updateMoniteurEntryOcr(editingOcr.candidateId, {
+        ocr_remark: editingOcr.ocr_remark.trim() || null,
+        ocr_issues: editingOcr.ocr_issues.length ? editingOcr.ocr_issues : null,
+        needs_ocr_review: editingOcr.needs_ocr_review,
+      })
+      onEntryUpdated(updated)
+      setEditingOcr(null)
+    } catch (e: any) {
+      setError(e?.body?.detail ?? String(e))
+    } finally {
+      setSavingOcr(false)
     }
   }
 
@@ -590,6 +673,22 @@ export function MoniteurIssueEditorPanel({
                         {t('editorial.moniteur.review.cardConfidence')}: {Number(c.confidence).toFixed(2)}
                       </span>
                     )}
+                    {c.ocr_confidence_score != null && (
+                      <span
+                        className={cn(
+                          'inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[11px] font-semibold tabular-nums',
+                          ocrBadgeCls(Number(c.ocr_confidence_score)),
+                        )}
+                      >
+                        <ScanLine className="w-3 h-3" aria-hidden="true" />
+                        OCR {Math.round(Number(c.ocr_confidence_score) * 100)}%
+                      </span>
+                    )}
+                    {c.needs_ocr_review && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                        <Flag className="w-3 h-3" aria-hidden="true" /> à vérifier
+                      </span>
+                    )}
                     {c.page_from && (
                       <span className="text-[11px] text-slate-400">
                         {t('editorial.moniteur.review.pages')} {c.page_from}
@@ -829,6 +928,135 @@ export function MoniteurIssueEditorPanel({
                     </div>
                   )}
                 </details>
+
+                {/* Qualité OCR — machine metrics (read-only) + reviewer
+                    annotations. Editor-only surface, so always shown. */}
+                <div className="mt-4 rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ScanLine className="w-4 h-4 text-slate-500" aria-hidden="true" />
+                    <span className="text-sm font-medium">Qualité OCR</span>
+                    {c.ocr_confidence_score != null ? (
+                      <span
+                        className={cn(
+                          'ml-auto inline-flex items-center px-2 py-0.5 rounded-md border text-[11px] font-semibold tabular-nums',
+                          ocrBadgeCls(Number(c.ocr_confidence_score)),
+                        )}
+                      >
+                        {Math.round(Number(c.ocr_confidence_score) * 100)}%
+                      </span>
+                    ) : (
+                      <span className="ml-auto text-[11px] text-slate-400">
+                        pas d’OCR (texte/transcription)
+                      </span>
+                    )}
+                  </div>
+
+                  {c.ocr_remark_ai && (
+                    <div className="flex gap-2 bg-indigo-50 dark:bg-indigo-950/40 rounded-md px-2.5 py-2 mb-2">
+                      <Bot
+                        className="w-4 h-4 text-indigo-600 dark:text-indigo-300 shrink-0 mt-0.5"
+                        aria-hidden="true"
+                      />
+                      <p className="text-[13px] text-indigo-900 dark:text-indigo-200 m-0">
+                        {c.ocr_remark_ai}
+                      </p>
+                    </div>
+                  )}
+
+                  {editingOcr?.candidateId === c.id ? (
+                    <div className="space-y-2">
+                      <textarea
+                        value={editingOcr.ocr_remark}
+                        onChange={(e) =>
+                          setEditingOcr((p) =>
+                            p ? { ...p, ocr_remark: e.target.value } : p,
+                          )
+                        }
+                        rows={2}
+                        placeholder="Remarque du relecteur sur la qualité OCR…"
+                        className="w-full text-[13px] rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1.5"
+                      />
+                      <div className="flex flex-wrap gap-1.5">
+                        {OCR_ISSUE_VALUES.map((v) => (
+                          <button
+                            key={v}
+                            type="button"
+                            onClick={() => toggleOcrIssue(v)}
+                            className={cn(
+                              'text-[11px] px-2 py-0.5 rounded-full border transition-colors',
+                              editingOcr.ocr_issues.includes(v)
+                                ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-200'
+                                : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-700',
+                            )}
+                          >
+                            {OCR_ISSUE_LABEL[v]}
+                          </button>
+                        ))}
+                      </div>
+                      <label className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-slate-300">
+                        <input
+                          type="checkbox"
+                          checked={editingOcr.needs_ocr_review}
+                          onChange={(e) =>
+                            setEditingOcr((p) =>
+                              p
+                                ? { ...p, needs_ocr_review: e.target.checked }
+                                : p,
+                            )
+                          }
+                        />
+                        <Flag className="w-3.5 h-3.5 text-amber-600" aria-hidden="true" />
+                        Marquer pour révision OCR
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={saveEditOcr}
+                          disabled={savingOcr}
+                          className="inline-flex items-center gap-1.5 rounded-md bg-primary text-white px-3 py-1 text-xs font-semibold hover:bg-primary/90 disabled:opacity-50"
+                        >
+                          {savingOcr ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Check className="w-3 h-3" />
+                          )}
+                          Enregistrer
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEditOcr}
+                          className="text-xs text-slate-500 hover:underline"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {(c.ocr_issues ?? []).map((v) => (
+                        <span
+                          key={v}
+                          className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200"
+                        >
+                          {OCR_ISSUE_LABEL[v] ?? v}
+                        </span>
+                      ))}
+                      {c.ocr_remark && (
+                        <span className="text-[12px] text-slate-600 dark:text-slate-300 italic">
+                          “{c.ocr_remark}”
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => startEditOcr(c)}
+                        className="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                      >
+                        <Pencil className="w-3 h-3" aria-hidden="true" />
+                        Annoter l’OCR
+                      </button>
+                    </div>
+                  )}
+                </div>
 
                 {editingFields?.candidateId !== c.id && (
                   <div className="mt-5 flex items-center gap-2 flex-wrap">

@@ -647,6 +647,8 @@ export type MoniteurIssueRead = components['schemas']['MoniteurIssueRead'] & {
   assigned_reviewer_email?: string | null
   assigned_reviewer_name?: string | null
   assigned_at?: string | null
+  /** How many entries are flagged for OCR review (Phase 1). */
+  ocr_flagged_count?: number
 }
 
 export type MoniteurEntryRead = {
@@ -718,6 +720,15 @@ export type MoniteurEntryRead = {
    *  ``moniteur_issue_id`` (fr) or ``moniteur_issue_id_ht`` (ht). NULL
    *  when the entry isn't promoted to a legal text. */
   lang?: 'fr' | 'ht' | null
+  /** OCR quality (Phase 1). confidence_score / quality / remark_ai are
+   *  machine-owned; remark / issues / needs_ocr_review are reviewer-set
+   *  via updateMoniteurEntryOcr. Numeric serialised as string. */
+  ocr_confidence_score?: string | null
+  ocr_quality?: Record<string, unknown> | null
+  ocr_remark?: string | null
+  ocr_remark_ai?: string | null
+  ocr_issues?: string[] | null
+  needs_ocr_review?: boolean
   created_at: string
   updated_at: string
 }
@@ -1074,6 +1085,20 @@ export async function setMoniteurEntryParserProfile(
     `/moniteur/candidates/${id}/parser-profile`,
     payload,
   )
+}
+
+/** Save a reviewer's OCR annotations on an entry. Only the editor-owned
+ *  fields — ocr_confidence_score / ocr_quality / ocr_remark_ai are
+ *  machine-generated and not writable. */
+export async function updateMoniteurEntryOcr(
+  id: number,
+  payload: {
+    ocr_remark?: string | null
+    ocr_issues?: string[] | null
+    needs_ocr_review?: boolean
+  },
+) {
+  return apiPatch<MoniteurEntryRead>(`/moniteur/candidates/${id}/ocr`, payload)
 }
 
 export type TranscriptPreview = components['schemas']['TranscriptPreview']
