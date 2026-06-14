@@ -198,7 +198,7 @@ export default function EditorialDashboardPage() {
           <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px]" />
         </div>
-        <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10 py-12 lg:py-20 pt-28 lg:pt-36">
+        <div className="relative z-10 w-full max-w-none px-4 sm:px-6 lg:px-10 py-12 lg:py-20 pt-28 lg:pt-36">
           <Breadcrumb
             className="mb-6"
             items={[
@@ -262,7 +262,7 @@ export default function EditorialDashboardPage() {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10 py-10 lg:py-12 space-y-10">
+      <div className="w-full max-w-none px-4 sm:px-6 lg:px-10 py-10 lg:py-12 space-y-10">
       {/* Quick actions */}
       <section className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <DashboardCard
