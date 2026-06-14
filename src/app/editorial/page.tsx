@@ -25,6 +25,7 @@ import {
 
 import { Breadcrumb } from '@/components/shared/Breadcrumb'
 import { ErrorBanner } from '@/components/shared/ErrorBanner'
+import { ErrorReportsPanel } from './_components/ErrorReportsPanel'
 import { useEditorMode } from '@/lib/hooks/useEditorMode'
 import { useT } from '@/i18n/useT'
 import {
@@ -397,6 +398,9 @@ export default function EditorialDashboardPage() {
           </div>
         </section>
       )}
+
+      {/* Reader error reports — triage queue (Phase 3) */}
+      <ErrorReportsPanel isFr={isFr} />
 
       {/* Recently updated texts */}
       {recentTexts && recentTexts.length > 0 && (

@@ -9,11 +9,14 @@ import {
   ArrowRight,
   Bot,
   Check,
+  Eye,
+  FileScan,
   Flag,
   Loader2,
   Pencil,
   RotateCcw,
   ScanLine,
+  ShieldCheck,
   Trash2,
   X,
 } from 'lucide-react'
@@ -28,6 +31,7 @@ import {
   listMoniteurIssues,
   moniteurIssueSlug,
   parseMoniteurIssue,
+  markMoniteurEntryReviewed,
   previewMoniteurEntrySplit,
   promoteMoniteurEntry,
   reviewMoniteurEntry,
@@ -281,6 +285,8 @@ export function MoniteurIssueEditorPanel({
     needs_ocr_review: boolean
   } | null>(null)
   const [savingOcr, setSavingOcr] = useState(false)
+  // Which entry's original-scan facsimile is open (id) — Phase 3.
+  const [scanOpenId, setScanOpenId] = useState<number | null>(null)
 
   function startEditOcr(c: MoniteurEntryRead) {
     setEditingOcr({
@@ -441,6 +447,22 @@ export function MoniteurIssueEditorPanel({
     setError(null)
     try {
       await reviewMoniteurEntry(c.id, { review_status: 'deferred' })
+      await refresh()
+    } catch (e: any) {
+      setError(e?.body?.detail ?? String(e))
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  /** First eye: vouch for an entry without promoting it. Lets a high-risk
+   *  promotable entry clear the four-eyes gate — one editor marks it
+   *  vérifié here, a *different* editor publishes. */
+  async function handleMarkReviewed(c: MoniteurEntryRead) {
+    setBusyId(c.id)
+    setError(null)
+    try {
+      await markMoniteurEntryReviewed(c.id)
       await refresh()
     } catch (e: any) {
       setError(e?.body?.detail ?? String(e))
@@ -1228,6 +1250,30 @@ export function MoniteurIssueEditorPanel({
                         >
                           {t('editorial.moniteur.review.defer')}
                         </button>
+                        {/* First eye — vouch without publishing, so a
+                            high-risk promotable entry can clear four-eyes
+                            (a different editor then publishes). */}
+                        {c.reviewed_by ? (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                            <ShieldCheck className="w-4 h-4" aria-hidden="true" />
+                            {lang === 'fr' ? 'Vérifié' : 'Verifye'}
+                            {c.reviewed_by_name ? ` · ${c.reviewed_by_name}` : ''}
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => handleMarkReviewed(c)}
+                            disabled={isBusy}
+                            className="inline-flex items-center gap-2 rounded-md border border-slate-300 text-slate-700 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50 disabled:opacity-50 transition-colors"
+                            title={
+                              lang === 'fr'
+                                ? 'Premier œil : valider sans publier (contrôle à quatre yeux des contenus à risque)'
+                                : 'Premye je : valide san pibliye'
+                            }
+                          >
+                            <Eye className="w-4 h-4" aria-hidden="true" />
+                            {lang === 'fr' ? 'Marquer vérifié' : 'Make verifye'}
+                          </button>
+                        )}
                       </>
                     )}
                     {/* Modifier — always available, even after promotion.
@@ -1245,6 +1291,75 @@ export function MoniteurIssueEditorPanel({
                       <Pencil className="w-4 h-4" />
                       {t('editorial.moniteur.review.edit')}
                     </button>
+                    {/* Facsimile toggle — compare the transcription against
+                        the original scan side-by-side. Enables a confident
+                        single review. Only when the issue has a scanned PDF. */}
+                    {issue?.file_url && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setScanOpenId((cur) => (cur === c.id ? null : c.id))
+                        }
+                        className="inline-flex items-center gap-2 rounded-md border border-slate-300 text-slate-700 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50 transition-colors"
+                      >
+                        <FileScan className="w-4 h-4" />
+                        {scanOpenId === c.id
+                          ? lang === 'fr'
+                            ? 'Masquer le scan'
+                            : 'Kache eskan'
+                          : lang === 'fr'
+                            ? 'Scan original'
+                            : 'Eskan orijinal'}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Original-scan facsimile (Phase 3). Embeds the issue PDF
+                    jumped to the entry's first page so the reviewer can
+                    compare text vs source. Auth flows via the same-origin
+                    Next proxy → the auth-gated /scan endpoint. */}
+                {scanOpenId === c.id && issue?.file_url && (
+                  <div className="mt-4 rounded-lg border border-slate-300 dark:border-slate-700 overflow-hidden">
+                    <iframe
+                      src={`/api/v1/moniteur/issues/${issue.id}/scan#page=${c.page_from ?? 1}`}
+                      title={
+                        lang === 'fr'
+                          ? 'Scan original du Moniteur'
+                          : 'Eskan orijinal Moniteur'
+                      }
+                      className="w-full h-[600px] bg-white"
+                    />
+                  </div>
+                )}
+
+                {/* Audit trail (Phase 2 step 7) — who vouched / published. */}
+                {(c.reviewed_by_name || c.promoted_by_name) && (
+                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-400 dark:text-slate-500">
+                    {c.reviewed_by_name && (
+                      <span className="inline-flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3" aria-hidden="true" />
+                        {lang === 'fr' ? 'Vérifié par' : 'Verifye pa'}{' '}
+                        {c.reviewed_by_name}
+                        {c.reviewed_at
+                          ? ` · ${new Date(c.reviewed_at).toLocaleDateString(
+                              'fr-FR',
+                            )}`
+                          : ''}
+                      </span>
+                    )}
+                    {c.promoted_by_name && (
+                      <span className="inline-flex items-center gap-1">
+                        <Check className="w-3 h-3" aria-hidden="true" />
+                        {lang === 'fr' ? 'Publié par' : 'Pibliye pa'}{' '}
+                        {c.promoted_by_name}
+                        {c.promoted_at
+                          ? ` · ${new Date(c.promoted_at).toLocaleDateString(
+                              'fr-FR',
+                            )}`
+                          : ''}
+                      </span>
+                    )}
                   </div>
                 )}
 

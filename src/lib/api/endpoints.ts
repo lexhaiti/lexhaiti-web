@@ -699,7 +699,14 @@ export type MoniteurEntryRead = {
   promoted_legal_text_slug: string | null
   promoted_legal_text_title_fr: string | null
   review_notes: string | null
+  /** Audit trail (Phase 2 step 7). reviewed_by/promoted_by resolved to
+   *  display names by the API. */
+  reviewed_by?: number | null
+  reviewed_by_name?: string | null
   reviewed_at: string | null
+  promoted_by?: number | null
+  promoted_by_name?: string | null
+  promoted_at?: string | null
   /** Translation source — populated when this entry has a known
    *  Kreyòl-companion publication (the "36 → 36-a" pattern). */
   translation_issue_id: number | null
@@ -1127,6 +1134,63 @@ export async function promoteMoniteurEntry(id: number) {
     `/moniteur/candidates/${id}/promote`,
     {},
   )
+}
+
+/** First-eye review: record reviewed_by without promoting, so a high-risk
+ *  promotable entry can clear four-eyes (a different editor then promotes). */
+export async function markMoniteurEntryReviewed(id: number) {
+  return apiPost<MoniteurEntryRead>(
+    `/moniteur/candidates/${id}/mark-reviewed`,
+    {},
+  )
+}
+
+// -----------------------------------------------------------------------
+// Reader error reports (Phase 3 — "Signaler une erreur")
+// -----------------------------------------------------------------------
+
+export type MoniteurErrorReport = {
+  id: number
+  target_type: string
+  target_id?: number | null
+  target_slug?: string | null
+  target_url?: string | null
+  location?: string | null
+  message: string
+  reporter_email?: string | null
+  status: string
+  created_at: string
+  resolved_by?: number | null
+  resolved_at?: string | null
+}
+
+/** Public — submit a reader-flagged error. No auth. */
+export async function reportMoniteurError(payload: {
+  target_type: string
+  target_id?: number | null
+  target_slug?: string | null
+  target_url?: string | null
+  location?: string | null
+  message: string
+  reporter_email?: string | null
+}) {
+  return apiPost<MoniteurErrorReport>('/moniteur/error-reports', payload)
+}
+
+/** Editor — list reports (optionally filtered by status). */
+export async function listMoniteurErrorReports(status?: string) {
+  const qs = status ? `?status=${encodeURIComponent(status)}` : ''
+  return apiGet<MoniteurErrorReport[]>(`/moniteur/error-reports${qs}`)
+}
+
+/** Editor — resolve / dismiss a report. */
+export async function resolveMoniteurErrorReport(
+  id: number,
+  status: 'open' | 'resolved' | 'dismissed',
+) {
+  return apiPatch<MoniteurErrorReport>(`/moniteur/error-reports/${id}`, {
+    status,
+  })
 }
 
 // -----------------------------------------------------------------------

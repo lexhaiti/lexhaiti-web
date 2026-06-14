@@ -32,6 +32,8 @@ import { formatLongDate as formatLongDateBilingual } from '@/lib/format/date'
 import { isNestedAccompaniment, smartIssueNumber } from '@/lib/format/moniteur'
 import { LoadingState } from '@/components/shared/LoadingState'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { SourceDisclaimer } from '@/components/shared/SourceDisclaimer'
+import { ReportErrorButton } from '@/components/shared/ReportErrorButton'
 import { useEditorMode } from '@/lib/hooks/useEditorMode'
 import { useSession } from 'next-auth/react'
 import { useT } from '@/i18n/useT'
@@ -1024,6 +1026,20 @@ export default function MoniteurDetailClient() {
             <EmptyState description="Aucun document indexé dans ce numéro." />
           )}
         </section>
+
+        {/* Reader trust layer (Phase 3): source disclaimer + report-error */}
+        <div className="mt-12 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <SourceDisclaimer lang={lang} className="sm:flex-1" />
+          <ReportErrorButton
+            lang={lang}
+            target={{
+              target_type: 'moniteur_issue',
+              target_id: issue.id,
+              target_slug: issue.slug ?? null,
+            }}
+            className="shrink-0"
+          />
+        </div>
 
         {/* Footer back-link */}
         <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800">

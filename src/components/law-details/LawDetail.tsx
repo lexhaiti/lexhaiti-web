@@ -97,6 +97,8 @@ import {
 } from '@/lib/legal/articleNumber'
 import { cn } from '@/lib/utils'
 import { useReaderChrome } from '@/components/layout/ReaderChromeContext'
+import { SourceDisclaimer } from '@/components/shared/SourceDisclaimer'
+import { ReportErrorButton } from '@/components/shared/ReportErrorButton'
 
 
 export default function LawDetail({
@@ -1323,6 +1325,16 @@ export default function LawDetail({
               isEditor={isEditor}
               refetch={refetch}
             />
+
+            {/* Reader trust layer (Phase 3): source disclaimer + report-error */}
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <SourceDisclaimer lang={currentLang} className="sm:flex-1" />
+              <ReportErrorButton
+                lang={currentLang}
+                target={{ target_type: 'legal_text', target_slug: law.slug }}
+                className="shrink-0"
+              />
+            </div>
 
             {isEditor && (
               <ChangesMadePanel lawSlug={law.slug} lang={currentLang} />
