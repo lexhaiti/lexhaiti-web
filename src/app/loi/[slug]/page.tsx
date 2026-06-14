@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import LawDetailPage from '@/components/law-details/LawDetail'
 import { getTextBySlug } from '@/lib/api/endpoints'
+import { legislationJsonLd } from '@/lib/harvest/jsonld'
 
 const SITE = 'https://lexhaiti.org'
 
@@ -78,40 +79,24 @@ export async function generateMetadata({
   }
 }
 
-function LawJsonLd({ slug, title }: { slug: string; title: string }) {
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Legislation',
-    name: title,
-    url: `${SITE}/loi/${slug}`,
-    inLanguage: 'fr',
-    legislationJurisdiction: 'HT',
-    isPartOf: {
-      '@type': 'WebSite',
-      name: 'LexHaiti',
-      url: SITE,
-    },
-  }
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  )
-}
-
 export default async function Page({ params }: PageProps) {
   const { slug } = await params
-  let title = slug.replace(/-/g, ' ')
+  // Full read model → rich schema.org + ELI JSON-LD (ADR-004 Stage 1).
+  let jsonLd: Record<string, unknown> | null = null
   try {
     const text = await getTextBySlug(slug)
-    title = text.title_fr ?? title
+    jsonLd = legislationJsonLd(text)
   } catch {
-    // Soft fail — JSON-LD will use the slug-derived name.
+    // Soft fail — the page still renders; only the structured data is dropped.
   }
   return (
     <>
-      <LawJsonLd slug={slug} title={title} />
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <LawDetailPage />
     </>
   )

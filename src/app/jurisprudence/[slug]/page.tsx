@@ -8,6 +8,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { getDecisionBySlug } from '@/lib/api/endpoints'
+import { decisionJsonLd } from '@/lib/harvest/jsonld'
 import { formatLongDate } from '@/lib/format/date'
 import { getServerLanguage, getT } from '@/i18n/server'
 
@@ -62,43 +63,6 @@ export async function generateMetadata({
   }
 }
 
-function DecisionJsonLd({
-  slug,
-  title,
-  date,
-  description,
-}: {
-  slug: string
-  title: string
-  date: string
-  description: string | null
-}) {
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: title,
-    datePublished: date,
-    inLanguage: 'fr',
-    isPartOf: {
-      '@type': 'WebSite',
-      name: 'LexHaiti',
-      url: SITE,
-    },
-    url: `${SITE}/jurisprudence/${slug}`,
-    ...(description ? { description } : {}),
-    about: {
-      '@type': 'Legislation',
-      legislationJurisdiction: 'HT',
-    },
-  }
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  )
-}
-
 export default async function Page({ params }: PageProps) {
   const { slug } = await params
 
@@ -109,27 +73,14 @@ export default async function Page({ params }: PageProps) {
     notFound()
   }
 
-  const language = await getServerLanguage()
-  const t = await getT(language)
-  const dateStr = formatLongDate(
-    decision.decision_date,
-    language,
-    decision.decision_date,
-  )
-  const courtLabel = t(`jurisprudence.courts.${decision.court}`, {
-    fallback: decision.court,
-  })
-  const title = `${courtLabel} — ${dateStr}`
-  const description =
-    (language === 'ht' ? decision.summary_ht : decision.summary_fr) ?? null
+  // Rich schema.org + ELI JSON-LD (ADR-004 Stage 1).
+  const jsonLd = decisionJsonLd(decision)
 
   return (
     <>
-      <DecisionJsonLd
-        slug={slug}
-        title={title}
-        date={decision.decision_date}
-        description={description}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <DecisionDetailClient decision={decision} />
     </>

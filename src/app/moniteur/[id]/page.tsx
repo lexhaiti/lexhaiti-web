@@ -5,6 +5,7 @@
 
 import type { Metadata } from 'next'
 import { getMoniteurIssue } from '@/lib/api/endpoints'
+import { moniteurIssueJsonLd } from '@/lib/harvest/jsonld'
 import { formatLongDate } from '@/lib/format/date'
 import { smartIssueNumber } from '@/lib/format/moniteur'
 import { getServerLanguage } from '@/i18n/server'
@@ -37,6 +38,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default function Page() {
-  return <MoniteurDetailClient />
+export default async function Page({ params }: PageProps) {
+  const { id } = await params
+  // schema.org PublicationIssue JSON-LD (ADR-004 Stage 1).
+  let jsonLd: Record<string, unknown> | null = null
+  const numericId = Number(id)
+  if (!Number.isNaN(numericId)) {
+    try {
+      const issue = await getMoniteurIssue(numericId)
+      jsonLd = moniteurIssueJsonLd(issue)
+    } catch {
+      // Soft fail — the client component renders its own not-found state.
+    }
+  }
+  return (
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <MoniteurDetailClient />
+    </>
+  )
 }
