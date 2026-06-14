@@ -1038,8 +1038,15 @@ export default function MoniteurDetailClient({
           )}
         </section>
 
-        {/* Reader trust layer (Phase 3): report-error */}
-        <div className="mt-12 flex justify-end">
+        {/* Footer: back-link (left) + report-error (right), under the line */}
+        <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4">
+          <Link
+            href="/moniteur"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Retour aux numéros du Moniteur
+          </Link>
           <ReportErrorButton
             lang={lang}
             target={{
@@ -1048,17 +1055,6 @@ export default function MoniteurDetailClient({
               target_slug: issue.slug ?? null,
             }}
           />
-        </div>
-
-        {/* Footer back-link */}
-        <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800">
-          <Link
-            href="/moniteur"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Retour aux numéros du Moniteur
-          </Link>
         </div>
       </div>
       )}
