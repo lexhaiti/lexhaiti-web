@@ -29,7 +29,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { cn } from '@/lib/utils'
 import { Breadcrumb } from '@/components/shared/Breadcrumb'
 import { formatLongDate as formatLongDateBilingual } from '@/lib/format/date'
-import { smartIssueNumber } from '@/lib/format/moniteur'
+import { isNestedAccompaniment, smartIssueNumber } from '@/lib/format/moniteur'
 import { LoadingState } from '@/components/shared/LoadingState'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { useEditorMode } from '@/lib/hooks/useEditorMode'
@@ -706,10 +706,13 @@ export default function MoniteurDetailClient() {
 
     if (issue) {
       for (const c of issue.entries) {
-        if (c.parent_entry_id) {
-          const list = childrenMap.get(c.parent_entry_id) ?? []
+        // Only true accompaniments (non-promotable entries with a parent)
+        // nest. A promotable act stays top-level even if an import wired
+        // it under a parent, so it shows in the rollup and as its own card.
+        if (isNestedAccompaniment(c)) {
+          const list = childrenMap.get(c.parent_entry_id!) ?? []
           list.push(c)
-          childrenMap.set(c.parent_entry_id, list)
+          childrenMap.set(c.parent_entry_id!, list)
         } else {
           top.push(c)
           if (c.detected_category && c.detected_category !== 'promulgation') {
