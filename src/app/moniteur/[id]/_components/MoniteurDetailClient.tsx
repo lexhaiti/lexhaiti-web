@@ -34,7 +34,6 @@ import { LoadingState } from '@/components/shared/LoadingState'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { ReportErrorButton } from '@/components/shared/ReportErrorButton'
 import { useEditorMode } from '@/lib/hooks/useEditorMode'
-import { useSession } from 'next-auth/react'
 import { useT } from '@/i18n/useT'
 
 // Editor-only review/translation workspace (~1.3k lines + sub-panels).
@@ -657,12 +656,6 @@ export default function MoniteurDetailClient({
   const params = useParams()
   const searchParams = useSearchParams()
   const { isEditor } = useEditorMode()
-  // Anyone with a valid session (admin / reviewer / editor) can pull
-  // the source scan; anonymous visitors get the structured corpus
-  // only. ``useSession`` is also used by the editor toggle, so this
-  // doesn't add an extra request.
-  const { status: authStatus } = useSession()
-  const isSignedIn = authStatus === 'authenticated'
   const { language } = useT()
   const lang = (language === 'ht' ? 'ht' : 'fr') as 'fr' | 'ht'
   // Route param is named "id" for backwards compatibility but accepts
@@ -885,12 +878,12 @@ export default function MoniteurDetailClient({
                 label="Année moniteur"
                 value={`${moniteurAnnee(issue.year)}e année`}
               />
-              {/* Download chip — matches the other chip shapes
-                  (icon-container + label + value) but the value
-                  slot carries two independent links: ``PDF``
-                  (public LexHaïti export) and ``Scan original``
-                  (signed-in editors only). Anonymous visitors see
-                  the PDF link alone; the row stays balanced.    */}
+              {/* Download chip — two roles in one tile: ``PDF`` is the
+                  readable LexHaïti edition; ``Scan original`` is the
+                  authoritative source (``fait foi``). The scan is now
+                  public for published issues (the structured reader gives
+                  the usable text, the scan gives the proof), so it shows
+                  to everyone whenever a ``file_url`` exists.            */}
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-amber-400/15 border border-amber-300/30 rounded-full">
                   <Download className="w-5 h-5 text-amber-200" />
@@ -908,7 +901,7 @@ export default function MoniteurDetailClient({
                     >
                       PDF
                     </a>
-                    {isSignedIn && issue.file_url && (
+                    {issue.file_url && (
                       <>
                         <span className="text-white/30 font-normal select-none">
                           ·
@@ -918,7 +911,7 @@ export default function MoniteurDetailClient({
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-white/70 hover:text-amber-200 transition-colors"
-                          title="Réservé aux éditeurs — scan original (PDF)"
+                          title="Source officielle — scan original du Moniteur (fait foi)"
                         >
                           Scan original
                         </a>
