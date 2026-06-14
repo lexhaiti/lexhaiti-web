@@ -46,6 +46,15 @@ export const metadata: Metadata = {
     'juridique',
     'Le Moniteur',
   ],
+  // Search-engine ownership verification. Set GOOGLE_SITE_VERIFICATION and
+  // BING_SITE_VERIFICATION in the Vercel env to the codes from Google Search
+  // Console / Bing Webmaster Tools (HTML-tag method). Unset → tag omitted.
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+    other: process.env.BING_SITE_VERIFICATION
+      ? { 'msvalidate.01': process.env.BING_SITE_VERIFICATION }
+      : {},
+  },
   openGraph: {
     type: 'website',
     siteName: SITE_NAME,
