@@ -2,16 +2,22 @@
 
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useParams, useSearchParams } from 'next/navigation'
 import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
   Calendar,
+  ChevronDown,
   ChevronRight,
+  CircleCheck,
   Download,
+  ExternalLink,
+  FileText,
   Files,
+  Info,
   Layers,
   Newspaper,
   Pencil,
@@ -681,6 +687,34 @@ export default function MoniteurDetailClient({
     wantsEditorView ? 'editor' : 'public',
   )
 
+  // Download popover — the hero chip is the trigger; on hover/focus it
+  // reveals the full dual-download card (LexHaïti edition + official scan).
+  // Rendered through a fixed-positioned body portal so the hero's
+  // ``overflow-hidden`` can't clip it.
+  const dlTriggerRef = useRef<HTMLButtonElement>(null)
+  const dlCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [dlOpen, setDlOpen] = useState(false)
+  const [dlPos, setDlPos] = useState<{ top: number; right: number } | null>(
+    null,
+  )
+  const openDownloads = () => {
+    if (dlCloseTimer.current) clearTimeout(dlCloseTimer.current)
+    const r = dlTriggerRef.current?.getBoundingClientRect()
+    if (r) {
+      setDlPos({
+        top: Math.round(r.bottom + 10),
+        right: Math.round(Math.max(12, window.innerWidth - r.right)),
+      })
+    }
+    setDlOpen(true)
+  }
+  const closeDownloads = () => {
+    dlCloseTimer.current = setTimeout(() => setDlOpen(false), 140)
+  }
+  useEffect(() => () => {
+    if (dlCloseTimer.current) clearTimeout(dlCloseTimer.current)
+  }, [])
+
   useEffect(() => {
     // ``useParams`` returns the URL-encoded segment for dynamic
     // routes containing non-ASCII characters. Without decoding, the
@@ -884,42 +918,118 @@ export default function MoniteurDetailClient({
                   public for published issues (the structured reader gives
                   the usable text, the scan gives the proof), so it shows
                   to everyone whenever a ``file_url`` exists.            */}
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-amber-400/15 border border-amber-300/30 rounded-full">
-                  <Download className="w-5 h-5 text-amber-200" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">
-                    Télécharger
-                  </p>
-                  <div className="text-white font-bold inline-flex items-center gap-2">
-                    <a
-                      href={`/api/v1/moniteur/issues/${issue.id}/export`}
-                      download
-                      className="hover:text-amber-200 transition-colors"
-                      title="Télécharger le PDF LexHaïti"
-                    >
-                      PDF
-                    </a>
-                    {issue.file_url && (
-                      <>
-                        <span className="text-white/30 font-normal select-none">
-                          ·
+              <div
+                onMouseEnter={openDownloads}
+                onMouseLeave={closeDownloads}
+                className="flex"
+              >
+                <button
+                  ref={dlTriggerRef}
+                  type="button"
+                  onFocus={openDownloads}
+                  onBlur={closeDownloads}
+                  aria-haspopup="dialog"
+                  aria-expanded={dlOpen}
+                  aria-label="Options de téléchargement"
+                  className="flex items-center gap-4 text-left rounded-xl -m-2 p-2 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 transition-colors"
+                >
+                  <div className="p-3 bg-amber-400/15 border border-amber-300/30 rounded-full">
+                    <Download className="w-5 h-5 text-amber-200" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">
+                      Télécharger
+                    </p>
+                    <p className="text-white font-bold inline-flex items-center gap-1.5">
+                      PDF &amp; scan
+                      <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                    </p>
+                  </div>
+                </button>
+              </div>
+
+              {dlOpen &&
+                dlPos &&
+                createPortal(
+                  <div
+                    onMouseEnter={openDownloads}
+                    onMouseLeave={closeDownloads}
+                    style={{
+                      position: 'fixed',
+                      top: dlPos.top,
+                      right: dlPos.right,
+                      zIndex: 60,
+                    }}
+                    className="w-[420px] max-w-[calc(100vw-24px)]"
+                  >
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-4 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <a
+                        href={`/api/v1/moniteur/issues/${issue.id}/export`}
+                        download
+                        className="flex items-center gap-3.5 rounded-xl border-2 border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-950/40 p-3 hover:bg-blue-100/60 dark:hover:bg-blue-900/40 transition-colors"
+                      >
+                        <FileText className="w-7 h-7 text-blue-700 dark:text-blue-300 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                              Édition LexHaïti — PDF
+                            </span>
+                            <span className="text-[11px] font-medium text-blue-900 dark:text-blue-100 bg-white dark:bg-slate-800 rounded-full px-2 py-0.5">
+                              recommandé
+                            </span>
+                          </div>
+                          <p className="text-[12.5px] text-blue-700/80 dark:text-blue-300/80 mt-0.5">
+                            Texte structuré et recherchable
+                          </p>
+                        </div>
+                        <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-white bg-blue-600 rounded-lg px-3 py-2 shrink-0">
+                          <Download className="w-4 h-4" />
+                          Télécharger
                         </span>
+                      </a>
+
+                      {issue.file_url && (
                         <a
                           href={`/api/v1/moniteur/issues/${issue.id}/scan`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-white/70 hover:text-amber-200 transition-colors"
-                          title="Source officielle — scan original du Moniteur (fait foi)"
+                          className="flex items-center gap-3.5 rounded-xl border border-slate-200 dark:border-slate-700 p-3 mt-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors"
                         >
-                          Scan original
+                          <Newspaper className="w-7 h-7 text-slate-500 dark:text-slate-400 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                                Source officielle — Le Moniteur {numberDisplay}
+                              </span>
+                              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-full px-2 py-0.5">
+                                <CircleCheck className="w-3 h-3" />
+                                fait foi
+                              </span>
+                            </div>
+                            <p className="text-[12.5px] text-slate-500 dark:text-slate-400 mt-0.5">
+                              Scan original du journal ·{' '}
+                              {formatLongDate(issue.publication_date)} · PDF
+                            </p>
+                          </div>
+                          <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 shrink-0">
+                            <ExternalLink className="w-4 h-4" />
+                            Voir le scan
+                          </span>
                         </a>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
+                      )}
+
+                      <div className="flex items-start gap-2 mt-3.5 pt-3 border-t border-slate-200 dark:border-slate-700">
+                        <Info className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                        <span className="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                          Édition numérisée à titre informatif. En cas de
+                          divergence, la version officielle du Moniteur fait
+                          foi.
+                        </span>
+                      </div>
+                    </div>
+                  </div>,
+                  document.body,
+                )}
             </div>
           </div>
 
