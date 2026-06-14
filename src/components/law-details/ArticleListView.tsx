@@ -725,7 +725,7 @@ const ArticleCard = memo(function ArticleCard({
   const articleUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}/loi/${lawSlug}?view=article&article=${encodeURIComponent(numStr)}`
-      : `https://lexhaiti.org/loi/${lawSlug}?view=article&article=${encodeURIComponent(numStr)}`
+      : `https://www.lexhaiti.org/loi/${lawSlug}?view=article&article=${encodeURIComponent(numStr)}`
 
   // Compact breadcrumb of the heading chain ending in the article
   // number — keeps the reader oriented when the heading rows above

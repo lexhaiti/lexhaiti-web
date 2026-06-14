@@ -3,7 +3,7 @@ import LawDetailPage from '@/components/law-details/LawDetail'
 import { getTextBySlug, type LegalTextRead } from '@/lib/api/endpoints'
 import { breadcrumbJsonLd, legislationJsonLd } from '@/lib/harvest/jsonld'
 
-const SITE = 'https://lexhaiti.org'
+const SITE = 'https://www.lexhaiti.org'
 
 interface PageProps {
   params: Promise<{ slug: string }>

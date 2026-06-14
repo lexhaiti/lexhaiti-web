@@ -24,7 +24,7 @@ const sourceSerif4 = Source_Serif_4({
   variable: '--font-source-serif-4',
 })
 
-const SITE = 'https://lexhaiti.org'
+const SITE = 'https://www.lexhaiti.org'
 const SITE_NAME = 'LexHaiti'
 const DEFAULT_DESC =
   "Plateforme de numérisation et d'accès public à la législation haïtienne. Recherchez les lois, décrets, codes et textes juridiques d'Haïti."

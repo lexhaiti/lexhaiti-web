@@ -5,7 +5,7 @@ import {
   listTexts,
 } from '@/lib/api/endpoints'
 
-const SITE = 'https://lexhaiti.org'
+const SITE = 'https://www.lexhaiti.org'
 const PAGE = 100
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

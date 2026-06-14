@@ -14,7 +14,7 @@ import { getServerLanguage, getT } from '@/i18n/server'
 
 import DecisionDetailClient from './_components/DecisionDetailClient'
 
-const SITE = 'https://lexhaiti.org'
+const SITE = 'https://www.lexhaiti.org'
 
 export const revalidate = 3600
 

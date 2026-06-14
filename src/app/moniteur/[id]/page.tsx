@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-const SITE = 'https://lexhaiti.org'
+const SITE = 'https://www.lexhaiti.org'
 
 export default async function Page({ params }: PageProps) {
   const { id } = await params

@@ -30,7 +30,7 @@ type DecisionInput = {
   subject_matter?: string[] | null
 }
 
-const SITE = 'https://lexhaiti.org'
+const SITE = 'https://www.lexhaiti.org'
 
 // schema.org + ELI in one context. ELI terms are namespaced `eli:`.
 const CONTEXT = ['https://schema.org', { eli: 'http://data.europa.eu/eli/ontology#' }]
