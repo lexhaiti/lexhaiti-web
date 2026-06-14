@@ -435,6 +435,24 @@ export function MoniteurIssueEditorPanel({
     }
   }
 
+  /** Accept a non-promotable entry (résolution, avis, communiqué, note,
+   *  correspondance, …) as a standalone sommaire item — no parent and no
+   *  LegalText. This is the direct accept path so every entry can reach a
+   *  terminal state and the issue can roll forward to reviewed/published,
+   *  even when there is no parent text to attach it to. */
+  async function handleAcceptStandalone(c: MoniteurEntryRead) {
+    setBusyId(c.id)
+    setError(null)
+    try {
+      await reviewMoniteurEntry(c.id, { review_status: 'accepted' })
+      await refresh()
+    } catch (e: any) {
+      setError(e?.body?.detail ?? String(e))
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   /** Attach a non-promotable entry (promulgation, communiqué, errata)
    *  to a parent entry in the same issue and mark it accepted. The
    *  parent is the legal text this entry accompanies — a promulgation
@@ -1082,19 +1100,39 @@ export function MoniteurIssueEditorPanel({
                             {t('editorial.moniteur.review.accept')}
                           </button>
                         ) : (
-                          /* Non-promotable categories (promulgation, communiqué,
-                             errata, autre) don't get their own LegalText. They
-                             attach to a parent entry in the same issue —
-                             a promulgation letter rides along with the law it
-                             promulgates. The select lets the editor pick which
-                             entry is the parent; selection auto-accepts. */
-                          <AttachToParentSelect
-                            candidate={c}
-                            candidates={issue?.entries ?? []}
-                            disabled={isBusy}
-                            lang={lang}
-                            onAttach={(parentId) => handleAttachToParent(c, parentId)}
-                          />
+                          /* Non-promotable categories (résolution, avis,
+                             communiqué, correspondance, promulgation, errata,
+                             note, autre) don't get their own LegalText. Accept
+                             them directly as a standalone sommaire item, OR
+                             attach to a parent entry when they ride along with
+                             another text (a promulgation letter with the law it
+                             promulgates). Both reach `accepted`, so the issue
+                             can roll forward — there is always a way to clear a
+                             pending entry, even with no parent to attach to. */
+                          <>
+                            <button
+                              onClick={() => handleAcceptStandalone(c)}
+                              disabled={isBusy}
+                              className="inline-flex items-center gap-2 rounded-md bg-primary text-white px-4 py-2 text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                            >
+                              {isBusy ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Check className="w-4 h-4" />
+                              )}
+                              {/* Distinct from the promotable "Accepter &
+                                  promouvoir" — this accepts the entry into the
+                                  sommaire without creating a LegalText. */}
+                              {lang === 'fr' ? 'Accepter' : 'Aksepte'}
+                            </button>
+                            <AttachToParentSelect
+                              candidate={c}
+                              candidates={issue?.entries ?? []}
+                              disabled={isBusy}
+                              lang={lang}
+                              onAttach={(parentId) => handleAttachToParent(c, parentId)}
+                            />
+                          </>
                         )}
                         <button
                           onClick={() => handleReject(c)}
