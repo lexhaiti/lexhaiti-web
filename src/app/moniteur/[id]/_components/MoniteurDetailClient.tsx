@@ -648,7 +648,13 @@ function CompanionRow({
 // Page
 // ---------------------------------------------------------------------------
 
-export default function MoniteurDetailClient() {
+export default function MoniteurDetailClient({
+  initialData,
+}: {
+  /** Server-fetched issue (with sommaire entries), seeded for SSR so the
+   *  content is in the initial HTML (SEO) and there's no skeleton flash. */
+  initialData?: MoniteurIssueWithEntries | null
+}) {
   const params = useParams()
   const searchParams = useSearchParams()
   const { isEditor } = useEditorMode()
@@ -668,8 +674,10 @@ export default function MoniteurDetailClient() {
   // refuses to hot-reload a component whose useEffect-deps changes
   // size between renders, and the previous ``[rawParam, isNumeric]``
   // form tripped that warning after every save.
-  const [issue, setIssue] = useState<MoniteurIssueWithEntries | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [issue, setIssue] = useState<MoniteurIssueWithEntries | null>(
+    initialData ?? null,
+  )
+  const [loading, setLoading] = useState(!initialData)
   const [error, setError] = useState<string | null>(null)
   // View mode for editors: 'public' is the reader layout below, 'editor'
   // mounts the shared MoniteurIssueEditorPanel under the same hero.
@@ -689,6 +697,10 @@ export default function MoniteurDetailClient() {
     // doubles the encoding to ``%25C3%25A9`` — guaranteeing a 404.
     const rawParam = decodeURIComponent(String(params.id ?? ''))
     if (!rawParam) return
+    // Public reads are SSR-seeded (the sommaire is already in the server
+    // HTML for SEO, no skeleton flash); only fetch when there's no seed or
+    // an editor session needs the fuller, scan-bearing payload.
+    if (initialData && !isEditor) return
     const isNumeric = /^\d+$/.test(rawParam)
     setLoading(true)
     const promise = isNumeric
@@ -698,7 +710,7 @@ export default function MoniteurDetailClient() {
       .then(setIssue)
       .catch(() => setError('Numéro introuvable'))
       .finally(() => setLoading(false))
-  }, [params.id])
+  }, [params.id, initialData, isEditor])
 
   // Group entries — must be called before any conditional return so hook order is stable.
   const { topLevel, childrenByParent, categoryCounts } = useMemo(() => {
