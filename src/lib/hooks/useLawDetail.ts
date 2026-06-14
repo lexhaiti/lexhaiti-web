@@ -10,12 +10,15 @@ import { useEditorMode } from '@/lib/hooks/useEditorMode'
 
 type LegalTextRead = components['schemas']['LegalTextRead']
 
-export function useLawDetail(slug: string) {
+export function useLawDetail(
+  slug: string,
+  initialData?: LegalTextRead | null,
+) {
   const { isEditor } = useEditorMode()
-  const [data, setData] = useState<LegalTextRead | null>(null)
+  const [data, setData] = useState<LegalTextRead | null>(initialData ?? null)
   const [status, setStatus] = useState<
     'idle' | 'loading' | 'success' | 'error'
-  >('idle')
+  >(initialData ? 'success' : 'idle')
   const [error, setError] = useState<Error | null>(null)
 
   const fetchLaw = useCallback(async () => {
@@ -40,8 +43,11 @@ export function useLawDetail(slug: string) {
   }, [slug, isEditor])
 
   useEffect(() => {
-    fetchLaw()
-  }, [fetchLaw])
+    // Public reads are SSR-seeded (the law text is in the server HTML for
+    // SEO and renders with no skeleton flash); only fetch when there is no
+    // seed, or when an editor needs drafts via the editorial endpoint.
+    if (initialData == null || isEditor) fetchLaw()
+  }, [fetchLaw, initialData, isEditor])
 
   return {
     data,

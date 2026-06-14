@@ -8,7 +8,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { getDecisionBySlug } from '@/lib/api/endpoints'
-import { decisionJsonLd } from '@/lib/harvest/jsonld'
+import { breadcrumbJsonLd, decisionJsonLd } from '@/lib/harvest/jsonld'
 import { formatLongDate } from '@/lib/format/date'
 import { getServerLanguage, getT } from '@/i18n/server'
 
@@ -75,12 +75,21 @@ export default async function Page({ params }: PageProps) {
 
   // Rich schema.org + ELI JSON-LD (ADR-004 Stage 1).
   const jsonLd = decisionJsonLd(decision)
+  const crumbs = breadcrumbJsonLd([
+    { name: 'Accueil', url: SITE },
+    { name: 'Jurisprudence', url: `${SITE}/jurisprudence` },
+    { name: `${decision.court} — ${decision.decision_date}`, url: `${SITE}/jurisprudence/${slug}` },
+  ])
 
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }}
       />
       <DecisionDetailClient decision={decision} />
     </>

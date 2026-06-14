@@ -11,6 +11,7 @@ import {
   TooltipProvider,
 } from '@/components/ui/tooltip'
 import { usePathname, useParams, useRouter, useSearchParams } from 'next/navigation'
+import type { LegalTextRead } from '@/lib/api/endpoints'
 import { FinalPart } from '@/components/law-details/FinalPart'
 
 // Editor-only overlays. These render only for signed-in editors (gated
@@ -98,7 +99,13 @@ import { cn } from '@/lib/utils'
 import { useReaderChrome } from '@/components/layout/ReaderChromeContext'
 
 
-export default function LawDetail() {
+export default function LawDetail({
+  initialData,
+}: {
+  /** Server-fetched law, seeded for SSR so the full text is in the initial
+   *  HTML (SEO) and the page renders without a skeleton flash. */
+  initialData?: LegalTextRead | null
+}) {
   const { language, setLanguage } = useLanguage()
   const { t } = useT()
   const { toast } = useToast()
@@ -156,7 +163,10 @@ export default function LawDetail() {
   // (entering preview wiped the mode, switching mode dropped preview).
   const isPublicPreview = searchParams?.get('apercu') === '1'
   const isEditor = actuallyIsEditor && !isPublicPreview
-  const { data: law, status, isLoading, isError, refetch } = useLawDetail(slug)
+  const { data: law, status, isLoading, isError, refetch } = useLawDetail(
+    slug,
+    initialData,
+  )
 
   // Find current article index
   const currentArticleIndex = useMemo(() => {

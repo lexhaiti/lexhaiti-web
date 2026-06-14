@@ -59,6 +59,21 @@ function compact(obj: JsonLd): JsonLd {
   )
 }
 
+/** A `BreadcrumbList` so Google can render the breadcrumb trail in results
+ *  (improves CTR and tells the crawler the site hierarchy). */
+export function breadcrumbJsonLd(items: { name: string; url: string }[]): JsonLd {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((it, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: it.name,
+      item: it.url,
+    })),
+  }
+}
+
 /** A Haitian-law `Legislation` node (codes, laws, decrees, …). */
 export function legislationJsonLd(text: LegalTextRead): JsonLd {
   const url = `${SITE}/loi/${text.slug}`

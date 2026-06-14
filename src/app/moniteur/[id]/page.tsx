@@ -5,7 +5,7 @@
 
 import type { Metadata } from 'next'
 import { getMoniteurIssue } from '@/lib/api/endpoints'
-import { moniteurIssueJsonLd } from '@/lib/harvest/jsonld'
+import { breadcrumbJsonLd, moniteurIssueJsonLd } from '@/lib/harvest/jsonld'
 import { formatLongDate } from '@/lib/format/date'
 import { smartIssueNumber } from '@/lib/format/moniteur'
 import { getServerLanguage } from '@/i18n/server'
@@ -38,15 +38,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
+const SITE = 'https://lexhaiti.org'
+
 export default async function Page({ params }: PageProps) {
   const { id } = await params
-  // schema.org PublicationIssue JSON-LD (ADR-004 Stage 1).
+  // schema.org PublicationIssue JSON-LD + breadcrumb (ADR-004 Stage 1).
   let jsonLd: Record<string, unknown> | null = null
+  let crumbs: Record<string, unknown> | null = null
   const numericId = Number(id)
   if (!Number.isNaN(numericId)) {
     try {
       const issue = await getMoniteurIssue(numericId)
       jsonLd = moniteurIssueJsonLd(issue)
+      crumbs = breadcrumbJsonLd([
+        { name: 'Accueil', url: SITE },
+        { name: 'Le Moniteur', url: `${SITE}/moniteur` },
+        { name: `N° ${issue.number}`, url: `${SITE}/moniteur/${numericId}` },
+      ])
     } catch {
       // Soft fail — the client component renders its own not-found state.
     }
@@ -57,6 +65,12 @@ export default async function Page({ params }: PageProps) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      {crumbs && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }}
         />
       )}
       <MoniteurDetailClient />

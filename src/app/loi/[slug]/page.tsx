@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import LawDetailPage from '@/components/law-details/LawDetail'
-import { getTextBySlug } from '@/lib/api/endpoints'
-import { legislationJsonLd } from '@/lib/harvest/jsonld'
+import { getTextBySlug, type LegalTextRead } from '@/lib/api/endpoints'
+import { breadcrumbJsonLd, legislationJsonLd } from '@/lib/harvest/jsonld'
 
 const SITE = 'https://lexhaiti.org'
 
@@ -81,13 +81,23 @@ export async function generateMetadata({
 
 export default async function Page({ params }: PageProps) {
   const { slug } = await params
-  // Full read model → rich schema.org + ELI JSON-LD (ADR-004 Stage 1).
+  // Fetch the FULL text server-side (include=all → headings + articles) and
+  // seed the client reader with it. This puts the actual legal text in the
+  // server-rendered HTML so Google indexes the corpus body — not just the
+  // title/metadata — and removes the skeleton flash. (ADR-004 Stage 1.)
+  let text: LegalTextRead | null = null
   let jsonLd: Record<string, unknown> | null = null
+  let crumbs: Record<string, unknown> | null = null
   try {
-    const text = await getTextBySlug(slug)
+    text = await getTextBySlug(slug, 'all')
     jsonLd = legislationJsonLd(text)
+    crumbs = breadcrumbJsonLd([
+      { name: 'Accueil', url: SITE },
+      { name: 'Lois', url: `${SITE}/lois` },
+      { name: text.title_fr ?? slug, url: `${SITE}/loi/${slug}` },
+    ])
   } catch {
-    // Soft fail — the page still renders; only the structured data is dropped.
+    // Soft fail — the reader still fetches client-side; structured data drops.
   }
   return (
     <>
@@ -97,7 +107,13 @@ export default async function Page({ params }: PageProps) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       )}
-      <LawDetailPage />
+      {crumbs && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }}
+        />
+      )}
+      <LawDetailPage key={slug} initialData={text} />
     </>
   )
 }
