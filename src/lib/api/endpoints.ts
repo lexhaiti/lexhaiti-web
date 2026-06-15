@@ -850,6 +850,26 @@ export async function getMoniteurIssue(id: number) {
   return apiGet<MoniteurIssueWithEntries>(`/moniteur/issues/${id}`)
 }
 
+/** Editable issue-level metadata (mirrors the backend ``MoniteurIssueUpdate``
+ *  schema). All fields optional — only the provided ones are patched. */
+export interface MoniteurIssueMetadataPatch {
+  number?: string
+  year?: number
+  publication_date?: string | null
+  edition_label?: string | null
+  director?: string | null
+  director_role?: string | null
+}
+
+/** Update an issue's header metadata. Editor/reviewer/admin only — the
+ *  backend ``PATCH /moniteur/issues/{id}`` is gated by ``EditorialUser``. */
+export async function updateMoniteurIssue(
+  id: number,
+  patch: MoniteurIssueMetadataPatch,
+) {
+  return apiPatch<MoniteurIssueRead>(`/moniteur/issues/${id}`, patch)
+}
+
 /** Resolve a date-based slug (``28-avril-1987``) to the full issue
  *  payload. Used by the public ``/moniteur/{slug}`` route. */
 export async function getMoniteurIssueBySlug(slug: string) {

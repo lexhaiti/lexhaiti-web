@@ -41,6 +41,8 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import { ReportErrorButton } from '@/components/shared/ReportErrorButton'
 import { useEditorMode } from '@/lib/hooks/useEditorMode'
 import { useT } from '@/i18n/useT'
+import { MoniteurEditorBar } from './MoniteurEditorBar'
+import { MoniteurMetadataEditor } from './MoniteurMetadataEditor'
 
 // Editor-only review/translation workspace (~1.3k lines + sub-panels).
 // Mounted only when a signed-in editor flips the issue into "editor"
@@ -661,7 +663,7 @@ export default function MoniteurDetailClient({
 }) {
   const params = useParams()
   const searchParams = useSearchParams()
-  const { isEditor } = useEditorMode()
+  const { isEditor, user: editorUser } = useEditorMode()
   const { language } = useT()
   const lang = (language === 'ht' ? 'ht' : 'fr') as 'fr' | 'ht'
   // Route param is named "id" for backwards compatibility but accepts
@@ -714,6 +716,9 @@ export default function MoniteurDetailClient({
   useEffect(() => () => {
     if (dlCloseTimer.current) clearTimeout(dlCloseTimer.current)
   }, [])
+
+  // Issue-metadata editor dialog (editors only).
+  const [metaOpen, setMetaOpen] = useState(false)
 
   useEffect(() => {
     // ``useParams`` returns the URL-encoded segment for dynamic
@@ -858,7 +863,19 @@ export default function MoniteurDetailClient({
 
             {/* Big issue number */}
             <h1 className="animate-in fade-in slide-in-from-top-2 duration-500 delay-100 fill-mode-both text-5xl lg:text-7xl font-black leading-[0.95] tracking-tight">
-              {numberDisplay}
+              {isEditor ? (
+                <button
+                  type="button"
+                  onClick={() => setMetaOpen(true)}
+                  className="group/title inline-flex items-center gap-3 text-left rounded-lg -mx-2 px-2 hover:bg-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                  title="Modifier les métadonnées de l’édition"
+                >
+                  {numberDisplay}
+                  <Pencil className="w-5 h-5 lg:w-7 lg:h-7 text-amber-300/70 opacity-0 group-hover/title:opacity-100 transition-opacity shrink-0" />
+                </button>
+              ) : (
+                numberDisplay
+              )}
             </h1>
 
             {/* Date + edition pill row */}
@@ -1160,6 +1177,28 @@ export default function MoniteurDetailClient({
           />
         </div>
       </div>
+      )}
+
+      {/* Editor-only: pinned metadata bar + editor dialog. Gated to
+          reviewer / editor / admin via ``isEditor``; anonymous visitors
+          never see either. */}
+      {isEditor && (
+        <>
+          <div aria-hidden className="h-16" />
+          <MoniteurEditorBar
+            status={String(issue.processing_status ?? 'uploaded')}
+            editorEmail={editorUser?.email ?? null}
+            onOpenMetadata={() => setMetaOpen(true)}
+          />
+          <MoniteurMetadataEditor
+            open={metaOpen}
+            onOpenChange={setMetaOpen}
+            issue={issue}
+            onSaved={(patch) =>
+              setIssue((prev) => (prev ? { ...prev, ...patch } : prev))
+            }
+          />
+        </>
       )}
     </div>
   )
