@@ -6,6 +6,7 @@ import {
   ArrowRight,
   BookMarked,
   Check,
+  Link2,
   Loader2,
   Pencil,
   RotateCcw,
@@ -19,6 +20,7 @@ import { cn } from '@/lib/utils'
 import {
   getMoniteurIndexFacets,
   listMoniteurIndex,
+  listTexts,
   updateMoniteurIndexEntry,
   type MoniteurIndexEntry,
   type MoniteurIndexFacets,
@@ -80,6 +82,48 @@ function EntryEditForm({
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(false)
+  const [linked, setLinked] = useState<{
+    id: number
+    slug: string
+    title: string
+  } | null>(
+    entry.legal_text_id && entry.legal_text_slug
+      ? {
+          id: entry.legal_text_id,
+          slug: entry.legal_text_slug,
+          title: entry.legal_text_title ?? entry.legal_text_slug,
+        }
+      : null,
+  )
+  const [lawQ, setLawQ] = useState('')
+  const [lawResults, setLawResults] = useState<
+    { id: number; slug: string; title_fr: string }[]
+  >([])
+
+  // debounced corpus-law search (skipped once a law is linked)
+  useEffect(() => {
+    if (linked || lawQ.trim().length < 2) {
+      setLawResults([])
+      return
+    }
+    let cancelled = false
+    const t = setTimeout(async () => {
+      try {
+        const res = await listTexts({ q: lawQ.trim(), limit: 6 })
+        if (!cancelled)
+          setLawResults(
+            (res.items ?? []) as { id: number; slug: string; title_fr: string }[],
+          )
+      } catch {
+        if (!cancelled) setLawResults([])
+      }
+    }, 250)
+    return () => {
+      cancelled = true
+      clearTimeout(t)
+    }
+  }, [lawQ, linked])
+
   const inputCls =
     'w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 outline-none focus:border-slate-500'
 
@@ -94,6 +138,7 @@ function EntryEditForm({
         description: d.description.trim(),
         moniteur_ref_raw: d.moniteur_ref_raw.trim() || null,
         moniteur_date: d.moniteur_date || null,
+        legal_text_id: linked?.id ?? null,
       })
       onSaved(updated)
     } catch {
@@ -151,6 +196,60 @@ function EntryEditForm({
         placeholder="Moniteur du …"
         className={inputCls}
       />
+
+      {/* Link to a law in the corpus */}
+      <div className="rounded-md border border-slate-200 bg-white p-2">
+        <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+          <Link2 className="h-3.5 w-3.5" />
+          {isFr ? 'Loi liée (corpus)' : 'Lwa ki lye (kòpis)'}
+        </div>
+        {linked ? (
+          <div className="flex items-center justify-between gap-2 rounded bg-emerald-50 px-2 py-1.5 text-sm ring-1 ring-emerald-200">
+            <span className="truncate text-emerald-900">{linked.title}</span>
+            <button
+              type="button"
+              onClick={() => setLinked(null)}
+              title={isFr ? 'Délier' : 'Delye'}
+              className="shrink-0 text-emerald-700 hover:text-red-600"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : (
+          <div className="relative">
+            <input
+              value={lawQ}
+              onChange={(e) => setLawQ(e.target.value)}
+              placeholder={isFr ? 'Rechercher une loi…' : 'Chèche yon lwa…'}
+              className={inputCls}
+            />
+            {lawResults.length > 0 && (
+              <ul className="absolute z-20 mt-1 max-h-48 w-full overflow-auto rounded-md border border-slate-200 bg-white shadow-lg">
+                {lawResults.map((l) => (
+                  <li key={l.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLinked({
+                          id: l.id,
+                          slug: l.slug,
+                          title: l.title_fr,
+                        })
+                        setLawQ('')
+                        setLawResults([])
+                      }}
+                      className="block w-full px-2.5 py-1.5 text-left text-sm hover:bg-slate-50"
+                    >
+                      {l.title_fr}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+
       {error && (
         <p className="text-xs text-red-600">
           {isFr ? "Échec de l'enregistrement." : 'Echèk anrejistreman.'}
@@ -457,6 +556,15 @@ export default function RepertoireClient() {
                   {e.description}
                 </p>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                  {e.legal_text_slug && (
+                    <Link
+                      href={`/loi/${e.legal_text_slug}`}
+                      className="inline-flex items-center gap-1 font-medium text-emerald-700 hover:underline"
+                    >
+                      <Link2 className="h-3 w-3" />
+                      {e.legal_text_title ?? e.legal_text_slug}
+                    </Link>
+                  )}
                   {e.moniteur_ref_raw &&
                     (e.issue_id ? (
                       <Link

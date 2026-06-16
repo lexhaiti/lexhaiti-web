@@ -835,6 +835,9 @@ export interface MoniteurIndexEntry {
   cross_refs?: string[] | null
   ocr_confidence?: number | null
   issue_id?: number | null
+  legal_text_id?: number | null
+  legal_text_slug?: string | null
+  legal_text_title?: string | null
 }
 export interface MoniteurIndexFacets {
   total: number
@@ -877,6 +880,7 @@ export async function updateMoniteurIndexEntry(
     moniteur_date: string | null
     moniteur_ref_raw: string | null
     cross_refs: string[] | null
+    legal_text_id: number | null
   }>,
 ) {
   return apiPatch<MoniteurIndexEntry>(`/moniteur/index/${id}`, patch)
