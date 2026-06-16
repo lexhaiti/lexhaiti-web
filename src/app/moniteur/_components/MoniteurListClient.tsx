@@ -16,10 +16,18 @@ import {
   Loader2,
   Newspaper,
   Plus,
+  RotateCcw,
   Search,
 } from 'lucide-react'
 import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   listMoniteurIssues,
   moniteurIssueSlug,
@@ -87,6 +95,7 @@ export default function MoniteurListClient() {
   // Year filter for the issues list (server supports `year`; we filter the
   // loaded set client-side so the dropdown and grid stay in sync).
   const [year, setYear] = useState<number | null>(null)
+  const [sort, setSort] = useState<'newest' | 'oldest'>('newest')
 
   useEffect(() => {
     let cancelled = false
@@ -143,6 +152,20 @@ export default function MoniteurListClient() {
   const visibleIssues = isEditor && editorialFilter === 'draft'
     ? filteredByYear.filter((i) => i.processing_status !== 'published')
     : filteredByYear
+
+  const displayIssues = [...visibleIssues].sort((a, b) => {
+    const da = a.publication_date ?? ''
+    const db = b.publication_date ?? ''
+    return sort === 'newest' ? db.localeCompare(da) : da.localeCompare(db)
+  })
+
+  const pillCls = (active: boolean) =>
+    cn(
+      'w-auto rounded-full h-9 text-sm transition-all',
+      active
+        ? 'bg-primary text-white border-primary hover:bg-primary/90 shadow-sm [&_svg]:text-white/60'
+        : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 hover:border-gray-400 dark:hover:border-slate-600 text-gray-700 dark:text-slate-200',
+    )
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
@@ -266,31 +289,62 @@ export default function MoniteurListClient() {
 
         {!(isEditor && view === 'year') && !loading && (
           <div className="mb-8 flex flex-wrap items-center gap-2">
-            <select
-              value={year ?? ''}
-              onChange={(e) =>
-                setYear(e.target.value ? Number(e.target.value) : null)
-              }
-              className="cursor-pointer appearance-none rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm text-slate-700 transition-colors hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            <Select
+              value={year !== null ? String(year) : 'all'}
+              onValueChange={(v) => setYear(v === 'all' ? null : Number(v))}
             >
-              <option value="">{isFr ? 'Toutes années' : 'Tout ane'}</option>
-              {availableYears.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-            {year !== null && (
+              <SelectTrigger className={cn('min-w-[9rem]', pillCls(year !== null))}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  {isFr ? 'Toutes années' : 'Tout ane'}
+                </SelectItem>
+                {availableYears.map((y) => (
+                  <SelectItem key={y} value={String(y)}>
+                    {y}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <div className="mx-1 h-6 w-px bg-gray-200 dark:bg-slate-700" />
+
+            <Select
+              value={sort}
+              onValueChange={(v) => setSort(v as 'newest' | 'oldest')}
+            >
+              <SelectTrigger
+                className={cn('min-w-[10rem]', pillCls(sort !== 'newest'))}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">
+                  {isFr ? 'Plus récents' : 'Pi resan'}
+                </SelectItem>
+                <SelectItem value="oldest">
+                  {isFr ? 'Plus anciens' : 'Pi ansyen'}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            {(year !== null || sort !== 'newest') && (
               <button
                 type="button"
-                onClick={() => setYear(null)}
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                onClick={() => {
+                  setYear(null)
+                  setSort('newest')
+                }}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
               >
+                <RotateCcw className="h-3.5 w-3.5" />
                 {isFr ? 'Réinitialiser' : 'Reyinisyalize'}
               </button>
             )}
+
             <span className="ml-auto text-sm text-slate-400">
-              {visibleIssues.length} {isFr ? 'numéros' : 'nimewo'}
+              {displayIssues.length} {isFr ? 'numéros' : 'nimewo'}
             </span>
           </div>
         )}
@@ -299,7 +353,7 @@ export default function MoniteurListClient() {
           <MoniteurYearView lang={lang} />
         ) : loading ? (
           <LoadingState />
-        ) : visibleIssues.length > 0 ? (
+        ) : displayIssues.length > 0 ? (
           <motion.div
             // `key` forces a fresh mount whenever the filter changes so the
             // stagger animation re-runs against the new card set. Using
@@ -320,7 +374,7 @@ export default function MoniteurListClient() {
             }}
             className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 lg:gap-6"
           >
-            {visibleIssues.map((issue) => {
+            {displayIssues.map((issue) => {
               const status = STATUS_LABEL[issue.processing_status]
               const Icon = status?.Icon
               const isDraft = issue.processing_status !== 'published'

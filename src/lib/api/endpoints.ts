@@ -866,6 +866,22 @@ export async function getMoniteurIndexFacets() {
   return apiGet<MoniteurIndexFacets>(`/moniteur/index/facets`)
 }
 
+/** Editor: correct OCR mistakes in one index entry. */
+export async function updateMoniteurIndexEntry(
+  id: number,
+  patch: Partial<{
+    rubrique: string
+    year: number | null
+    acte_type: string | null
+    description: string
+    moniteur_date: string | null
+    moniteur_ref_raw: string | null
+    cross_refs: string[] | null
+  }>,
+) {
+  return apiPatch<MoniteurIndexEntry>(`/moniteur/index/${id}`, patch)
+}
+
 /** Assignable reviewers (admin / reviewer / editor) with their workload. */
 export async function listMoniteurReviewers() {
   return apiGet<MoniteurReviewerOption[]>(`/moniteur/reviewers`)
