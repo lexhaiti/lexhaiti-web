@@ -1,12 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useT } from '@/i18n/useT'
 import { StandardPageHeader } from '@/components/shared/StandardPageHeader'
 import {
   AlertTriangle,
   ArrowRight,
+  BookMarked,
   CalendarDays,
   CheckCircle2,
   Clock,
@@ -83,11 +84,14 @@ export default function MoniteurListClient() {
   // review/assignment view. Defaults to grid so the page is unchanged for
   // the common case.
   const [view, setView] = useState<'grid' | 'year'>('grid')
+  // Year filter for the issues list (server supports `year`; we filter the
+  // loaded set client-side so the dropdown and grid stay in sync).
+  const [year, setYear] = useState<number | null>(null)
 
   useEffect(() => {
     let cancelled = false
     const onlyPublished = isEditor ? editorialFilter === 'published' : true
-    listMoniteurIssues({ only_published: onlyPublished, limit: 100 })
+    listMoniteurIssues({ only_published: onlyPublished, limit: 500 })
       .then((res) => {
         if (cancelled) return
         setIssues(res.items)
@@ -104,6 +108,20 @@ export default function MoniteurListClient() {
     }
   }, [isEditor, editorialFilter])
 
+  const availableYears = useMemo(
+    () =>
+      [
+        ...new Set(
+          issues
+            .map((i) => i.publication_date?.slice(0, 4))
+            .filter(Boolean) as string[],
+        ),
+      ]
+        .map(Number)
+        .sort((a, b) => b - a),
+    [issues],
+  )
+
   const filteredByQuery = query.trim()
     ? issues.filter((i) => {
         const q = query.trim().toLowerCase()
@@ -116,9 +134,15 @@ export default function MoniteurListClient() {
       })
     : issues
 
-  const visibleIssues = isEditor && editorialFilter === 'draft'
-    ? filteredByQuery.filter((i) => i.processing_status !== 'published')
+  const filteredByYear = year
+    ? filteredByQuery.filter((i) =>
+        i.publication_date?.startsWith(String(year)),
+      )
     : filteredByQuery
+
+  const visibleIssues = isEditor && editorialFilter === 'draft'
+    ? filteredByYear.filter((i) => i.processing_status !== 'published')
+    : filteredByYear
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
@@ -162,6 +186,20 @@ export default function MoniteurListClient() {
               {isFr ? 'Rechercher' : 'Chèche'}
             </span>
           </button>
+        </div>
+
+        {/* Public entry to the printed-index browser (1900–1944). */}
+        <div className="mt-4">
+          <Link
+            href="/moniteur/repertoire"
+            className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/20 transition-colors hover:bg-white/20"
+          >
+            <BookMarked className="h-4 w-4" />
+            {isFr
+              ? 'Répertoire alphabétique (1900–1944)'
+              : 'Repètwa alfabetik (1900–1944)'}
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
 
         {isEditor && (
@@ -225,6 +263,37 @@ export default function MoniteurListClient() {
       </StandardPageHeader>
 
       <div className="container py-12 lg:py-20">
+
+        {!(isEditor && view === 'year') && !loading && (
+          <div className="mb-8 flex flex-wrap items-center gap-2">
+            <select
+              value={year ?? ''}
+              onChange={(e) =>
+                setYear(e.target.value ? Number(e.target.value) : null)
+              }
+              className="cursor-pointer appearance-none rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm text-slate-700 transition-colors hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            >
+              <option value="">{isFr ? 'Toutes années' : 'Tout ane'}</option>
+              {availableYears.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+            {year !== null && (
+              <button
+                type="button"
+                onClick={() => setYear(null)}
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+              >
+                {isFr ? 'Réinitialiser' : 'Reyinisyalize'}
+              </button>
+            )}
+            <span className="ml-auto text-sm text-slate-400">
+              {visibleIssues.length} {isFr ? 'numéros' : 'nimewo'}
+            </span>
+          </div>
+        )}
 
         {isEditor && view === 'year' ? (
           <MoniteurYearView lang={lang} />

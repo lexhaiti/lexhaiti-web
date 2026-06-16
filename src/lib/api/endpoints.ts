@@ -820,6 +820,52 @@ export async function listMoniteurYears(only_published = false) {
   })
 }
 
+// ── Moniteur index — the printed *Index alphabétique et chronologique du
+// Moniteur* (1900-1944). A finding-aid layer over the issues; standalone
+// types because the generated api-types lags the backend.
+export interface MoniteurIndexEntry {
+  id: number
+  rubrique: string
+  initial?: string | null
+  year?: number | null
+  acte_type?: string | null
+  description: string
+  moniteur_date?: string | null
+  moniteur_ref_raw?: string | null
+  cross_refs?: string[] | null
+  ocr_confidence?: number | null
+  issue_id?: number | null
+}
+export interface MoniteurIndexFacets {
+  total: number
+  years: number[]
+  initials: string[]
+  acte_types: string[]
+}
+
+/** Browse the printed Moniteur index (1900-1944): rubrique → acts → cited date. */
+export async function listMoniteurIndex(params?: {
+  initial?: string
+  year?: number
+  acte_type?: string
+  q?: string
+  sort?: 'rubrique' | 'year' | 'date'
+  limit?: number
+  offset?: number
+}) {
+  return apiGet<{
+    items: MoniteurIndexEntry[]
+    total: number
+    page: number
+    size: number
+  }>(`/moniteur/index`, { params })
+}
+
+/** Distinct filter values present in the index (années, lettres, types). */
+export async function getMoniteurIndexFacets() {
+  return apiGet<MoniteurIndexFacets>(`/moniteur/index/facets`)
+}
+
 /** Assignable reviewers (admin / reviewer / editor) with their workload. */
 export async function listMoniteurReviewers() {
   return apiGet<MoniteurReviewerOption[]>(`/moniteur/reviewers`)
