@@ -40,7 +40,7 @@ export function MobileFilterSheet({
         <Button
           variant="outline"
           className={cn(
-            'lg:hidden w-full justify-between rounded-xl h-11',
+            'lg:hidden h-11 gap-2 rounded-xl',
             activeCount > 0
               ? 'bg-primary text-white border-primary hover:bg-primary/90'
               : 'border-gray-200 dark:border-slate-700',

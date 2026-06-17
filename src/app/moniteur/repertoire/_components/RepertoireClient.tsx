@@ -571,19 +571,20 @@ export default function RepertoireClient() {
       {/* Filter toolbar — full-width sticky band (matches /lois & /moniteur) */}
       <div className="sticky top-16 z-30 border-b border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950 lg:top-20">
         <div className="container space-y-3 py-4">
-          {/* Mobile: filters in a bottom sheet (same design as /lois) */}
-          <MobileFilterSheet
-            activeCount={activeCount}
-            title={isFr ? 'Filtres' : 'Filt'}
-            applyLabel={isFr ? 'Appliquer' : 'Aplike'}
-            resetLabel={isFr ? 'Réinitialiser' : 'Reyinisyalize'}
-            onReset={reset}
-          >
-            <div className="space-y-3">
-              {filterSelects(true)}
-              {searchField}
-            </div>
-          </MobileFilterSheet>
+          {/* Mobile: compact Filtres button (sheet = selects only) + the
+              search bar below it (like /lois) */}
+          <div className="space-y-3 lg:hidden">
+            <MobileFilterSheet
+              activeCount={activeCount}
+              title={isFr ? 'Filtres' : 'Filt'}
+              applyLabel={isFr ? 'Appliquer' : 'Aplike'}
+              resetLabel={isFr ? 'Réinitialiser' : 'Reyinisyalize'}
+              onReset={reset}
+            >
+              <div className="space-y-3">{filterSelects(true)}</div>
+            </MobileFilterSheet>
+            {searchField}
+          </div>
 
           {/* Desktop: inline pill row */}
           <div className="hidden flex-wrap items-center gap-2 lg:flex">
