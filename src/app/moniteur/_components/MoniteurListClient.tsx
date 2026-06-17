@@ -12,7 +12,9 @@ import {
   CheckCircle2,
   Clock,
   FileText,
+  Grid3X3,
   LayoutGrid,
+  List,
   Loader2,
   Newspaper,
   Plus,
@@ -28,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { MobileFilterSheet } from '@/components/shared/MobileFilterSheet'
 import {
   listMoniteurIssues,
   moniteurIssueSlug,
@@ -35,10 +38,7 @@ import {
 } from '@/lib/api/endpoints'
 import { useEditorMode } from '@/lib/hooks/useEditorMode'
 import { cn } from '@/lib/utils'
-import {
-  EditorialFilter,
-  type EditorialStatusFilter,
-} from '@/components/shared/EditorialFilter'
+import { type EditorialStatusFilter } from '@/components/shared/EditorialFilter'
 import { MoniteurIssueCard } from '@/components/shared/MoniteurIssueCard'
 import { LoadingState } from '@/components/shared/LoadingState'
 import { MoniteurYearView } from './MoniteurYearView'
@@ -87,7 +87,10 @@ export default function MoniteurListClient() {
   const [issues, setIssues] = useState<MoniteurIssueRead[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
-  const [editorialFilter, setEditorialFilter] = useState<EditorialStatusFilter>('published')
+  // Editors default to "all" so the in-progress brouillons are visible
+  // immediately (the whole corpus is currently drafts). The public view
+  // ignores this and always shows only published issues.
+  const [editorialFilter, setEditorialFilter] = useState<EditorialStatusFilter>('all')
   // Editor-only: switch between the public card grid and the year-grouped
   // review/assignment view. Defaults to grid so the page is unchanged for
   // the common case.
@@ -96,6 +99,7 @@ export default function MoniteurListClient() {
   // loaded set client-side so the dropdown and grid stay in sync).
   const [year, setYear] = useState<number | null>(null)
   const [sort, setSort] = useState<'newest' | 'oldest'>('newest')
+  const [cardStyle, setCardStyle] = useState<'grid' | 'list'>('grid')
 
   useEffect(() => {
     let cancelled = false
@@ -166,6 +170,87 @@ export default function MoniteurListClient() {
         ? 'bg-primary text-white border-primary hover:bg-primary/90 shadow-sm [&_svg]:text-white/60'
         : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 hover:border-gray-400 dark:hover:border-slate-600 text-gray-700 dark:text-slate-200',
     )
+
+  const activeFilterCount = [
+    year !== null,
+    sort !== 'newest',
+    isEditor && editorialFilter !== 'all',
+  ].filter(Boolean).length
+  const resetFilters = () => {
+    setYear(null)
+    setSort('newest')
+    setEditorialFilter('all')
+  }
+  // Filter selects, shared between the desktop inline row (pill) and the
+  // mobile bottom sheet (`full` → full-width stacked).
+  const filterSelects = (full: boolean) => {
+    const trig = (active: boolean) =>
+      cn(full ? 'w-full' : 'min-w-[9rem]', pillCls(active))
+    return (
+      <>
+        {isEditor && (
+          <Select
+            value={editorialFilter}
+            onValueChange={(v) =>
+              setEditorialFilter(v as EditorialStatusFilter)
+            }
+          >
+            <SelectTrigger className={trig(editorialFilter !== 'all')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                {isFr ? 'Tous statuts' : 'Tout estati'}
+              </SelectItem>
+              <SelectItem value="published">
+                {isFr ? 'Publiés' : 'Pibliye'}
+              </SelectItem>
+              <SelectItem value="draft">
+                {isFr ? 'Brouillons' : 'Bouyon'}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+        <Select
+          value={year !== null ? String(year) : 'all'}
+          onValueChange={(v) => setYear(v === 'all' ? null : Number(v))}
+        >
+          <SelectTrigger className={trig(year !== null)}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">
+              {isFr ? 'Toutes années' : 'Tout ane'}
+            </SelectItem>
+            {availableYears.map((y) => (
+              <SelectItem key={y} value={String(y)}>
+                {y}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {!full && (
+          <div className="mx-1 h-6 w-px bg-gray-200 dark:bg-slate-700" />
+        )}
+        <Select
+          value={sort}
+          onValueChange={(v) => setSort(v as 'newest' | 'oldest')}
+        >
+          <SelectTrigger className={trig(sort !== 'newest')}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest">
+              {isFr ? 'Plus récents' : 'Pi resan'}
+            </SelectItem>
+            <SelectItem value="oldest">
+              {isFr ? 'Plus anciens' : 'Pi ansyen'}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
@@ -257,10 +342,8 @@ export default function MoniteurListClient() {
                 {isFr ? 'Par année' : 'Pa ane'}
               </button>
             </div>
-            <EditorialFilter
-              value={editorialFilter}
-              onChange={setEditorialFilter}
-            />
+            {/* Editorial status moved into the filter bar below (pill,
+                /lois-style). */}
             {/* Editor-only quick action — opens the Moniteur side of
                 the import flow directly with the type pre-selected.
                 Visible only when ``isEditor`` is true, so the public
@@ -285,56 +368,34 @@ export default function MoniteurListClient() {
         )}
       </StandardPageHeader>
 
-      <div className="container py-12 lg:py-20">
-
-        {!(isEditor && view === 'year') && !loading && (
-          <div className="mb-8 flex flex-wrap items-center gap-2">
-            <Select
-              value={year !== null ? String(year) : 'all'}
-              onValueChange={(v) => setYear(v === 'all' ? null : Number(v))}
-            >
-              <SelectTrigger className={cn('min-w-[9rem]', pillCls(year !== null))}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">
-                  {isFr ? 'Toutes années' : 'Tout ane'}
-                </SelectItem>
-                {availableYears.map((y) => (
-                  <SelectItem key={y} value={String(y)}>
-                    {y}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="mx-1 h-6 w-px bg-gray-200 dark:bg-slate-700" />
-
-            <Select
-              value={sort}
-              onValueChange={(v) => setSort(v as 'newest' | 'oldest')}
-            >
-              <SelectTrigger
-                className={cn('min-w-[10rem]', pillCls(sort !== 'newest'))}
+      {!(isEditor && view === 'year') && !loading && (
+        <div className="sticky top-16 z-30 border-b border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950 lg:top-20">
+          <div className="container py-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              {/* Mobile: filters in a bottom sheet (same design as /lois) */}
+              <MobileFilterSheet
+                activeCount={activeFilterCount}
+                title={isFr ? 'Filtres' : 'Filt'}
+                applyLabel={isFr ? 'Appliquer' : 'Aplike'}
+                resetLabel={isFr ? 'Réinitialiser' : 'Reyinisyalize'}
+                onReset={resetFilters}
               >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">
-                  {isFr ? 'Plus récents' : 'Pi resan'}
-                </SelectItem>
-                <SelectItem value="oldest">
-                  {isFr ? 'Plus anciens' : 'Pi ansyen'}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+                <div className="space-y-3">{filterSelects(true)}</div>
+              </MobileFilterSheet>
 
-            {(year !== null || sort !== 'newest') && (
+              {/* Desktop: inline pill row */}
+              <div className="hidden flex-wrap items-center gap-2 lg:flex">
+                {filterSelects(false)}
+
+            {(year !== null ||
+              sort !== 'newest' ||
+              (isEditor && editorialFilter !== 'all')) && (
               <button
                 type="button"
                 onClick={() => {
                   setYear(null)
                   setSort('newest')
+                  setEditorialFilter('all')
                 }}
                 className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
               >
@@ -342,12 +403,50 @@ export default function MoniteurListClient() {
                 {isFr ? 'Réinitialiser' : 'Reyinisyalize'}
               </button>
             )}
+            </div>
 
-            <span className="ml-auto text-sm text-slate-400">
-              {displayIssues.length} {isFr ? 'numéros' : 'nimewo'}
-            </span>
+            {/* Grid / list view toggle (matches /lois) */}
+            <div className="hidden lg:flex items-center gap-1 rounded-full bg-gray-100 p-1 px-2 dark:bg-slate-800">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCardStyle('grid')}
+                className={
+                  cardStyle === 'grid'
+                    ? 'rounded-full bg-white shadow-sm dark:bg-slate-700'
+                    : 'rounded-full'
+                }
+                aria-label={isFr ? 'Grille' : 'Griy'}
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCardStyle('list')}
+                className={
+                  cardStyle === 'list'
+                    ? 'rounded-full bg-white shadow-sm dark:bg-slate-700'
+                    : 'rounded-full'
+                }
+                aria-label={isFr ? 'Liste' : 'Lis'}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        )}
+          </div>
+        </div>
+      )}
+
+      <div className="container py-8 lg:py-12">
+        {!(isEditor && view === 'year') &&
+          !loading &&
+          displayIssues.length > 0 && (
+            <p className="mb-6 text-sm text-slate-400">
+              {displayIssues.length} {isFr ? 'numéros' : 'nimewo'}
+            </p>
+          )}
 
         {isEditor && view === 'year' ? (
           <MoniteurYearView lang={lang} />
@@ -372,7 +471,12 @@ export default function MoniteurListClient() {
                 transition: { staggerChildren: 0.04 },
               },
             }}
-            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 lg:gap-6"
+            className={cn(
+              'grid gap-5 lg:gap-6',
+              cardStyle === 'list'
+                ? 'grid-cols-1'
+                : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
+            )}
           >
             {displayIssues.map((issue) => {
               const status = STATUS_LABEL[issue.processing_status]

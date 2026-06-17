@@ -838,6 +838,7 @@ export interface MoniteurIndexEntry {
   legal_text_id?: number | null
   legal_text_slug?: string | null
   legal_text_title?: string | null
+  editorial_status?: string
 }
 export interface MoniteurIndexFacets {
   total: number
@@ -851,6 +852,7 @@ export async function listMoniteurIndex(params?: {
   initial?: string
   year?: number
   acte_type?: string
+  status?: string
   q?: string
   sort?: 'rubrique' | 'year' | 'date'
   limit?: number
@@ -881,6 +883,7 @@ export async function updateMoniteurIndexEntry(
     moniteur_ref_raw: string | null
     cross_refs: string[] | null
     legal_text_id: number | null
+    editorial_status: string
   }>,
 ) {
   return apiPatch<MoniteurIndexEntry>(`/moniteur/index/${id}`, patch)

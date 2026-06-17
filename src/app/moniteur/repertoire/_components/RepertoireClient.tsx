@@ -11,10 +11,19 @@ import {
   Pencil,
   RotateCcw,
   Search,
+  SlidersHorizontal,
   X,
 } from 'lucide-react'
 import { useT } from '@/i18n/useT'
 import { StandardPageHeader } from '@/components/shared/StandardPageHeader'
+import { MobileFilterSheet } from '@/components/shared/MobileFilterSheet'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useEditorMode } from '@/lib/hooks/useEditorMode'
 import { cn } from '@/lib/utils'
 import {
@@ -42,6 +51,7 @@ type Filters = {
   initial?: string
   year?: number
   acte_type?: string
+  status?: string
   q?: string
   sort: Sort
 }
@@ -50,6 +60,15 @@ const PILL =
   'inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm transition-colors'
 const PILL_OFF = 'bg-white text-slate-700 border-slate-200 hover:border-slate-400'
 const PILL_ON = 'bg-slate-900 text-white border-slate-900'
+
+/** Pill-style trigger for shadcn Select (matches /lois & /moniteur). */
+const PILL_TRIGGER = (active: boolean) =>
+  cn(
+    'w-auto rounded-full h-9 text-sm transition-all',
+    active
+      ? 'bg-primary text-white border-primary hover:bg-primary/90 shadow-sm [&_svg]:text-white/60'
+      : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200',
+  )
 
 const ACTE_TYPES = [
   'loi',
@@ -79,6 +98,7 @@ function EntryEditForm({
     description: entry.description,
     moniteur_ref_raw: entry.moniteur_ref_raw ?? '',
     moniteur_date: entry.moniteur_date ?? '',
+    editorial_status: entry.editorial_status ?? 'draft',
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(false)
@@ -139,6 +159,7 @@ function EntryEditForm({
         moniteur_ref_raw: d.moniteur_ref_raw.trim() || null,
         moniteur_date: d.moniteur_date || null,
         legal_text_id: linked?.id ?? null,
+        editorial_status: d.editorial_status,
       })
       onSaved(updated)
     } catch {
@@ -250,6 +271,36 @@ function EntryEditForm({
         )}
       </div>
 
+      {/* Editorial status */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-semibold text-slate-500">
+          {isFr ? 'Statut' : 'Estati'}:
+        </span>
+        {(['draft', 'published'] as const).map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setD({ ...d, editorial_status: s })}
+            className={cn(
+              'rounded-full border px-3 py-1 text-xs font-semibold transition-colors',
+              d.editorial_status === s
+                ? s === 'published'
+                  ? 'border-emerald-600 bg-emerald-600 text-white'
+                  : 'border-amber-500 bg-amber-500 text-white'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400',
+            )}
+          >
+            {s === 'published'
+              ? isFr
+                ? 'Publié'
+                : 'Pibliye'
+              : isFr
+                ? 'Brouillon'
+                : 'Bouyon'}
+          </button>
+        ))}
+      </div>
+
       {error && (
         <p className="text-xs text-red-600">
           {isFr ? "Échec de l'enregistrement." : 'Echèk anrejistreman.'}
@@ -318,6 +369,7 @@ export default function RepertoireClient() {
         initial: filters.initial,
         year: filters.year,
         acte_type: filters.acte_type,
+        status: filters.status,
         q: filters.q,
         sort: filters.sort,
         limit: PAGE,
@@ -360,7 +412,18 @@ export default function RepertoireClient() {
     setEditingId(null)
   }
   const hasFilters =
-    !!filters.initial || !!filters.year || !!filters.acte_type || !!filters.q
+    !!filters.initial ||
+    !!filters.year ||
+    !!filters.acte_type ||
+    !!filters.status ||
+    !!filters.q
+  const activeCount = [
+    filters.initial,
+    filters.year,
+    filters.acte_type,
+    filters.status,
+    filters.q,
+  ].filter(Boolean).length
 
   const initials = facets?.initials ?? []
   const years = facets?.years ?? []
@@ -373,6 +436,108 @@ export default function RepertoireClient() {
       date: isFr ? 'Par date' : 'Pa dat',
     }),
     [isFr],
+  )
+
+  // Filter selects, shared between the desktop inline row (pill, `w-auto`)
+  // and the mobile bottom sheet (`full` → `w-full` stacked).
+  const filterSelects = (full: boolean) => {
+    const trig = (active: boolean) =>
+      cn(full ? 'w-full' : 'min-w-[9rem]', PILL_TRIGGER(active))
+    return (
+      <>
+        <Select
+          value={filters.year != null ? String(filters.year) : 'all'}
+          onValueChange={(v) =>
+            setF({ year: v === 'all' ? undefined : Number(v) })
+          }
+        >
+          <SelectTrigger className={trig(filters.year != null)}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">
+              {isFr ? 'Toutes années' : 'Tout ane'}
+            </SelectItem>
+            {years.map((y) => (
+              <SelectItem key={y} value={String(y)}>
+                {y}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={filters.acte_type ?? 'all'}
+          onValueChange={(v) => setF({ acte_type: v === 'all' ? undefined : v })}
+        >
+          <SelectTrigger className={trig(!!filters.acte_type)}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">
+              {isFr ? 'Tous types' : 'Tout kalite'}
+            </SelectItem>
+            {acteTypes.map((a) => (
+              <SelectItem key={a} value={a}>
+                {ACTE_LABEL[a]?.fr ?? a}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {isEditor && (
+          <Select
+            value={filters.status ?? 'all'}
+            onValueChange={(v) => setF({ status: v === 'all' ? undefined : v })}
+          >
+            <SelectTrigger className={trig(!!filters.status)}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                {isFr ? 'Tous statuts' : 'Tout estati'}
+              </SelectItem>
+              <SelectItem value="published">
+                {isFr ? 'Publiés' : 'Pibliye'}
+              </SelectItem>
+              <SelectItem value="draft">
+                {isFr ? 'Brouillons' : 'Bouyon'}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+
+        <Select
+          value={filters.sort}
+          onValueChange={(v) => setF({ sort: v as Sort })}
+        >
+          <SelectTrigger className={trig(filters.sort !== 'rubrique')}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(['rubrique', 'year', 'date'] as Sort[]).map((s) => (
+              <SelectItem key={s} value={s}>
+                {sortLabel[s]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </>
+    )
+  }
+
+  const searchField = (
+    <div className="relative min-w-[180px] flex-1">
+      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <input
+        value={qDraft}
+        onChange={(e) => setQDraft(e.target.value)}
+        placeholder={
+          isFr ? 'Rechercher (rubrique, acte…)' : 'Chèche (rubrik, zak…)'
+        }
+        className="h-9 w-full rounded-full border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none focus:border-slate-400"
+      />
+    </div>
   )
 
   return (
@@ -403,61 +568,28 @@ export default function RepertoireClient() {
         )}
       </StandardPageHeader>
 
-      <div className="container py-10 lg:py-12">
-        {/* Filter bar */}
-      <div className="mb-4 space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={filters.year ?? ''}
-            onChange={(e) =>
-              setF({ year: e.target.value ? Number(e.target.value) : undefined })
-            }
-            className={cn(PILL, PILL_OFF, 'cursor-pointer appearance-none pr-7')}
+      {/* Filter toolbar — full-width sticky band (matches /lois & /moniteur) */}
+      <div className="sticky top-16 z-30 border-b border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950 lg:top-20">
+        <div className="container space-y-3 py-4">
+          {/* Mobile: filters in a bottom sheet (same design as /lois) */}
+          <MobileFilterSheet
+            activeCount={activeCount}
+            title={isFr ? 'Filtres' : 'Filt'}
+            applyLabel={isFr ? 'Appliquer' : 'Aplike'}
+            resetLabel={isFr ? 'Réinitialiser' : 'Reyinisyalize'}
+            onReset={reset}
           >
-            <option value="">{isFr ? 'Toutes années' : 'Tout ane'}</option>
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
+            <div className="space-y-3">
+              {filterSelects(true)}
+              {searchField}
+            </div>
+          </MobileFilterSheet>
 
-          <select
-            value={filters.acte_type ?? ''}
-            onChange={(e) => setF({ acte_type: e.target.value || undefined })}
-            className={cn(PILL, PILL_OFF, 'cursor-pointer appearance-none pr-7')}
-          >
-            <option value="">{isFr ? 'Tous types' : 'Tout kalite'}</option>
-            {acteTypes.map((a) => (
-              <option key={a} value={a}>
-                {ACTE_LABEL[a]?.fr ?? a}
-              </option>
-            ))}
-          </select>
+          {/* Desktop: inline pill row */}
+          <div className="hidden flex-wrap items-center gap-2 lg:flex">
+            {filterSelects(false)}
 
-          <select
-            value={filters.sort}
-            onChange={(e) => setF({ sort: e.target.value as Sort })}
-            className={cn(PILL, PILL_OFF, 'cursor-pointer appearance-none pr-7')}
-          >
-            {(['rubrique', 'year', 'date'] as Sort[]).map((s) => (
-              <option key={s} value={s}>
-                {sortLabel[s]}
-              </option>
-            ))}
-          </select>
-
-          <div className="relative flex-1 min-w-[180px]">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              value={qDraft}
-              onChange={(e) => setQDraft(e.target.value)}
-              placeholder={
-                isFr ? 'Rechercher (rubrique, acte…)' : 'Chèche (rubrik, zak…)'
-              }
-              className="w-full rounded-full border border-slate-200 bg-white py-1.5 pl-9 pr-3 text-sm outline-none focus:border-slate-400"
-            />
-          </div>
+            {searchField}
 
           {hasFilters && (
             <button
@@ -500,9 +632,11 @@ export default function RepertoireClient() {
             </button>
           ))}
         </div>
+        </div>
       </div>
 
-      {/* Results */}
+      <div className="container py-8 lg:py-12">
+        {/* Results */}
       {loading ? (
         <div className="flex items-center justify-center py-20 text-slate-400">
           <Loader2 className="h-6 w-6 animate-spin" />
@@ -549,6 +683,24 @@ export default function RepertoireClient() {
                   {e.year && (
                     <span className="text-xs font-medium text-slate-400">
                       {e.year}
+                    </span>
+                  )}
+                  {isEditor && (
+                    <span
+                      className={cn(
+                        'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+                        e.editorial_status === 'published'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-amber-100 text-amber-700',
+                      )}
+                    >
+                      {e.editorial_status === 'published'
+                        ? isFr
+                          ? 'Publié'
+                          : 'Pibliye'
+                        : isFr
+                          ? 'Brouillon'
+                          : 'Bouyon'}
                     </span>
                   )}
                 </div>
