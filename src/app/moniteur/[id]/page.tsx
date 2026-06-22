@@ -4,11 +4,13 @@
 // lives in the client component below.
 
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import {
   getMoniteurIssue,
   getMoniteurIssueBySlug,
   type MoniteurIssueWithEntries,
 } from '@/lib/api/endpoints'
+import { ApiError } from '@/lib/api/client'
 import { breadcrumbJsonLd, moniteurIssueJsonLd } from '@/lib/harvest/jsonld'
 import { formatLongDate } from '@/lib/format/date'
 import { smartIssueNumber } from '@/lib/format/moniteur'
@@ -66,36 +68,34 @@ export default async function Page({ params }: PageProps) {
   // client. (ADR-004 Stage 1.)
   const raw = decodeURIComponent(id)
   const isNumeric = /^\d+$/.test(raw)
-  let issue: MoniteurIssueWithEntries | null = null
-  let jsonLd: Record<string, unknown> | null = null
-  let crumbs: Record<string, unknown> | null = null
+  let issue: MoniteurIssueWithEntries
   try {
     issue = isNumeric
       ? await getMoniteurIssue(Number(raw))
       : await getMoniteurIssueBySlug(raw)
-    jsonLd = moniteurIssueJsonLd(issue)
-    crumbs = breadcrumbJsonLd([
-      { name: 'Accueil', url: SITE },
-      { name: 'Le Moniteur', url: `${SITE}/moniteur` },
-      { name: `N° ${issue.number}`, url: `${SITE}/moniteur/${id}` },
-    ])
-  } catch {
-    // Soft fail — the reader fetches client-side and shows its not-found state.
+  } catch (err) {
+    // Genuine 404 → real Next 404 instead of a soft-404 (HTTP 200 with a
+    // not-found body). A transient/backend error must NOT 404 — rethrow so a
+    // healthy issue isn't de-indexed over a hiccup.
+    if (err instanceof ApiError && err.status === 404) notFound()
+    throw err
   }
+  const jsonLd = moniteurIssueJsonLd(issue)
+  const crumbs = breadcrumbJsonLd([
+    { name: 'Accueil', url: SITE },
+    { name: 'Le Moniteur', url: `${SITE}/moniteur` },
+    { name: `N° ${issue.number}`, url: `${SITE}/moniteur/${id}` },
+  ])
   return (
     <>
-      {jsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-      )}
-      {crumbs && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }}
-        />
-      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }}
+      />
       <MoniteurDetailClient key={id} initialData={issue} />
     </>
   )

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import LawDetailPage from '@/components/law-details/LawDetail'
 import { getTextBySlug, type LegalTextRead } from '@/lib/api/endpoints'
+import { ApiError } from '@/lib/api/client'
 import { breadcrumbJsonLd, legislationJsonLd } from '@/lib/harvest/jsonld'
 
 const SITE = 'https://www.lexhaiti.org'
@@ -75,9 +77,10 @@ export async function generateMetadata({
       },
     }
   } catch {
-    // Even when the data fetch fails, emit a self-referential canonical so the
-    // page never falls back to the site-root canonical. (This is why some laws
-    // like /loi/code-penal were canonicalised onto the homepage.)
+    // Transient/backend error → keep a self-referential canonical so the page
+    // never inherits the site-root canonical. A genuine 404 is handled by the
+    // page component below (notFound()); there is no route-level loading.tsx, so
+    // that resolves to a real 404 status rather than a streamed soft-404.
     return { alternates: { canonical: `${SITE}/loi/${slug}` } }
   }
 }
@@ -88,34 +91,33 @@ export default async function Page({ params }: PageProps) {
   // seed the client reader with it. This puts the actual legal text in the
   // server-rendered HTML so Google indexes the corpus body — not just the
   // title/metadata — and removes the skeleton flash. (ADR-004 Stage 1.)
-  let text: LegalTextRead | null = null
-  let jsonLd: Record<string, unknown> | null = null
-  let crumbs: Record<string, unknown> | null = null
+  let text: LegalTextRead
   try {
     text = await getTextBySlug(slug, 'all')
-    jsonLd = legislationJsonLd(text)
-    crumbs = breadcrumbJsonLd([
-      { name: 'Accueil', url: SITE },
-      { name: 'Lois', url: `${SITE}/lois` },
-      { name: text.title_fr ?? slug, url: `${SITE}/loi/${slug}` },
-    ])
-  } catch {
-    // Soft fail — the reader still fetches client-side; structured data drops.
+  } catch (err) {
+    // A genuine 404 → return a real Next 404 instead of a soft-404 (HTTP 200
+    // with "Page introuvable" content, which Google flags and keeps crawling).
+    // A transient/backend error must NOT 404 — rethrow so Next renders the
+    // error boundary and Google doesn't de-index a real page over a hiccup.
+    if (err instanceof ApiError && err.status === 404) notFound()
+    throw err
   }
+  const jsonLd = legislationJsonLd(text)
+  const crumbs = breadcrumbJsonLd([
+    { name: 'Accueil', url: SITE },
+    { name: 'Lois', url: `${SITE}/lois` },
+    { name: text.title_fr ?? slug, url: `${SITE}/loi/${slug}` },
+  ])
   return (
     <>
-      {jsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-      )}
-      {crumbs && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }}
-        />
-      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }}
+      />
       <LawDetailPage key={slug} initialData={text} />
     </>
   )
