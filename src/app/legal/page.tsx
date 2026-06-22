@@ -10,6 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const language = await getServerLanguage()
   const t = await getT(language)
   return {
+    alternates: { canonical: 'https://www.lexhaiti.org/legal' },
     title: t('legal.title', {
       fallback: language === 'fr' ? 'Mentions légales' : 'Mansyon legal',
     }),

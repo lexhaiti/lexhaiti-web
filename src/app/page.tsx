@@ -8,6 +8,13 @@ import ActualitesSection from '@/components/home/ActualitesSection'
 import AppelContribution from '@/components/home/AppelContribution'
 import PartenairesSection from '@/components/home/PartenairesSection'
 import { HomePrefetch } from '@/components/home/HomePrefetch'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  // The homepage is the one route whose canonical IS the site root. Every
+  // other route sets its own self-referential canonical (see layout note).
+  alternates: { canonical: 'https://www.lexhaiti.org' },
+}
 
 export default function Page() {
   return (

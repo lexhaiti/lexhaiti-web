@@ -68,6 +68,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const language = await getServerLanguage()
   const t = await getT(language)
   return {
+    alternates: { canonical: 'https://www.lexhaiti.org/thematiques' },
     title: t('themes.title', {
       fallback: language === 'fr' ? 'Thématiques' : 'Tèm yo',
     }),

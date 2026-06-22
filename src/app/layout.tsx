@@ -69,14 +69,12 @@ export const metadata: Metadata = {
     description: DEFAULT_DESC,
     site: '@lexhaiti',
   },
-  alternates: {
-    canonical: SITE,
-    languages: {
-      'fr': SITE,
-      'ht': SITE,
-      'x-default': SITE,
-    },
-  },
+  // NOTE: deliberately NO site-wide `alternates.canonical` (or hreflang
+  // `languages`) here. A layout-level default makes every sub-page inherit the
+  // homepage as its canonical — telling Google those distinct pages are
+  // duplicates of `/`, which can drop them from the index under their own URL.
+  // Each route sets its OWN self-referential canonical in its
+  // `generateMetadata` / `metadata` instead (homepage: see app/page.tsx).
 }
 
 const jsonLd = {

@@ -75,7 +75,10 @@ export async function generateMetadata({
       },
     }
   } catch {
-    return {}
+    // Even when the data fetch fails, emit a self-referential canonical so the
+    // page never falls back to the site-root canonical. (This is why some laws
+    // like /loi/code-penal were canonicalised onto the homepage.)
+    return { alternates: { canonical: `${SITE}/loi/${slug}` } }
   }
 }
 

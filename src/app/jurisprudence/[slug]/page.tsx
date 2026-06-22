@@ -59,7 +59,9 @@ export async function generateMetadata({
       twitter: { card: 'summary_large_image', title, description },
     }
   } catch {
-    return {}
+    // Keep a self-referential canonical even on fetch failure, so the page
+    // never inherits the site-root canonical from the layout.
+    return { alternates: { canonical: `${SITE}/jurisprudence/${slug}` } }
   }
 }
 

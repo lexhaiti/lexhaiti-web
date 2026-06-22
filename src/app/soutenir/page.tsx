@@ -24,6 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const language = await getServerLanguage()
   const t = await getT(language)
   return {
+    alternates: { canonical: 'https://www.lexhaiti.org/soutenir' },
     title: t('donate.title', {
       fallback: language === 'fr' ? 'Soutenir LexHaïti' : 'Sipòte LexHaïti',
     }),

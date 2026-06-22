@@ -19,13 +19,20 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
+const SITE = 'https://www.lexhaiti.org'
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params
-  const numericId = Number(id)
-  if (Number.isNaN(numericId)) return {}
+  const raw = decodeURIComponent(id)
+  const isNumeric = /^\d+$/.test(raw)
 
   try {
-    const issue = await getMoniteurIssue(numericId)
+    const issue = isNumeric
+      ? await getMoniteurIssue(Number(raw))
+      : await getMoniteurIssueBySlug(raw)
+    // Canonicalise every issue onto its numeric-id URL (the form the sitemap
+    // exposes), so a slug-accessed view doesn't become a duplicate of it.
+    const canonical = `${SITE}/moniteur/${issue.id}`
     const language = await getServerLanguage()
     const number = smartIssueNumber(issue.number)
     const date = formatLongDate(issue.publication_date, language)
@@ -35,14 +42,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: issue.edition_label
         ? `${issue.edition_label} · ${title}`
         : title,
+      alternates: { canonical },
+      openGraph: {
+        type: 'article',
+        title,
+        url: canonical,
+        siteName: 'LexHaiti',
+        locale: 'fr_FR',
+      },
     }
   } catch {
-    // Detail page surfaces a not-found state itself; fall back to default.
-    return {}
+    // Even on fetch failure, keep a self-referential canonical so the page
+    // never inherits the site-root canonical from the layout.
+    return { alternates: { canonical: `${SITE}/moniteur/${raw}` } }
   }
 }
-
-const SITE = 'https://www.lexhaiti.org'
 
 export default async function Page({ params }: PageProps) {
   const { id } = await params
