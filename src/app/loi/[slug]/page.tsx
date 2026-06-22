@@ -78,9 +78,9 @@ export async function generateMetadata({
     }
   } catch {
     // Transient/backend error → keep a self-referential canonical so the page
-    // never inherits the site-root canonical. A genuine 404 is handled by the
-    // page component below (notFound()); there is no route-level loading.tsx, so
-    // that resolves to a real 404 status rather than a streamed soft-404.
+    // never inherits the site-root canonical. A genuine 404 is turned into a
+    // real 404 by the route layout's existence gate (layout.tsx, which runs
+    // above loading.tsx); this catch only needs to cover the canonical.
     return { alternates: { canonical: `${SITE}/loi/${slug}` } }
   }
 }
