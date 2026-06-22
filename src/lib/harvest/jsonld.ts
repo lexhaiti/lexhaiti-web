@@ -182,9 +182,18 @@ export function moniteurIssueJsonLd(issue: MoniteurIssueRead): JsonLd {
     editor: issue.director
       ? { '@type': 'Person', name: issue.director }
       : undefined,
-    associatedMedia: issue.file_url
-      ? { '@type': 'MediaObject', contentUrl: issue.file_url, encodingFormat: 'application/pdf' }
-      : undefined,
+    // Only advertise the scan as a public MediaObject when file_url is a
+    // real http(s) URL. Many issues store a filesystem path
+    // (/app/data/scans/…) which is NOT web-reachable — emitting it as a
+    // contentUrl made Google crawl a non-existent URL (→ 404).
+    associatedMedia:
+      issue.file_url && /^https?:\/\//.test(issue.file_url)
+        ? {
+            '@type': 'MediaObject',
+            contentUrl: issue.file_url,
+            encodingFormat: 'application/pdf',
+          }
+        : undefined,
     isPartOf: {
       '@type': 'Periodical',
       name: 'Le Moniteur',
