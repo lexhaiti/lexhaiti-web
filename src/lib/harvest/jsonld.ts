@@ -48,6 +48,26 @@ const LEGAL_FORCE: Record<string, string> = {
 
 type JsonLd = Record<string, unknown>
 
+/**
+ * Serialize a JSON-LD graph for safe embedding inside a `<script>` element.
+ *
+ * `JSON.stringify` does NOT escape `<`, so any string field that can contain
+ * `</script>` (e.g. an editor-entered decision summary, court name, or law
+ * title) would terminate the `<script type="application/ld+json">` block and
+ * inject arbitrary markup — a stored XSS. Escaping `<`, `>` and `&` to their
+ * `\\uXXXX` forms keeps the output valid JSON while making `</script>` (and any
+ * HTML/JS breakout) impossible.
+ *
+ * Always use this instead of `JSON.stringify` for `dangerouslySetInnerHTML`
+ * JSON-LD injection.
+ */
+export function jsonLdToString(graph: unknown): string {
+  return JSON.stringify(graph)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+}
+
 function compact(obj: JsonLd): JsonLd {
   // Drop null / undefined / empty-array keys so the emitted graph is tidy.
   return Object.fromEntries(

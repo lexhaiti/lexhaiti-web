@@ -41,6 +41,24 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Baseline security headers on every response. HSTS is already added by
+  // Vercel's edge. `frame-ancestors 'self'` (+ X-Frame-Options for older
+  // browsers) blocks clickjacking of the app — including the editor panel —
+  // without a full script-src CSP (which would need nonces for Next's inline
+  // bootstrap and risk breaking the app).
+  async headers() {
+    const securityHeaders = [
+      { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      {
+        key: "Permissions-Policy",
+        value: "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+      },
+      { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+    ];
+    return [{ source: "/:path*", headers: securityHeaders }];
+  },
 };
 
 export default nextConfig;

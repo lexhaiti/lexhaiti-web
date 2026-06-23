@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import LawDetailPage from '@/components/law-details/LawDetail'
 import { getTextBySlug, type LegalTextRead } from '@/lib/api/endpoints'
 import { ApiError } from '@/lib/api/client'
-import { breadcrumbJsonLd, legislationJsonLd } from '@/lib/harvest/jsonld'
+import { breadcrumbJsonLd, jsonLdToString, legislationJsonLd } from '@/lib/harvest/jsonld'
 
 const SITE = 'https://www.lexhaiti.org'
 
@@ -112,11 +112,11 @@ export default async function Page({ params }: PageProps) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdToString(jsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdToString(crumbs) }}
       />
       <LawDetailPage key={slug} initialData={text} />
     </>

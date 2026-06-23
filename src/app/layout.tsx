@@ -8,6 +8,7 @@ import SiteShell from '@/components/layout/SiteShell'
 import Providers from './providers'
 import { getServerLanguage } from '@/i18n/server'
 import { loadMessages } from '@/i18n'
+import { jsonLdToString } from '@/lib/harvest/jsonld'
 
 // next/font self-hosts these so the browser never blocks on a
 // Google Fonts CSS request. ``swap`` shows a fallback immediately,
@@ -148,7 +149,7 @@ export default async function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdToString(jsonLd) }}
         />
       </head>
       <body suppressHydrationWarning>
