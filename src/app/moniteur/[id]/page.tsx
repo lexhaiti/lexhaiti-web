@@ -11,7 +11,8 @@ import {
   type MoniteurIssueWithEntries,
 } from '@/lib/api/endpoints'
 import { ApiError } from '@/lib/api/client'
-import { breadcrumbJsonLd, jsonLdToString, moniteurIssueJsonLd } from '@/lib/harvest/jsonld'
+import { breadcrumbJsonLd, moniteurIssueJsonLd } from '@/lib/harvest/jsonld'
+import { JsonLd } from '@/components/seo/JsonLd'
 import { formatLongDate } from '@/lib/format/date'
 import { smartIssueNumber } from '@/lib/format/moniteur'
 import { getServerLanguage } from '@/i18n/server'
@@ -88,14 +89,8 @@ export default async function Page({ params }: PageProps) {
   ])
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdToString(jsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdToString(crumbs) }}
-      />
+      <JsonLd graph={jsonLd} />
+      <JsonLd graph={crumbs} />
       <MoniteurDetailClient key={id} initialData={issue} />
     </>
   )

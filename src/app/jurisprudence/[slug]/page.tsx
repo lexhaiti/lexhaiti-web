@@ -8,7 +8,8 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { getDecisionBySlug } from '@/lib/api/endpoints'
-import { breadcrumbJsonLd, decisionJsonLd, jsonLdToString } from '@/lib/harvest/jsonld'
+import { breadcrumbJsonLd, decisionJsonLd } from '@/lib/harvest/jsonld'
+import { JsonLd } from '@/components/seo/JsonLd'
 import { formatLongDate } from '@/lib/format/date'
 import { getServerLanguage, getT } from '@/i18n/server'
 
@@ -85,14 +86,8 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdToString(jsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdToString(crumbs) }}
-      />
+      <JsonLd graph={jsonLd} />
+      <JsonLd graph={crumbs} />
       <DecisionDetailClient decision={decision} />
     </>
   )
