@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import {
   ArrowRight,
+  BarChart3,
   Braces,
   CalendarRange,
   ChevronDown,
@@ -361,6 +362,16 @@ export default function EditorialDashboardPage() {
             isFr
               ? 'Import brut — texte légal ou Moniteur en JSON'
               : 'Enpòte brit — tèks legal oswa Moniteur an JSON'
+          }
+        />
+        <DashboardCard
+          href="/editorial/analytics"
+          icon={BarChart3}
+          title={isFr ? 'Statistiques' : 'Estatistik'}
+          subtitle={
+            isFr
+              ? 'Téléchargements et recherches des visiteurs'
+              : 'Telechajman ak rechèch vizitè yo'
           }
         />
       </section>

@@ -2402,3 +2402,44 @@ export async function requestDecisionChanges(slug: string, comment: string) {
     { comment },
   )
 }
+
+// ---------------------------------------------------------------------------
+// Usage analytics (editor-only) — anonymous reach metrics over usage_events.
+// ---------------------------------------------------------------------------
+
+export type AnalyticsDownloadRow = {
+  event_type: string
+  target_type: string | null
+  target_id: number | null
+  count: number
+  /** Best-effort human label resolved server-side; null if unresolved. */
+  label: string | null
+}
+
+export type AnalyticsSearchRow = {
+  query: string
+  count: number
+}
+
+export type AnalyticsUsageResponse = {
+  window_days: number
+  /** Event count per event_type; only types with rows are present. */
+  totals: Record<string, number>
+  top_downloads: AnalyticsDownloadRow[]
+  top_searches: AnalyticsSearchRow[]
+  zero_result_searches: AnalyticsSearchRow[]
+}
+
+/** Editor-only aggregated usage stats. All figures are bounded to the
+ *  trailing ``windowDays`` days and sourced from the anonymous usage_events
+ *  log (no IP / user / session id). */
+export async function getAnalyticsUsage(params?: {
+  windowDays?: number
+  limit?: number
+}) {
+  const windowDays = params?.windowDays ?? 30
+  const limit = params?.limit ?? 20
+  return apiGet<AnalyticsUsageResponse>(
+    `/analytics/usage?window_days=${windowDays}&limit=${limit}`,
+  )
+}
