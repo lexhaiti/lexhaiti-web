@@ -37,6 +37,12 @@ export default async function Page() {
         : "Nou itilize sèlman cookies teknik ki nesesè pou fonksyonman an (sonje lang, eta sesyon). Pa gen okenn cookies pou piblisite oswa pou swiv ou.",
     },
     {
+      title: isFr ? "Mesure d'audience" : 'Mezi odyans',
+      content: isFr
+        ? "Pour comprendre quelles ressources sont les plus consultées et améliorer la plateforme, nous utilisons une mesure d'audience respectueuse de la vie privée (Vercel Web Analytics), sans cookie et sans conservation de votre adresse IP. Nous tenons également un journal d'usage anonyme côté serveur — uniquement les téléchargements et les termes de recherche, jamais d'identifiant personnel — ce qui nous aide notamment à repérer les contenus manquants. Ces mesures étant entièrement anonymes, aucun consentement préalable n'est requis."
+        : "Pou nou konprann ki resous moun konsilte plis epi amelyore platfòm lan, nou itilize yon mezi odyans ki respekte vi prive (Vercel Web Analytics), san cookie e san konsève adrès IP ou. Nou kenbe tou yon jounal itilizasyon anonim sou sèvè a — sèlman telechajman ak tèm rechèch yo, pa janm okenn idantifyan pèsonèl — sa ki ede nou jwenn kontni ki manke. Paske mezi sa yo konplètman anonim, pa gen okenn dakò davans ki egzije.",
+    },
+    {
       title: isFr ? 'Vos droits' : 'Dwa ou yo',
       content: isFr
         ? "Conformément aux principes de protection des données, vous pouvez effacer vos données locales à tout moment en vidant le cache de votre navigateur. Aucune donnée n'est conservée côté serveur sans consentement explicite."

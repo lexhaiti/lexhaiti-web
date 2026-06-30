@@ -2,6 +2,7 @@
 import type { Metadata } from 'next'
 import { DM_Sans, Source_Serif_4 } from 'next/font/google'
 import NextTopLoader from 'nextjs-toploader'
+import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 import SiteShell from '@/components/layout/SiteShell'
@@ -189,6 +190,14 @@ export default async function RootLayout({
             so it doesn't compete with first paint. Free tier covers
             10k events/month, plenty for our current traffic. */}
         <SpeedInsights />
+        {/* Vercel Web Analytics — cookieless, same-origin page-view +
+            custom-event counts (no IP stored, no cross-site cookies, so no
+            consent banner needed — see /privacy). The script loads from
+            va.vercel-scripts.com and beacons to the same-origin
+            /_vercel/insights path, both already allowed by the CSP in
+            src/middleware.ts. Pairs with the anonymous server-side
+            usage_events log for download/search analytics. */}
+        <Analytics />
       </body>
     </html>
   )
