@@ -2414,6 +2414,9 @@ export type AnalyticsDownloadRow = {
   count: number
   /** Best-effort human label resolved server-side; null if unresolved. */
   label: string | null
+  /** Dense, oldest-first daily download counts over the window (for the
+   *  sparkline). Optional for forward-compat with older API builds. */
+  trend?: number[]
 }
 
 export type AnalyticsSearchRow = {

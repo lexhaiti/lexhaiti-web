@@ -27,6 +27,7 @@ import {
   getAnalyticsUsage,
   type AnalyticsUsageResponse,
 } from '@/lib/api/endpoints'
+import { buildUsageCsv, downloadCsv } from '@/lib/analytics/csv'
 
 const WINDOWS = [30, 90, 365] as const
 
@@ -155,6 +156,21 @@ export default function AnalyticsPage() {
               {L('Chargement…', 'Chaje…')}
             </span>
           )}
+          {data && (
+            <button
+              type="button"
+              onClick={() =>
+                downloadCsv(
+                  `lexhaiti-stats-${windowDays}j.csv`,
+                  buildUsageCsv(data),
+                )
+              }
+              className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-1.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              {L('Exporter en CSV', 'Ekspòte CSV')}
+            </button>
+          )}
         </div>
 
         {err && <ErrorBanner>{err}</ErrorBanner>}
@@ -215,6 +231,9 @@ export default function AnalyticsPage() {
                         <th className="px-5 py-3 w-10">#</th>
                         <th className="px-5 py-3">{L('Document', 'Dokiman')}</th>
                         <th className="px-5 py-3">{L('Type', 'Tip')}</th>
+                        <th className="px-5 py-3">
+                          {L('Tendance', 'Tandans')}
+                        </th>
                         <th className="px-5 py-3 text-right">
                           {L('Téléchargements', 'Telechajman')}
                         </th>
@@ -237,6 +256,16 @@ export default function AnalyticsPage() {
                             <Badge variant="secondary">
                               {downloadKind(row.event_type)}
                             </Badge>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            {row.trend && row.trend.some((n) => n > 0) ? (
+                              <Sparkline
+                                values={row.trend}
+                                className="text-primary"
+                              />
+                            ) : (
+                              <span className="text-xs text-slate-400">—</span>
+                            )}
                           </td>
                           <td className="px-5 py-3.5 text-right tabular-nums font-semibold text-slate-700 dark:text-slate-200">
                             {row.count}
@@ -329,6 +358,46 @@ function StatTile({
         {value.toLocaleString('fr-FR')}
       </div>
     </div>
+  )
+}
+
+function Sparkline({
+  values,
+  className,
+}: {
+  values: number[]
+  className?: string
+}) {
+  const width = 96
+  const height = 24
+  const pad = 2
+  if (values.length === 0) return null
+  const max = Math.max(1, ...values)
+  const step = values.length > 1 ? (width - pad * 2) / (values.length - 1) : 0
+  const points = values
+    .map((v, i) => {
+      const x = pad + i * step
+      const y = height - pad - (v / max) * (height - pad * 2)
+      return `${x.toFixed(1)},${y.toFixed(1)}`
+    })
+    .join(' ')
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      className={className}
+      aria-hidden
+    >
+      <polyline
+        points={points}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
   )
 }
 
